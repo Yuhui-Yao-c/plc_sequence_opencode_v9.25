@@ -20,11 +20,17 @@ def main():
     else:
         filetypes = [("所有文件", "*.*")]
         if file_filter == "xml":
-            filetypes = [("XML 文件", "*.xml"), ("所有文件", "*.*")]
+            filetypes = [
+                ("PLC 源码文件", "*.xml *.smc2 *.txt"),
+                ("PLCopen XML", "*.xml"),
+                ("SMC2", "*.smc2"),
+                ("文本导出", "*.txt"),
+                ("所有文件", "*.*"),
+            ]
         elif file_filter == "trace":
             filetypes = [("Trace 文件", "*.trace"), ("所有文件", "*.*")]
         elif file_filter == "excel":
-            filetypes = [("Excel 文件", "*.xls;*.xlsx"), ("所有文件", "*.*")]
+            filetypes = [("Excel 文件", "*.xls *.xlsx"), ("所有文件", "*.*")]
         path = filedialog.askopenfilename(title=title, filetypes=filetypes)
 
     print(path if path else "")

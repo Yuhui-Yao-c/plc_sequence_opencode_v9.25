@@ -79,3 +79,23 @@ Excel仍使用既有artifact_tool导出器，安装基础requirements仅含解�
 本次随仓库另提供已经生成的专项Excel，不使用示例标签反向生成预测。
 
 新增规则见 `.opencode/skills/plc-cross-fb-transport/SKILL.md`；验证见 `RELEASE_v9_12.md`。
+
+## v9.25 Web 控制台（完整工作流）
+
+项目提供本地页面版工作台，能够真实调用 Python CLI 与 OpenCode CLI，而不是仅展示模拟进度。
+
+```bash
+python -m pip install -r requirements.txt
+opencode --version
+opencode auth list
+opencode agent list
+python web_app.py
+```
+
+浏览器默认访问 `http://127.0.0.1:5173`；Windows 也可双击 `run_web.bat`。页面会按顺序执行 predict、逐批 OpenCode 工艺分析、逐批 B 档动作描述、finish 校验与 Excel 交付。任务中断后，可从历史运行记录恢复，只重跑缺失或结构无效的批次。
+
+- 默认仅监听本机回环地址。
+- OpenCode CLI 必须已安装并完成模型认证；页面会检查 CLI 版本与项目批次 Agent 是否加载。
+- 如 CLI 不在 PATH，可设置 `OPENCODE_BIN` 指向可执行文件。
+- 人工采集表仅用于 finish 阶段覆盖评价，不会进入 OpenCode Agent 上下文。
+- 详细说明见 [WEB_UI_GUIDE.md](WEB_UI_GUIDE.md)。
