@@ -1,0 +1,15 @@
+<project><pou name="Demo"><body><ST><xhtml xmlns="http://www.w3.org/1999/xhtml">CASE Cell.Phase[4] OF
+500: Motor.Execute:=TRUE; IF Axis.Arrived THEN Cell.Phase[4]:=620; END_IF;
+620: IF Released THEN Cell.Phase[4]:=20; END_IF;
+20: IF Permit THEN Cell.Phase[4]:=500; END_IF;
+END_CASE;
+CASE Robot.Phase[2] OF
+210: IF MoveDone THEN Robot.Phase[2]:=260; END_IF;
+260: IF Released THEN Robot.Phase[2]:=310; END_IF;
+310: IF Permit THEN Robot.Phase[2]:=210; END_IF;
+END_CASE;
+CASE Shuttle.Phase[0] OF
+80: IF OK THEN Shuttle.Phase[0]:=120; ELSE Shuttle.Phase[0]:=30; END_IF;
+120: IF Reset THEN Shuttle.Phase[0]:=80; END_IF;
+30: IF Reset THEN Shuttle.Phase[0]:=80; END_IF;
+END_CASE;</xhtml></ST></body></pou></project>

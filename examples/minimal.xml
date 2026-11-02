@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://www.plcopen.org/xml/tc6_0200">
+  <fileHeader companyName="Generic" productName="Example" productVersion="1" creationDateTime="2026-01-01T00:00:00"/>
+  <contentHeader name="minimal" modificationDateTime="2026-01-01T00:00:00"/>
+  <types><pous><pou name="Sample" pouType="program"><body><ST><xhtml xmlns="http://www.w3.org/1999/xhtml">IF state = 10 THEN state := 20; ELSIF state = 20 THEN state := 10; END_IF;</xhtml></ST></body></pou></pous></types>
+</project>

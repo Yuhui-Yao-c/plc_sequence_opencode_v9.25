@@ -1,0 +1,590 @@
+﻿开始标签	结束标签	动作描述	人工源文件行号
+m_nNextAutoStep[3]=INT#110	NOT (m_nNextAutoStep[3]=INT#110)	上料搬运模块合芯前机械手Z轴下降150mm	合芯动作拆解 (2)!3
+m_nNextAutoStep[4]=INT#110	NOT (m_nNextAutoStep[4]=INT#110)	上料搬运模块合芯前机械手Z轴下降150mm	合芯动作拆解 (2)!3
+m_nNextAutoStep[3]=INT#120	NOT (m_nNextAutoStep[3]=INT#120)	上料搬运模块合芯前机械手的夹爪气缸HFD25缩回，兜住电芯	合芯动作拆解 (2)!4
+m_nNextAutoStep[4]=INT#120	NOT (m_nNextAutoStep[4]=INT#120)	上料搬运模块合芯前机械手的夹爪气缸HFD25缩回，兜住电芯	合芯动作拆解 (2)!4
+m_nNextAutoStep[3]=INT#140	NOT (m_nNextAutoStep[3]=INT#140)	上料搬运模块合芯前机械手的气缸TCM10伸出下压夹紧电芯	合芯动作拆解 (2)!5
+m_nNextAutoStep[4]=INT#140	NOT (m_nNextAutoStep[3]=INT#140)	上料搬运模块合芯前机械手的气缸TCM10伸出下压夹紧电芯	合芯动作拆解 (2)!5
+m_nNextAutoStep[3]=INT#150	NOT (m_nNextAutoStep[3]=INT#150)	上料搬运模块合芯前机械手Z轴上升150mm	合芯动作拆解 (2)!6
+m_nNextAutoStep[4]=INT#150	NOT(m_nNextAutoStep[4]=INT#150)	上料搬运模块合芯前机械手Z轴上升150mm	合芯动作拆解 (2)!6
+m_nNextAutoStep[2]=INT#1130 OR m_nNextAutoStep[2]= INT#5010	NOT (m_nNextAutoStep[2]=INT#1130) AND NOT (m_nNextAutoStep[2]= INT#5010)	上料搬运模块直线电机平移1990至合芯放料位上方	合芯动作拆解 (2)!7
+m_nNextAutoStep[2]=INT#1130 OR m_nNextAutoStep[2]= INT#5010	NOT (m_nNextAutoStep[2]=INT#1130) AND NOT (m_nNextAutoStep[2]= INT#5010)	上料搬运模块直线电机平移1990至合芯放料位上方	合芯动作拆解 (2)!7
+m_nNextAutoStep[2]=INT#10	NOT m_nNextAutoStep[2]=INT#10	电芯在位检测	合芯动作拆解 (2)!8
+m_nNextAutoStep[2]=INT#10	NOT m_nNextAutoStep[2]=INT#10	电芯在位检测	合芯动作拆解 (2)!8
+m_nNextAutoStep[3]=INT#1100	NOT (m_nNextAutoStep[3]=INT#1100)	上料搬运模块等待合芯允许放料	合芯动作拆解 (2)!9
+m_nNextAutoStep[4]=INT#1100	NOT (m_nNextAutoStep[4]=INT#1100)	上料搬运模块等待合芯允许放料	合芯动作拆解 (2)!9
+m_nNextAutoStep[3]=INT#1110	m_nNextAutoStep[3]=INT#1120	上料搬运模块合芯前机械手Z轴下降150mm	合芯动作拆解 (2)!10
+m_nNextAutoStep[4]=INT#1110	m_nNextAutoStep[4]=INT#1120	上料搬运模块合芯前机械手Z轴下降150mm	合芯动作拆解 (2)!10
+m_nNextAutoStep[3]=INT#1120	m_nNextAutoStep[3]=INT#1130	上料搬运模块合芯前机械手的气缸TCM10缩回	合芯动作拆解 (2)!11
+m_nNextAutoStep[4]=INT#1120	m_nNextAutoStep[4]=INT#1130	上料搬运模块合芯前机械手的气缸TCM10缩回	合芯动作拆解 (2)!11
+m_nNextAutoStep[3]=INT#1130	m_nNextAutoStep[3]=INT#1170	上料搬运模块合芯前机械手的夹爪气缸HFD25张开（合芯夹爪同步夹紧）	合芯动作拆解 (2)!12
+m_nNextAutoStep[4]=INT#1130	m_nNextAutoStep[4]=INT#1170	上料搬运模块合芯前机械手的夹爪气缸HFD25张开（合芯夹爪同步夹紧）	合芯动作拆解 (2)!12
+m_nNextAutoStep[3]=INT#1170	NOT (m_nNextAutoStep[3]=INT#1170)	上料搬运模块合芯前机械手Z轴上升150mm	合芯动作拆解 (2)!13
+m_nNextAutoStep[4]=INT#1170	NOT(m_nNextAutoStep[4]=INT#1170)	上料搬运模块合芯前机械手Z轴上升150mm	合芯动作拆解 (2)!13
+m_nNextAutoStep[2]=INT#1010	NOT (m_nNextAutoStep[2]=INT#1010)	上料搬运模块直线电机从合芯上方平移1990mm回上线物流上方	合芯动作拆解 (2)!14
+m_nNextAutoStep[2]=INT#1010	NOT (m_nNextAutoStep[2]=INT#1010)	上料搬运模块直线电机从合芯上方平移1990mm回上线物流上方	合芯动作拆解 (2)!14
+m_nNextAutoStep[2]=INT#1050	NOT m_nNextAutoStep[2]=INT#1050	等待移动指令	合芯动作拆解 (2)!15
+m_nNextAutoStep[2]=INT#1050	NOT m_nNextAutoStep[2]=INT#1050	等待移动指令	合芯动作拆解 (2)!15
+m_nNextAutoStep[2]=INT#1100	NOT (m_nNextAutoStep[2]=INT#1100)	等待物流线允许取料	合芯动作拆解 (2)!16
+m_nNextAutoStep[2]=INT#1100	NOT (m_nNextAutoStep[2]=INT#1100)	等待物流线允许取料	合芯动作拆解 (2)!16
+A		机构动作	合芯动作拆解 (2)!18
+B		机构动作	合芯动作拆解 (2)!18
+开始	结束		合芯动作拆解 (2)!19
+开始	结束		合芯动作拆解 (2)!19
+m_nNextAutoStep[5]=INT#10	NOT m_nNextAutoStep[5]=INT#10	合芯机构电芯在位检测	合芯动作拆解 (2)!21
+m_nNextAutoStep[5]=INT#240 OR m_nNextAutoStep[5]=INT#330	NOT(m_nNextAutoStep[5]=INT#240 OR m_nNextAutoStep[5]=INT#330)	合芯位直线电机平移1100mm至中转搬运取料位（运动过程中合芯）	合芯动作拆解 (2)!22
+m_nNextAutoStep[5]=INT#400	NOT (m_nNextAutoStep[5]=INT#400)	顶盖上下电机定位取料位	合芯动作拆解 (2)!23
+m_nNextAutoStep[5]=INT#420	NOT m_nNextAutoStep[5]=INT#420	等待机器人下降位取料	合芯动作拆解 (2)!24
+m_nNextAutoStep[5]=INT#430	NOT m_nNextAutoStep[5]=INT#430	合芯工位打开90°（合芯先打开一定角度，上下料平移机械手上升250mm，过程中合芯完成打开）	合芯动作拆解 (2)!25
+m_nNextAutoStep[5]=INT#450	NOT (m_nNextAutoStep[5]=INT#450)	等待机器人离开合芯机构	合芯动作拆解 (2)!26
+m_nNextAutoStep[5]=INT#130 OR m_nNextAutoStep[5]=INT#150	NOT (m_nNextAutoStep[5]=INT#130 OR m_nNextAutoStep[5]=INT#150)	合芯位直线电机平移1100mm复位至合芯上料位	合芯动作拆解 (2)!27
+m_nNextAutoStep[5]=INT#180	NOT m_nNextAutoStep[5]=INT#180	等待上料搬运机械手放料	合芯动作拆解 (2)!28
+A		机构动作	合芯动作拆解 (2)!30
+B		机构动作	合芯动作拆解 (2)!30
+开始	结束		合芯动作拆解 (2)!31
+开始	结束		合芯动作拆解 (2)!31
+m_nNextAutoStep[7]=INT#260	NOT (m_nNextAutoStep[7]=INT#260)	合芯工位打开90°	合芯动作拆解 (2)!33
+m_nNextAutoStep[7]=INT#280	NOT (m_nNextAutoStep[7]=INT#280)	机器人上升250mm（在合芯位上方安全位）	合芯动作拆解 (2)!34
+m_nNextAutoStep[7]=INT#320	NOT (m_nNextAutoStep[7]=INT#320)	上料机器人从合芯下料位平移至治具上料位	合芯动作拆解 (2)!35
+m_nNextAutoStep[7]=INT#330	NOT (m_nNextAutoStep[7]=INT#330)	等待治具回流允许下料信号	合芯动作拆解 (2)!36
+m_nNextAutoStep[7]=INT#410	NOT (m_nNextAutoStep[7]=INT#410)	机器人下降250mm放料料（机械手在治具上料位上方）	合芯动作拆解 (2)!37
+m_nNextAutoStep[7]=INT#420	NOT (m_nNextAutoStep[7]=INT#420)	内循环治具夹紧气缸同步夹紧	合芯动作拆解 (2)!38
+m_nNextAutoStep[7]=INT#440	NOT (m_nNextAutoStep[7]=INT#440)	合芯后搬运夹爪气缸B52-HFD25x80松开20mm	合芯动作拆解 (2)!39
+m_nNextAutoStep[7]=INT#460	NOT (m_nNextAutoStep[7]=INT#460)	机器人上升250mm（机械手在治具上料位上方安全位）	合芯动作拆解 (2)!40
+m_nNextAutoStep[7]=INT#120	NOT (m_nNextAutoStep[7]=INT#120)	上料机器人从治具上料位平移至合芯取料上方位	合芯动作拆解 (2)!41
+m_nNextAutoStep[7]=INT#130	NOT (m_nNextAutoStep[7]=INT#130)	等待允许机器人取料信号	合芯动作拆解 (2)!42
+m_nNextAutoStep[7]=INT#10	NOT m_nNextAutoStep[7]=INT#10	电芯在位检测	合芯动作拆解 (2)!43
+m_nNextAutoStep[7]=INT#210	NOT (m_nNextAutoStep[7]=INT#210)	机器人去合芯取料位	合芯动作拆解 (2)!44
+m_nNextAutoStep[7]=INT#220	NOT m_nNextAutoStep[7]=INT#220	合芯后搬运机械手夹爪气缸B52-HFD25x80夹紧20mm	合芯动作拆解 (2)!45
+m_nNextAutoStep[7]=INT#230	not(m_nNextAutoStep[7]=INT#230)	合芯夹紧定位气缸B52-HFD16x60张开30mm	合芯动作拆解 (2)!46
+A		机构动作	合芯动作拆解 (2)!49
+B		机构动作	合芯动作拆解 (2)!49
+开始	结束		合芯动作拆解 (2)!50
+开始	结束		合芯动作拆解 (2)!50
+m_nNextAutoStep[10]=INT#640	NOT (m_nNextAutoStep[10]=INT#640)	磁驱动子平移来料,治具流出	合芯动作拆解 (2)!51
+m_nNextAutoStep[11]=INT#1010	NOT (m_nNextAutoStep[11]=INT#1010)	磁驱动子平移来料,治具流出	合芯动作拆解 (2)!51
+m_nNextAutoStep[10]=INT#105	NOT (m_nNextAutoStep[10]=INT#105)	BTH22Z轴模组下降取料	合芯动作拆解 (2)!52
+m_nNextAutoStep[11]=INT#110	NOT (m_nNextAutoStep[11]=INT#110)	BTH22Z轴模组下降取料	合芯动作拆解 (2)!52
+m_nNextAutoStep[10]=INT#110	NOT (m_nNextAutoStep[10]=INT#110)	夹紧电芯气缸B52-HFD25x80夹紧电芯20mm，磁驱夹具松开电芯50mm	合芯动作拆解 (2)!53
+m_nNextAutoStep[11]=INT#115	NOT (m_nNextAutoStep[11]=INT#115)	夹紧电芯气缸B52-HFD25x80夹紧电芯20mm，磁驱夹具松开电芯50mm	合芯动作拆解 (2)!53
+m_nNextAutoStep[10]=INT#300	NOT (m_nNextAutoStep[10]=INT#300)	BTH22Z轴模组上升150mm，撕裂检测位	合芯动作拆解 (2)!54
+m_nNextAutoStep[11]=INT#300	NOT (m_nNextAutoStep[11]=INT#300)	BTH22Z轴模组上升150mm，撕裂检测位	合芯动作拆解 (2)!54
+m_nNextAutoStep[10]=INT#340	NOT (m_nNextAutoStep[10]=INT#340)	极耳撕裂检测拍照	合芯动作拆解 (2)!55
+m_nNextAutoStep[11]=INT#340	NOT (m_nNextAutoStep[11]=INT#340)	极耳撕裂检测拍照	合芯动作拆解 (2)!55
+m_nNextAutoStep[10]=INT#380	NOT (m_nNextAutoStep[10]=INT#380)	侧面CCD飞拍准备	合芯动作拆解 (2)!56
+m_nNextAutoStep[11]=INT#380	NOT (m_nNextAutoStep[11]=INT#380)	侧面CCD飞拍准备	合芯动作拆解 (2)!56
+m_nNextAutoStep[10]=INT#390	NOT (m_nNextAutoStep[10]=INT#390)	BTH22Z轴模组上升350mm,侧面CCD飞拍	合芯动作拆解 (2)!57
+m_nNextAutoStep[11]=INT#400	NOT (m_nNextAutoStep[11]=INT#400)	BTH22Z轴模组上升350mm,侧面CCD飞拍	合芯动作拆解 (2)!57
+m_nNextAutoStep[10]=INT#510	NOT m_nNextAutoStep[10]=INT#510	BTH22Z轴模组下降500mm	合芯动作拆解 (2)!58
+m_nNextAutoStep[11]=INT#505	NOT m_nNextAutoStep[11]=INT#505	BTH22Z轴模组下降500mm	合芯动作拆解 (2)!58
+m_nNextAutoStep[10]=INT#515	NOT m_nNextAutoStep[10]=INT#515	内循环治具缩回夹紧电芯50mm，	合芯动作拆解 (2)!59
+m_nNextAutoStep[11]=INT#510	NOT m_nNextAutoStep[11]=INT#510	内循环治具缩回夹紧电芯50mm，	合芯动作拆解 (2)!59
+m_nNextAutoStep[10]=INT#520	NOT m_nNextAutoStep[10]=INT#520	夹紧电芯气缸B52-HFD25x80松开电芯20mm	合芯动作拆解 (2)!60
+m_nNextAutoStep[11]=INT#520	NOT m_nNextAutoStep[11]=INT#520	夹紧电芯气缸B52-HFD25x80松开电芯20mm	合芯动作拆解 (2)!60
+m_nNextAutoStep[10]=INT#540	NOT (m_nNextAutoStep[10]=INT#540)	BTH22Z轴模组定位安全位	合芯动作拆解 (2)!61
+m_nNextAutoStep[11]=INT#540	NOT (m_nNextAutoStep[11]=INT#540)	BTH22Z轴模组定位安全位	合芯动作拆解 (2)!61
+m_nNextAutoStep[10]=INT#10	NOT (m_nNextAutoStep[10]=INT#10)	电芯在位检测	合芯动作拆解 (2)!62
+m_nNextAutoStep[11]=INT#10	NOT (m_nNextAutoStep[11]=INT#10)	电芯在位检测	合芯动作拆解 (2)!62
+m_nNextAutoStep[10]=INT#580	NOT m_nNextAutoStep[10]=INT#580	匹配A0,B0工位电芯码	合芯动作拆解 (2)!63
+m_nNextAutoStep[10]= INT#600 OR m_nNextAutoStep[10]= INT#620	NOT (m_nNextAutoStep[10]=INT#600) AND NOT (m_nNextAutoStep[10]=INT#620)	大面准备拍照,CCD飞拍	合芯动作拆解 (2)!64
+A		机构动作	合芯动作拆解 (2)!67
+B		机构动作	合芯动作拆解 (2)!67
+开始	结束		合芯动作拆解 (2)!68
+开始	结束		合芯动作拆解 (2)!68
+m_nNextAutoStep[37]=INT#510	NOT (m_nNextAutoStep[37]=INT#510)	磁驱动子平移来料,治具流出	合芯动作拆解 (2)!69
+m_nNextAutoStep[37]=INT#510	NOT (m_nNextAutoStep[38]=INT#510)	磁驱动子平移来料,治具流出	合芯动作拆解 (2)!69
+m_nNextAutoStep[37]=INT#100	NOT m_nNextAutoStep[37]=INT#100	夹紧电芯气缸B52-HFD25x80夹紧电芯20mm	合芯动作拆解 (2)!70
+m_nNextAutoStep[38]=INT#100	NOT m_nNextAutoStep[38]=INT#100	夹紧电芯气缸B52-HFD25x80夹紧电芯20mm	合芯动作拆解 (2)!70
+m_nNextAutoStep[37]=INT#110	NOT m_nNextAutoStep[37]=INT#110	磁驱夹具松开电芯50mm	合芯动作拆解 (2)!71
+m_nNextAutoStep[38]=INT#110	NOT m_nNextAutoStep[38]=INT#110	磁驱夹具松开电芯50mm	合芯动作拆解 (2)!71
+m_nNextAutoStep[37]=INT#120	NOT m_nNextAutoStep[37]=INT#120	外刮片气缸松开，内夹子气缸夹紧	合芯动作拆解 (2)!72
+m_nNextAutoStep[38]=INT#120	NOT m_nNextAutoStep[38]=INT#120	外刮片气缸松开，内夹子气缸夹紧	合芯动作拆解 (2)!72
+m_nNextAutoStep[37]=INT#130	NOT m_nNextAutoStep[37]=INT#130	短边热熔封头夹子气缸松开	合芯动作拆解 (2)!73
+m_nNextAutoStep[37]=INT#140	NOT m_nNextAutoStep[37]=INT#140	刮片内平移电机热熔位	合芯动作拆解 (2)!74
+m_nNextAutoStep[38]=INT#130	NOT m_nNextAutoStep[38]=INT#130	刮片内平移电机热熔位	合芯动作拆解 (2)!74
+m_nNextAutoStep[37]=INT#150	NOT m_nNextAutoStep[37]=INT#150	刮片外平移电机热熔位，封头平移电机热熔位	合芯动作拆解 (2)!75
+m_nNextAutoStep[38]=INT#140	NOT m_nNextAutoStep[38]=INT#140	刮片外平移电机热熔位，封头平移电机热熔位	合芯动作拆解 (2)!75
+m_nNextAutoStep[37]=INT#165	NOT m_nNextAutoStep[37]=INT#165	外刮片夹子气缸夹紧	合芯动作拆解 (2)!76
+m_nNextAutoStep[38]=INT#150	NOT m_nNextAutoStep[38]=INT#150	外刮片夹子气缸夹紧	合芯动作拆解 (2)!76
+m_nNextAutoStep[37]=INT#170	NOT m_nNextAutoStep[37]=INT#170	内刮片平移电机安全位，封头气缸夹紧	合芯动作拆解 (2)!77
+m_nNextAutoStep[38]=INT#170	NOT m_nNextAutoStep[38]=INT#170	内刮片平移电机安全位，封头气缸夹紧	合芯动作拆解 (2)!77
+m_nNextAutoStep[37]=INT#200	NOT m_nNextAutoStep[37]=INT#200	短边热熔	合芯动作拆解 (2)!78
+m_nNextAutoStep[38]=INT#210	NOT m_nNextAutoStep[38]=INT#210	短边热熔	合芯动作拆解 (2)!78
+m_nNextAutoStep[37]=INT#220	NOT (m_nNextAutoStep[37]=INT#220)	热熔冷却	合芯动作拆解 (2)!79
+m_nNextAutoStep[38]=INT#220	NOT (m_nNextAutoStep[38]=INT#220)	热熔冷却	合芯动作拆解 (2)!79
+m_nNextAutoStep[37]=INT#250	NOT m_nNextAutoStep[37]=INT#250	短边热熔封头夹子气缸延时	合芯动作拆解 (2)!80
+m_nNextAutoStep[38]=INT#250	NOT m_nNextAutoStep[38]=INT#250	短边热熔封头夹子气缸延时	合芯动作拆解 (2)!80
+m_nNextAutoStep[37]=INT#260	NOT (m_nNextAutoStep[37]=INT#260)	电芯夹夹子气缸，治具开夹气缸，外刮片气缸，封头夹子气缸松开	合芯动作拆解 (2)!81
+m_nNextAutoStep[38]=INT#260	NOT (m_nNextAutoStep[38]=INT#260)	电芯夹夹子气缸，治具开夹气缸，外刮片气缸，封头夹子气缸松开	合芯动作拆解 (2)!81
+m_nNextAutoStep[37]=INT#270	NOT (m_nNextAutoStep[37]=INT#270)	封头平移轴热熔位安全位	合芯动作拆解 (2)!82
+m_nNextAutoStep[38]=INT#270	NOT (m_nNextAutoStep[38]=INT#270)	封头平移轴热熔位安全位	合芯动作拆解 (2)!82
+m_nNextAutoStep[37]=INT#290	NOT (m_nNextAutoStep[37]=INT#290)	电芯夹夹子气缸松开（保证安全）	合芯动作拆解 (2)!83
+m_nNextAutoStep[38]=INT#290	NOT (m_nNextAutoStep[37]=INT#290)	电芯夹夹子气缸松开（保证安全）	合芯动作拆解 (2)!83
+A		机构动作	合芯动作拆解 (2)!87
+B		机构动作	合芯动作拆解 (2)!87
+开始	结束		合芯动作拆解 (2)!88
+开始	结束		合芯动作拆解 (2)!88
+m_nNextAutoStep[39]=INT#510	NOT m_nNextAutoStep[39]=INT#510	磁驱动子平移来料,治具流出	合芯动作拆解 (2)!89
+m_nNextAutoStep[39]=INT#510	NOT m_nNextAutoStep[39]=INT#510	磁驱动子平移来料,治具流出	合芯动作拆解 (2)!89
+m_nNextAutoStep[40]=INT#510	NOT (m_nNextAutoStep[40]=INT#510)	贴胶模组BTH17定位预贴胶位	合芯动作拆解 (2)!90
+m_nNextAutoStep[41]=INT#510	NOT (m_nNextAutoStep[41]=INT#510)	贴胶模组BTH17定位预贴胶位	合芯动作拆解 (2)!90
+m_nNextAutoStep[40]=INT#520	NOT m_nNextAutoStep[40]=INT#520	贴胶模组BTH17下降200mm贴胶	合芯动作拆解 (2)!91
+m_nNextAutoStep[41]=INT#520	NOT m_nNextAutoStep[41]=INT#520	贴胶模组BTH17下降200mm贴胶	合芯动作拆解 (2)!91
+m_nNextAutoStep[40]=INT#530	NOT m_nNextAutoStep[40]=INT#530	贴胶模组BTH17 破真空	合芯动作拆解 (2)!92
+m_nNextAutoStep[41]=INT#530	NOT m_nNextAutoStep[41]=INT#530	贴胶模组BTH17 破真空	合芯动作拆解 (2)!92
+m_nNextAutoStep[40]=INT#550	NOT (m_nNextAutoStep[40]=INT#550)	贴胶模组BTH17上升200mm退回安全位	合芯动作拆解 (2)!93
+m_nNextAutoStep[41]=INT#550	NOT (m_nNextAutoStep[41]=INT#550)	贴胶模组BTH17上升200mm退回安全位	合芯动作拆解 (2)!93
+m_nNextAutoStep[39]=INT#530 AND m_nNextAutoStep[40]=INT#20	NOT m_nNextAutoStep[39]=INT#530	等待两侧贴胶模组到安全位	合芯动作拆解 (2)!94
+m_nNextAutoStep[39]=INT#530 AND m_nNextAutoStep[41]=INT#20	NOT m_nNextAutoStep[39]=INT#530	等待两侧贴胶模组到安全位	合芯动作拆解 (2)!94
+m_nNextAutoStep[39]=INT#200 OR m_nNextAutoStep[39]= INT#300	NOT(m_nNextAutoStep[39]=INT#200 OR m_nNextAutoStep[39]= INT#300)	贴胶直线电机平移1350mm至备胶工位（贴胶头同步变距）	合芯动作拆解 (2)!95
+m_nNextAutoStep[39]=INT#200 OR m_nNextAutoStep[39]= INT#300	NOT(m_nNextAutoStep[39]=INT#200 OR m_nNextAutoStep[39]= INT#300)	贴胶直线电机平移1350mm至备胶工位（贴胶头同步变距）	合芯动作拆解 (2)!95
+m_nNextAutoStep[39]=INT#205 OR m_nNextAutoStep[39]= INT#305	NOT(m_nNextAutoStep[39]=INT#205 OR m_nNextAutoStep[39]= INT#305)	等待料仓取料允许	合芯动作拆解 (2)!96
+m_nNextAutoStep[39]=INT#205 OR m_nNextAutoStep[39]= INT#305	NOT(m_nNextAutoStep[39]=INT#205 OR m_nNextAutoStep[39]= INT#305)	等待料仓取料允许	合芯动作拆解 (2)!96
+m_nNextAutoStep[40]= INT#110 OR m_nNextAutoStep[40]= INT#310	NOT(m_nNextAutoStep[40]=INT#110 OR m_nNextAutoStep[40]= INT#310)	贴胶模组BTH17下降100mm取胶	合芯动作拆解 (2)!97
+m_nNextAutoStep[41]= INT#110 OR m_nNextAutoStep[41]= INT#310	NOT (m_nNextAutoStep[41]=INT#110 OR m_nNextAutoStep[41]= INT#310)	贴胶模组BTH17下降100mm取胶	合芯动作拆解 (2)!97
+m_nNextAutoStep[40]=INT#120 OR m_nNextAutoStep[40]= INT#320	NOT (m_nNextAutoStep[40]=INT#120 OR m_nNextAutoStep[40]= INT#320)	贴胶模组BTH17下降100mm吸真空	合芯动作拆解 (2)!98
+m_nNextAutoStep[41]=INT#120 OR m_nNextAutoStep[41]= INT#320	NOT (m_nNextAutoStep[41]=INT#120 OR m_nNextAutoStep[41]= INT#320)	贴胶模组BTH17下降100mm吸真空	合芯动作拆解 (2)!98
+m_nNextAutoStep[40]=INT#130 OR m_nNextAutoStep[40]=INT#330	NOT (m_nNextAutoStep[40]=INT#130 OR m_nNextAutoStep[40]=INT#330)	切胶气缸B52-TCM16x50S上升切胶50mm	合芯动作拆解 (2)!99
+m_nNextAutoStep[41]=INT#130 OR m_nNextAutoStep[41]=INT#330	NOT (m_nNextAutoStep[41]=INT#130 OR m_nNextAutoStep[41]=INT#330)	切胶气缸B52-TCM16x50S上升切胶50mm	合芯动作拆解 (2)!99
+m_nNextAutoStep[40]=INT#150 OR m_nNextAutoStep[40]=INT#350	NOT (m_nNextAutoStep[40]=INT#150 OR m_nNextAutoStep[40]=INT#350)	备胶夹子气缸B52-HFD12x25松开	合芯动作拆解 (2)!100
+m_nNextAutoStep[41]=INT#150 OR m_nNextAutoStep[41]=INT#350	NOT(m_nNextAutoStep[41]=INT#150 OR m_nNextAutoStep[41]=INT#350)	备胶夹子气缸B52-HFD12x25松开	合芯动作拆解 (2)!100
+m_nNextAutoStep[40]=INT#160 OR m_nNextAutoStep[40]=INT#360	NOT (m_nNextAutoStep[40]=INT#160 OR m_nNextAutoStep[40]=INT#360)	贴胶模组BTH17上升100mm至安全位（切胶气缸B52-TCM16x50S同步下降）	合芯动作拆解 (2)!101
+m_nNextAutoStep[41]=INT#160 OR m_nNextAutoStep[41]=INT#360	NOT (m_nNextAutoStep[41]=INT#160 OR  m_nNextAutoStep[41]=INT#360)	贴胶模组BTH17上升100mm至安全位（切胶气缸B52-TCM16x50S同步下降）	合芯动作拆解 (2)!101
+(m_nNextAutoStep[39]=INT#220 OR m_nNextAutoStep[39]=INT#320 )AND m_nNextAutoStep[40]=INT#20	m_nNextAutoStep[39]= INT#500	等待两侧贴胶模组到安全位	合芯动作拆解 (2)!102
+(m_nNextAutoStep[39]=INT#220 OR m_nNextAutoStep[39]=INT#320 )AND m_nNextAutoStep[41]=INT#20	m_nNextAutoStep[39]= INT#500	等待两侧贴胶模组到安全位	合芯动作拆解 (2)!102
+m_nNextAutoStep[39]=INT#500	NOT (m_nNextAutoStep[39]=INT#500)	贴胶直线电机平移1350mm至贴胶工位（贴胶头同步变距）	合芯动作拆解 (2)!103
+m_nNextAutoStep[39]=INT#500	NOT (m_nNextAutoStep[39]=INT#500)	贴胶直线电机平移1350mm至贴胶工位（贴胶头同步变距）	合芯动作拆解 (2)!103
+A		机构动作	合芯动作拆解 (2)!107
+B		机构动作	合芯动作拆解 (2)!107
+开始	结束		合芯动作拆解 (2)!108
+开始	结束		合芯动作拆解 (2)!108
+m_nNextAutoStep[46]=INT#660	NOT m_nNextAutoStep[46]=INT#660	磁驱动子平移来料,治具流出	合芯动作拆解 (2)!110
+m_nNextAutoStep[46] = 100	NOT m_nNextAutoStep[46] = 100	夹紧电芯气缸B52-HFD25x80松开电芯20mm（时间0）	合芯动作拆解 (2)!111
+m_nNextAutoStep[47] = 100	NOT m_nNextAutoStep[47] = 100	夹紧电芯气缸B52-HFD25x80松开电芯20mm（时间0）	合芯动作拆解 (2)!111
+m_nNextAutoStep[46] = 110	NOT m_nNextAutoStep[46] = 110	BTH22Z轴模组走取料位	合芯动作拆解 (2)!112
+m_nNextAutoStep[47] = 105	NOT m_nNextAutoStep[47] = 105	BTH22Z轴模组走取料位	合芯动作拆解 (2)!112
+m_nNextAutoStep[46] = 115	NOT m_nNextAutoStep[46] = 115	夹紧电芯气缸B52-HFD25x80夹紧电芯	合芯动作拆解 (2)!113
+m_nNextAutoStep[47] = 110	NOT m_nNextAutoStep[47] = 110	夹紧电芯气缸B52-HFD25x80夹紧电芯	合芯动作拆解 (2)!113
+m_nNextAutoStep[46] = 120	NOT (m_nNextAutoStep[46] = 120)	磁驱夹具打开放开电芯50mm	合芯动作拆解 (2)!114
+m_nNextAutoStep[47] = 120	NOT (m_nNextAutoStep[47] = 120)	磁驱夹具打开放开电芯50mm	合芯动作拆解 (2)!114
+m_nNextAutoStep[46]= INT#10	NOT m_nNextAutoStep[46]= INT#10	电芯在位信号检测	合芯动作拆解 (2)!115
+m_nNextAutoStep[47] = 10	NOT m_nNextAutoStep[47] = 10	电芯在位信号检测	合芯动作拆解 (2)!115
+m_nNextAutoStep[46]= INT#320	NOT (m_nNextAutoStep[46]= INT#320)	侧面CCD拍照准备	合芯动作拆解 (2)!116
+m_nNextAutoStep[47]= INT#320	NOT (m_nNextAutoStep[47]= INT#320)	侧面CCD拍照准备	合芯动作拆解 (2)!116
+m_nNextAutoStep[46]= INT#330	NOT (m_nNextAutoStep[46]=INT#330)	BTH22Z轴模组上升500mm,侧面CCD飞拍	合芯动作拆解 (2)!117
+m_nNextAutoStep[47]= INT#330	NOT (m_nNextAutoStep[47]=INT#330)	BTH22Z轴模组上升500mm,侧面CCD飞拍	合芯动作拆解 (2)!117
+m_nNextAutoStep[46]=INT#500	NOT m_nNextAutoStep[46]=INT#500	磁驱夹具打开放开电芯50mm（时间0）	合芯动作拆解 (2)!118
+m_nNextAutoStep[47]=INT#500	NOT (m_nNextAutoStep[47]=INT#500)	磁驱夹具打开放开电芯50mm（时间0）	合芯动作拆解 (2)!118
+m_nNextAutoStep[46]=INT#505	NOT (m_nNextAutoStep[46]=INT#505)	BTH22Z轴模组下降500mm	合芯动作拆解 (2)!119
+m_nNextAutoStep[47]=INT#505	NOT (m_nNextAutoStep[47]=INT#505)	BTH22Z轴模组下降500mm	合芯动作拆解 (2)!119
+m_nNextAutoStep[46]=INT#510	NOT (m_nNextAutoStep[46]=INT#510)	磁驱夹具缩回夹紧电芯50mm	合芯动作拆解 (2)!120
+m_nNextAutoStep[47]=INT#510	NOT (m_nNextAutoStep[47]=INT#510)	磁驱夹具缩回夹紧电芯50mm	合芯动作拆解 (2)!120
+m_nNextAutoStep[46]=INT#520	NOT (m_nNextAutoStep[46]=INT#520)	夹紧电芯气缸B52-HFD25x80松开电芯20mm	合芯动作拆解 (2)!121
+m_nNextAutoStep[47]=INT#520	NOT (m_nNextAutoStep[47]=INT#520)	夹紧电芯气缸B52-HFD25x80松开电芯20mm	合芯动作拆解 (2)!121
+m_nNextAutoStep[46]=INT#540	NOT (m_nNextAutoStep[46]=INT#540)	BTH22Z轴模组走取料等待位	合芯动作拆解 (2)!122
+m_nNextAutoStep[47]=INT#540	NOT (m_nNextAutoStep[47]=INT#540)	BTH22Z轴模组走取料等待位	合芯动作拆解 (2)!122
+m_nNextAutoStep[46]=INT#550	NOT m_nNextAutoStep[46]=INT#550	安全位到位检测	合芯动作拆解 (2)!123
+m_nNextAutoStep[47]=INT#560	NOT (m_nNextAutoStep[47]=INT#560)	安全位到位检测	合芯动作拆解 (2)!123
+m_nNextAutoStep[46]=INT#590	NOT m_nNextAutoStep[46]=INT#590	大面CCD飞拍1	合芯动作拆解 (2)!124
+m_nNextAutoStep[46]=INT#620	NOT m_nNextAutoStep[46]=INT#620	大面CCD飞拍2	合芯动作拆解 (2)!125
+m_nNextAutoStep[46]=INT#640	NOT m_nNextAutoStep[46]=INT#640	底面CCD拍照	合芯动作拆解 (2)!126
+A		机构动作	合芯动作拆解 (2)!129
+B		机构动作	合芯动作拆解 (2)!129
+开始	结束		合芯动作拆解 (2)!130
+开始	结束		合芯动作拆解 (2)!130
+m_nNextAutoStep[62]=INT#340	NOT (m_nNextAutoStep[62]=INT#340)	模组下降30mm到入壳初步位	合芯动作拆解 (2)!132
+m_nNextAutoStep[63]=INT#340	NOT (m_nNextAutoStep[63]=INT#340)	模组下降30mm到入壳初步位	合芯动作拆解 (2)!132
+m_nNextAutoStep[62]=INT#350	NOT (m_nNextAutoStep[62]=INT#350)	居中定位气缸张开	合芯动作拆解 (2)!133
+m_nNextAutoStep[63]=INT#350	NOT (m_nNextAutoStep[63]=INT#350)	居中定位气缸张开	合芯动作拆解 (2)!133
+m_nNextAutoStep[62]=INT#370	NOT (m_nNextAutoStep[62]=INT#370)	压力表清零	合芯动作拆解 (2)!134
+m_nNextAutoStep[63]=INT#370	NOT (m_nNextAutoStep[63]=INT#370)	压力表清零	合芯动作拆解 (2)!134
+m_nNextAutoStep[62]=INT#371	NOT m_nNextAutoStep[62]=INT#371	模组下降30mm到入壳位置1，预入壳位	合芯动作拆解 (2)!135
+m_nNextAutoStep[63]=INT#371	NOT m_nNextAutoStep[63]=INT#371	模组下降30mm到入壳位置1，预入壳位	合芯动作拆解 (2)!135
+m_nNextAutoStep[62]=INT#373	NOT (m_nNextAutoStep[62]=INT#373)	浮动定位气缸松开10mm	合芯动作拆解 (2)!136
+m_nNextAutoStep[63]=INT#373	NOT (m_nNextAutoStep[63]=INT#373)	浮动定位气缸松开10mm	合芯动作拆解 (2)!136
+m_nNextAutoStep[62]=INT#380	NOT m_nNextAutoStep[62]=INT#380	模组下降40mm到入壳位置2，夹具块上方	合芯动作拆解 (2)!137
+m_nNextAutoStep[63]=INT#380	NOT m_nNextAutoStep[63]=INT#380	模组下降40mm到入壳位置2，夹具块上方	合芯动作拆解 (2)!137
+m_nNextAutoStep[62]=INT#390	NOT (m_nNextAutoStep[62]=INT#390)	磁驱夹具打开放开电芯50mm	合芯动作拆解 (2)!138
+m_nNextAutoStep[63]=INT#390	NOT (m_nNextAutoStep[63]=INT#390)	磁驱夹具打开放开电芯50mm	合芯动作拆解 (2)!138
+m_nNextAutoStep[62]=INT#410	NOT (m_nNextAutoStep[62]=INT#410)	入壳数据清零	合芯动作拆解 (2)!139
+m_nNextAutoStep[63]=INT#410	NOT (m_nNextAutoStep[63]=INT#410)	入壳数据清零	合芯动作拆解 (2)!139
+m_nNextAutoStep[62]=INT#420	NOT m_nNextAutoStep[62]=INT#420	模组下降180mm到入壳位置3完成位（距离入壳完成位20mm处小Z轴与大Z轴走相对插补，导入片提前脱离）	合芯动作拆解 (2)!140
+m_nNextAutoStep[63]=INT#420	m_nNextAutoStep[63]=INT#450	模组下降180mm到入壳位置3完成位（距离入壳完成位20mm处小Z轴与大Z轴走相对插补，导入片提前脱离）	合芯动作拆解 (2)!140
+m_nNextAutoStep[62]=INT#425	NOT m_nNextAutoStep[62]=INT#425	模组定位到顶盖回退位	合芯动作拆解 (2)!141
+m_nNextAutoStep[63]=INT#425	NOT m_nNextAutoStep[63]=INT#425	模组定位到顶盖回退位	合芯动作拆解 (2)!141
+m_nNextAutoStep[62]=INT#440	NOT m_nNextAutoStep[62]=INT#440	卡口夹子气缸松开	合芯动作拆解 (2)!142
+m_nNextAutoStep[63]=INT#440	NOT m_nNextAutoStep[63]=INT#440	卡口夹子气缸松开	合芯动作拆解 (2)!142
+m_nNextAutoStep[62]=INT#445	NOT m_nNextAutoStep[62]=INT#445	模组定位到顶盖位	合芯动作拆解 (2)!143
+m_nNextAutoStep[63]=INT#445	NOT m_nNextAutoStep[63]=INT#445	模组定位到顶盖位	合芯动作拆解 (2)!143
+m_nNextAutoStep[62]=450	NOT (m_nNextAutoStep[62]=450)	磁驱夹具夹紧开电芯50mm	合芯动作拆解 (2)!144
+m_nNextAutoStep[63]=450	NOT (m_nNextAutoStep[63]=450)	磁驱夹具夹紧开电芯50mm	合芯动作拆解 (2)!144
+m_nNextAutoStep[62]=470	NOT m_nNextAutoStep[62]=470	居中定位气缸，夹子气缸，卡口外夹子，卡口内夹子气缸打开	合芯动作拆解 (2)!145
+m_nNextAutoStep[63]=470	NOT m_nNextAutoStep[63]=470	居中定位气缸，夹子气缸，卡口外夹子，卡口内夹子气缸打开	合芯动作拆解 (2)!145
+m_nNextAutoStep[62]=480	NOT m_nNextAutoStep[62]=480	模组上升回铝壳取料位	合芯动作拆解 (2)!146
+m_nNextAutoStep[63]=480	NOT m_nNextAutoStep[63]=480	模组上升回铝壳取料位	合芯动作拆解 (2)!146
+m_nNextAutoStep[62]=510	NOT m_nNextAutoStep[62]=510	入壳数据清零2	合芯动作拆解 (2)!147
+m_nNextAutoStep[63]=510	NOT m_nNextAutoStep[63]=510	入壳数据清零2	合芯动作拆解 (2)!147
+m_nNextAutoStep[62]=INT#130	NOT (m_nNextAutoStep[62]=INT#130)	等待放铝壳完成	合芯动作拆解 (2)!148
+m_nNextAutoStep[63]=INT#130	NOT (m_nNextAutoStep[63]=INT#130)	等待放铝壳完成	合芯动作拆解 (2)!148
+m_nNextAutoStep[62]=INT#140	NOT m_nNextAutoStep[62]=INT#140	小Z轴模组下降至备壳位1	合芯动作拆解 (2)!149
+m_nNextAutoStep[63]=INT#140	NOT m_nNextAutoStep[63]=INT#140	小Z轴模组下降至备壳位1	合芯动作拆解 (2)!149
+m_nNextAutoStep[62]=INT#150	NOT m_nNextAutoStep[62]=INT#150	壳口导向气缸伸出50mm	合芯动作拆解 (2)!150
+m_nNextAutoStep[63]=INT#150	NOT m_nNextAutoStep[63]=INT#150	壳口导向气缸伸出50mm	合芯动作拆解 (2)!150
+m_nNextAutoStep[62]=INT#160	NOT m_nNextAutoStep[62]=INT#160	卡口夹子气缸	合芯动作拆解 (2)!151
+m_nNextAutoStep[63]=INT#160	NOT m_nNextAutoStep[63]=INT#160	卡口夹子气缸	合芯动作拆解 (2)!151
+m_nNextAutoStep[62]=INT#170	NOT (m_nNextAutoStep[62]=INT#170)	小Z轴模组下降至备壳位2	合芯动作拆解 (2)!152
+m_nNextAutoStep[63]=INT#170	NOT (m_nNextAutoStep[63]=INT#170)	小Z轴模组下降至备壳位2	合芯动作拆解 (2)!152
+m_nNextAutoStep[62]=INT#1010	NOT m_nNextAutoStep[62]=INT#1010	磁驱动子平移来料,治具流出2	合芯动作拆解 (2)!153
+m_nNextAutoStep[63]=INT#1010	NOT m_nNextAutoStep[63]=INT#1010	磁驱动子平移来料,治具流出2	合芯动作拆解 (2)!153
+m_nNextAutoStep[62]=INT#5	NOT m_nNextAutoStep[62]=INT#5	磁驱动子平移来料,治具流出	合芯动作拆解 (2)!154
+m_nNextAutoStep[63]=INT#5	NOT m_nNextAutoStep[63]=INT#5	磁驱动子平移来料,治具流出	合芯动作拆解 (2)!154
+A		机构动作	合芯动作拆解 (2)!156
+开始	结束		合芯动作拆解 (2)!157
+m_nNextAutoStep[64]=INT#1110	m_nNextAutoStep[64]=INT#1120	机器人Z轴在治具上方下降250mm取料	合芯动作拆解 (2)!158
+m_nNextAutoStep[64]=INT#1120	m_nNextAutoStep[64]=INT#1130	夹爪气缸B52-HFD25x80夹紧电芯	合芯动作拆解 (2)!159
+m_nNextAutoStep[64]=INT#1130	NOT (m_nNextAutoStep[64]=INT#1130)	磁驱夹具打开松开电芯50mm	合芯动作拆解 (2)!160
+m_nNextAutoStep[64]= INT#2910 OR 2960	"NOT m_nNextAutoStep[64]= INT#2910 AND NOT 
+m_nNextAutoStep[64]=INT#2960"	机器人定位到物流线外侧等待位(内外两侧)	合芯动作拆解 (2)!161
+m_nNextAutoStep[64]= INT#2010	NOT m_nNextAutoStep[64]= INT#2010	判断取料位置	合芯动作拆解 (2)!162
+m_nNextAutoStep[64]= INT#2110 OR INT#2210	NOT m_nNextAutoStep[64]= INT#2110 AND NOT m_nNextAutoStep[64]= INT#2210	机器人定位到物流线放料位（内外两侧）	合芯动作拆解 (2)!163
+m_nNextAutoStep[64]= INT#2400	NOT m_nNextAutoStep[64]= INT#2400	机器人AB夹子松开	合芯动作拆解 (2)!164
+m_nNextAutoStep[64]= INT#2710 OR m_nNextAutoStep[64]=INT#2810	NOT m_nNextAutoStep[64]= INT#2710 AND NOT  m_nNextAutoStep[64]=INT#2810	机器人放料完成后到等待位	合芯动作拆解 (2)!165
+m_nNextAutoStep[64]=INT#1000	NOT (m_nNextAutoStep[64]=INT#1000)	机器人夹爪气缸B52-HFD25x80打开	合芯动作拆解 (2)!166
+m_nNextAutoStep[64]=INT#1030	NOT (m_nNextAutoStep[64]=INT#1030)	机器人平移至治具上方取料等待位	合芯动作拆解 (2)!167
+m_nNextAutoStep[64]=INT#1040	NOT (m_nNextAutoStep[64]=INT#1040)	等待允许取料信号	合芯动作拆解 (2)!168
+A		机构动作	合芯动作拆解 (2)!172
+开始	结束		合芯动作拆解 (2)!173
+m_nNextAutoStep[70]=INT#10 OR m_nNextAutoStep[70]= 20	NOT (m_nNextAutoStep[70]=INT#10 OR m_nNextAutoStep[70]= 20)	上料接驳直线电机平移950mm至下料位	合芯动作拆解 (2)!175
+m_nNextAutoStep[70]=INT#30	NOT (m_nNextAutoStep[70]=INT#30)	下料位到位检测	合芯动作拆解 (2)!176
+m_nNextAutoStep[70]=INT#40	NOT (m_nNextAutoStep[70]=INT#40)	等待上工位动子就位	合芯动作拆解 (2)!177
+m_nNextAutoStep[70]=INT#70	NOT (m_nNextAutoStep[70]=INT#70)	等待切离状态允许	合芯动作拆解 (2)!178
+m_nNextAutoStep[70]=INT#90	NOT (m_nNextAutoStep[70]=INT#90)	等待上料切离A0,B0动子到位	合芯动作拆解 (2)!179
+m_nNextAutoStep[70]=INT#100	NOT (m_nNextAutoStep[70]=INT#100)	上料切离动子到位检测	合芯动作拆解 (2)!180
+m_nNextAutoStep[70]=INT#210	NOT (m_nNextAutoStep[70]=INT#210)	上料接驳直线电机平移950mm至上料位,磁驱夹具打开	合芯动作拆解 (2)!181
+m_nNextAutoStep[70]=INT#250	NOT (m_nNextAutoStep[70]=INT#250)	等待治具扫码完成	合芯动作拆解 (2)!182
+m_nNextAutoStep[70]=INT#280	NOT m_nNextAutoStep[70]=INT#280	治具气缸开夹	合芯动作拆解 (2)!183
+m_nNextAutoStep[70]=INT#290	NOT (m_nNextAutoStep[70]=INT#290)	等待机器人放料完成	合芯动作拆解 (2)!184
+m_nNextAutoStep[70]=INT#400	NOT (m_nNextAutoStep[70]=INT#400)	切离安全条件，电芯检测	合芯动作拆解 (2)!185
+m_nNextAutoStep[70]=INT#410	NOT (m_nNextAutoStep[70]=INT#410)	上料接驳直线电机平移950mm至上料位(安全保证)	合芯动作拆解 (2)!186
+m_nNextAutoStep[70]=INT#460	NOT m_nNextAutoStep[70]=INT#460	等待治具扫码完成2	合芯动作拆解 (2)!187
+m_nNextAutoStep[70]= 470	NOT m_nNextAutoStep[70]= 470	治具气缸缩回	合芯动作拆解 (2)!188
+m_nNextAutoStep[70]=INT#490	NOT (m_nNextAutoStep[70]=INT#490)	等待回流完成	合芯动作拆解 (2)!189
+m_nNextAutoStep[67]=INT#5	NOT m_nNextAutoStep[67]=INT#5	等待动作指令	合芯动作拆解 (2)!190
+m_nNextAutoStep[67]=INT#10	NOT (m_nNextAutoStep[67]= INT#10)	等待下料切离安全条件	合芯动作拆解 (2)!191
+m_nNextAutoStep[67]=INT#20	NOT (m_nNextAutoStep[67]=INT#20)	下料接驳直线电机平移950mm至上料位	合芯动作拆解 (2)!192
+m_nNextAutoStep[67]=INT#40	NOT (m_nNextAutoStep[67]=INT#40)	上料到位检测	合芯动作拆解 (2)!193
+m_nNextAutoStep[67]=INT#70	NOT m_nNextAutoStep[67]=INT#70	等待CDD结果	合芯动作拆解 (2)!194
+m_nNextAutoStep[67]=INT#110	NOT m_nNextAutoStep[67]=INT#110	等待回流状态允许	合芯动作拆解 (2)!195
+m_nNextAutoStep[67]=INT#130	NOT (m_nNextAutoStep[67]=INT#130)	等待机器人取料完成	合芯动作拆解 (2)!196
+m_nNextAutoStep[67]=INT#200	NOT (m_nNextAutoStep[67]=INT#200)	等待切离安全条件	合芯动作拆解 (2)!197
+m_nNextAutoStep[67]=INT#210	NOT (m_nNextAutoStep[67]=INT#210)	下料接驳直线电机平移950mm至下料位	合芯动作拆解 (2)!198
+m_nNextAutoStep[67]=INT#250	NOT (m_nNextAutoStep[67]=INT#250)	下料位到位检测	合芯动作拆解 (2)!199
+m_nNextAutoStep[67]=INT#260	NOT (m_nNextAutoStep[67]=INT#260)	等待下料缓存区域无动子	合芯动作拆解 (2)!200
+m_nNextAutoStep[67]=INT#280	NOT m_nNextAutoStep[67]=INT#280	等待切离无转入状态	合芯动作拆解 (2)!201
+m_nNextAutoStep[67]=INT#290	NOT (m_nNextAutoStep[67]=INT#290)	等待动子转入完成	合芯动作拆解 (2)!202
+m_nNextAutoStep[67]=INT#320	NOT (m_nNextAutoStep[67]=INT#320)	等待切离安全条件	合芯动作拆解 (2)!203
+m_nNextAutoStep[67]=INT#360	NOT (m_nNextAutoStep[67]=INT#360)	下料接驳直线电机平移950mm至上料位	合芯动作拆解 (2)!204
+m_nNextAutoStep[67]=INT#380	NOT (m_nNextAutoStep[67]=INT#380)	上料位到位检测	合芯动作拆解 (2)!205
+m_nNextAutoStep[67]=INT#500	NOT m_nNextAutoStep[67]=INT#500	等待切离回流完成	合芯动作拆解 (2)!206
+A		机构动作	合芯动作拆解 (2)!208
+B		机构动作	合芯动作拆解 (2)!208
+开始	结束		合芯动作拆解 (2)!209
+m_nNextAutoStep[54]= 340 OR m_nNextAutoStep[54]= 540	NOT (m_nNextAutoStep[54]=INT#340) AND NOT (m_nNextAutoStep[54]=INT#540)	等待机器人取料完成	合芯动作拆解 (2)!210
+m_nNextAutoStep[54]= INT#360 OR m_nNextAutoStep[54]= INT#560	NOT (m_nNextAutoStep[54]=INT#360) AND NOT (m_nNextAutoStep[54]=INT#560)	等待出料升降接盘完成	合芯动作拆解 (2)!211
+m_nNextAutoStep[54]= INT#370 OR m_nNextAutoStep[54]= INT#570	NOT (m_nNextAutoStep[54]=INT#370) AND NOT (m_nNextAutoStep[54]=INT#570)	判断另一侧进盘情况	合芯动作拆解 (2)!212
+m_nNextAutoStep[54]=INT#300 OR m_nNextAutoStep[54]= INT#500	NOT m_nNextAutoStep[54]=INT#300 AND NOT  m_nNextAutoStep[54]= INT#500	移动安全检测	合芯动作拆解 (2)!213
+m_nNextAutoStep[54]=INT#305 OR m_nNextAutoStep[54]= INT#505	NOT (m_nNextAutoStep[54]=INT#305) AND NOT (m_nNextAutoStep[54]=INT#505)	吸塑盘切换模组平移950mm到取盘位	合芯动作拆解 (2)!214
+m_nNextAutoStep[51]=INT#120	NOT (m_nNextAutoStep[51]=INT#120)	升降走空托盘转出位	合芯动作拆解 (2)!215
+m_nNextAutoStep[52]=INT#120	NOT (m_nNextAutoStep[52]=INT#120)	升降走空托盘转出位	合芯动作拆解 (2)!215
+m_nNextAutoStep[51]=INT#140	NOT (m_nNextAutoStep[51]=INT#140)	等待取托盘完成	合芯动作拆解 (2)!216
+m_nNextAutoStep[52]=INT#140	NOT (m_nNextAutoStep[52]=INT#140)	等待取托盘完成	合芯动作拆解 (2)!216
+m_nNextAutoStep[51]=INT#150	NOT (m_nNextAutoStep[51]=INT#150)	升降走接盘位	合芯动作拆解 (2)!217
+m_nNextAutoStep[52]=INT#150	NOT (m_nNextAutoStep[52]=INT#150)	升降走接盘位	合芯动作拆解 (2)!217
+m_nNextAutoStep[51]=INT#170	NOT (m_nNextAutoStep[51]=INT#170)	等待托盘入缓存	合芯动作拆解 (2)!218
+m_nNextAutoStep[52]=INT#170	NOT (m_nNextAutoStep[52]=INT#170)	等待托盘入缓存	合芯动作拆解 (2)!218
+m_nNextAutoStep[51]=INT#330	m_nNextAutoStep[51]=INT#340	升降到快速JOG到进盘位	合芯动作拆解 (2)!219
+m_nNextAutoStep[52]=INT#330	m_nNextAutoStep[52]=INT#350	升降到快速JOG到进盘位	合芯动作拆解 (2)!219
+m_nNextAutoStep[51]=INT#340	m_nNextAutoStep[51]=INT#348	升降到慢速JOG接近进盘位	合芯动作拆解 (2)!220
+m_nNextAutoStep[52]=INT#340	m_nNextAutoStep[52]=INT#348	升降到慢速JOG接近进盘位	合芯动作拆解 (2)!220
+m_nNextAutoStep[51]=INT#348	NOT (m_nNextAutoStep[51]=INT#348)	升降定位补偿位置	合芯动作拆解 (2)!221
+m_nNextAutoStep[52]=INT#348	NOT (m_nNextAutoStep[52]=INT#348)	升降定位补偿位置	合芯动作拆解 (2)!221
+m_nNextAutoStep[51]=INT#350	NOT (m_nNextAutoStep[51]=INT#350)	托盘夹紧	合芯动作拆解 (2)!222
+m_nNextAutoStep[52]=INT#350	NOT (m_nNextAutoStep[52]=INT#350)	托盘夹紧	合芯动作拆解 (2)!222
+m_nNextAutoStep[51]=INT#380	m_nNextAutoStep[51]=INT#410	升降下降到脱离位	合芯动作拆解 (2)!223
+m_nNextAutoStep[52]=INT#380	m_nNextAutoStep[52]=INT#410	升降下降到脱离位	合芯动作拆解 (2)!223
+m_nNextAutoStep[51]=INT#410	NOT (m_nNextAutoStep[51]=INT#410)	托底机构气缸25A-MGPL16-20Z伸出	合芯动作拆解 (2)!224
+m_nNextAutoStep[52]=INT#420	NOT (m_nNextAutoStep[52]=INT#420)	托底机构气缸25A-MGPL16-20Z伸出	合芯动作拆解 (2)!224
+A		机构动作	合芯动作拆解 (2)!227
+开始	结束		合芯动作拆解 (2)!228
+m_nNextAutoStep[55]=INT#140	NOT (m_nNextAutoStep[55]=INT#140)	机器人定位至取料位等待位,变距电机动作	合芯动作拆解 (2)!229
+m_nNextAutoStep[55]=INT#150	NOT (m_nNextAutoStep[55]=INT#150)	等待允许机器人取料信号	合芯动作拆解 (2)!230
+m_nNextAutoStep[55]=INT#170	m_nNextAutoStep[55]=INT#180	机器人Z轴下降400mm	合芯动作拆解 (2)!231
+m_nNextAutoStep[55]=INT#180	m_nNextAutoStep[55]=INT#200	吸盘开真空	合芯动作拆解 (2)!232
+m_nNextAutoStep[55]=INT#200	NOT (m_nNextAutoStep[55]=INT#200)	机器人Z轴上升400mm	合芯动作拆解 (2)!233
+m_nNextAutoStep[55]=INT#302	NOT (m_nNextAutoStep[55]=INT#302)	机器人平移放料至安全位(二次定位不允许放铝壳时)	合芯动作拆解 (2)!234
+m_nNextAutoStep[55]=INT#303	NOT (m_nNextAutoStep[55]=INT#303)	机器人平等待允许放料1	合芯动作拆解 (2)!235
+m_nNextAutoStep[55]=INT#320	NOT (m_nNextAutoStep[55]= INT#320)	机器人平移至二次定位上方（平移过程中铝壳翻转）	合芯动作拆解 (2)!236
+m_nNextAutoStep[55]=INT#330	NOT (m_nNextAutoStep[55]=INT#330)	机器人平等待允许放料2	合芯动作拆解 (2)!237
+m_nNextAutoStep[55]=INT#350	NOT (m_nNextAutoStep[55]=INT#350)	机器人Z轴下降400mm放料	合芯动作拆解 (2)!238
+m_nNextAutoStep[55]=INT#360	NOT (m_nNextAutoStep[55]=INT#360)	铝壳定位夹子气缸夹紧	合芯动作拆解 (2)!239
+m_nNextAutoStep[55]=INT#365	NOT (m_nNextAutoStep[55]=INT#365)	吸盘破真空,	合芯动作拆解 (2)!240
+A		机构动作	合芯动作拆解 (2)!243
+B		机构动作	合芯动作拆解 (2)!243
+开始	结束		合芯动作拆解 (2)!244
+开始	结束		合芯动作拆解 (2)!244
+m_nNextAutoStep[56]=INT#110	NOT (m_nNextAutoStep[56]=INT#110)	定位夹子气缸打开，定位平台平移模组PTH17平移600mm至机器人放铝壳位	合芯动作拆解 (2)!246
+m_nNextAutoStep[56]=INT#140	NOT (m_nNextAutoStep[56]=INT#140)	等待铝壳机器人放料完成	合芯动作拆解 (2)!247
+m_nNextAutoStep[56]=INT#305	NOT (m_nNextAutoStep[56]=INT#305)	定位平台平移模组PTH17平移600mm至搬运机构取铝壳位，同步旋转变距	合芯动作拆解 (2)!248
+m_nNextAutoStep[56]=INT#330	NOT (m_nNextAutoStep[56]=INT#330)	定位除尘气缸伸出，吹气	合芯动作拆解 (2)!249
+m_nNextAutoStep[56]=INT#340	NOT (m_nNextAutoStep[56]=INT#340)	定位除尘气缸缩回，关吹气	合芯动作拆解 (2)!250
+m_nNextAutoStep[56]=INT#360	NOT m_nNextAutoStep[56]=INT#360	等待铝壳机器人取料完成	合芯动作拆解 (2)!251
+m_nNextAutoStep[59]=INT#110	NOT (m_nNextAutoStep[59]=INT#110)	等待允许取铝壳	合芯动作拆解 (2)!252
+m_nNextAutoStep[59]=INT#110	NOT (m_nNextAutoStep[59]=INT#110)	等待允许取铝壳	合芯动作拆解 (2)!252
+m_nNextAutoStep[60]=INT#110	NOT m_nNextAutoStep[60]=INT#110	铝壳搬运Z轴模组GTH12下降180mm	合芯动作拆解 (2)!253
+m_nNextAutoStep[61]=INT#110	NOT m_nNextAutoStep[61]=INT#110	铝壳搬运Z轴模组GTH12下降180mm	合芯动作拆解 (2)!253
+m_nNextAutoStep[60]=INT#120	NOT m_nNextAutoStep[60]=INT#120	搬运夹爪夹紧20mm	合芯动作拆解 (2)!254
+m_nNextAutoStep[61]=INT#120	NOT m_nNextAutoStep[61]=INT#120	搬运夹爪夹紧20mm	合芯动作拆解 (2)!254
+m_nNextAutoStep[60]=INT#130	NOT m_nNextAutoStep[60]=INT#130	铝壳二次定位夹爪张开20mm	合芯动作拆解 (2)!255
+m_nNextAutoStep[61]=INT#130	NOT m_nNextAutoStep[61]=INT#130	铝壳二次定位夹爪张开20mm	合芯动作拆解 (2)!255
+m_nNextAutoStep[60]=INT#160	NOT (m_nNextAutoStep[60]=INT#160)	铝壳搬运Z轴模组GTH12上升230mm至安全位	合芯动作拆解 (2)!256
+m_nNextAutoStep[61]=INT#160	NOT (m_nNextAutoStep[61]=INT#160)	铝壳搬运Z轴模组GTH12上升230mm至安全位	合芯动作拆解 (2)!256
+m_nNextAutoStep[60]=INT#170	NOT (m_nNextAutoStep[60]=INT#170)	铝壳搬运Z轴模组GTH12安全位到位检测	合芯动作拆解 (2)!257
+m_nNextAutoStep[61]=INT#170	NOT (m_nNextAutoStep[61]=INT#170)	铝壳搬运Z轴模组GTH12安全位到位检测	合芯动作拆解 (2)!257
+m_nNextAutoStep[59]=INT#300	NOT (m_nNextAutoStep[59]=INT#300)	铝壳搬运平移直线电机平移1150mm至入壳放料位	合芯动作拆解 (2)!258
+m_nNextAutoStep[59]=INT#300	NOT (m_nNextAutoStep[59]=INT#300)	铝壳搬运平移直线电机平移1150mm至入壳放料位	合芯动作拆解 (2)!258
+m_nNextAutoStep[59]=INT#310	NOT (m_nNextAutoStep[59]=INT#310)	等待入壳机构允许放料	合芯动作拆解 (2)!259
+m_nNextAutoStep[59]=INT#310	NOT (m_nNextAutoStep[59]=INT#310)	等待入壳机构允许放料	合芯动作拆解 (2)!259
+m_nNextAutoStep[60]=INT#500	NOT (m_nNextAutoStep[60]=INT#500)	铝壳搬运Z轴模组GTH12下降300mm	合芯动作拆解 (2)!260
+m_nNextAutoStep[61]=INT#500	NOT (m_nNextAutoStep[61]=INT#500)	铝壳搬运Z轴模组GTH12下降300mm	合芯动作拆解 (2)!260
+m_nNextAutoStep[60]=INT#520	NOT m_nNextAutoStep[60]=INT#520	铝壳夹紧气缸B52-HFD16x60夹紧	合芯动作拆解 (2)!261
+m_nNextAutoStep[61]=INT#520	NOT m_nNextAutoStep[61]=INT#520	铝壳夹紧气缸B52-HFD16x60夹紧	合芯动作拆解 (2)!261
+m_nNextAutoStep[60]=INT#530	NOT m_nNextAutoStep[60]=INT#530	铝壳搬运夹爪B52-HFD16x30松开	合芯动作拆解 (2)!262
+m_nNextAutoStep[61]=INT#530	NOT m_nNextAutoStep[61]=INT#530	铝壳搬运夹爪B52-HFD16x30松开	合芯动作拆解 (2)!262
+m_nNextAutoStep[60]=INT#560	NOT (m_nNextAutoStep[60]=INT#560)	铝壳搬运Z轴模组GTH12上升230mm	合芯动作拆解 (2)!263
+m_nNextAutoStep[61]=INT#560	NOT (m_nNextAutoStep[61]=INT#560)	铝壳搬运Z轴模组GTH12上升230mm	合芯动作拆解 (2)!263
+m_nNextAutoStep[59]=INT#100	NOT (m_nNextAutoStep[59]=INT#100)	铝壳搬运平移直线电机平移1150mm至取料等待位	合芯动作拆解 (2)!264
+m_nNextAutoStep[59]=INT#100	NOT (m_nNextAutoStep[59]=INT#100)	铝壳搬运平移直线电机平移1150mm至取料等待位	合芯动作拆解 (2)!264
+A		机构动作	合芯动作拆解 (2)!267
+B		机构动作	合芯动作拆解 (2)!267
+开始	结束		合芯动作拆解 (2)!268
+开始	结束		合芯动作拆解 (2)!268
+m_nNextAutoStep[35]= 140 OR 150	NOT (m_nNextAutoStep[35]= 140) AND NOT (m_nNextAutoStep[35]= 150)	热熔内外平移轴走热熔位,热熔封头气缸伸出	合芯动作拆解 (2)!270
+m_nNextAutoStep[36]= 140 OR 150	NOT (m_nNextAutoStep[36]= 140) AND NOT (m_nNextAutoStep[36]= 150)	热熔内外平移轴走热熔位,热熔封头气缸伸出	合芯动作拆解 (2)!270
+m_nNextAutoStep[35]= 170	NOT (m_nNextAutoStep[35]= 170)	等待热熔完成	合芯动作拆解 (2)!271
+m_nNextAutoStep[36]= 170	NOT (m_nNextAutoStep[35]= 170)	等待热熔完成	合芯动作拆解 (2)!271
+m_nNextAutoStep[35]= 200	NOT (m_nNextAutoStep[35]= 200)	等待热熔冷却完成	合芯动作拆解 (2)!272
+m_nNextAutoStep[36]= 200	NOT (m_nNextAutoStep[35]= 200)	等待热熔冷却完成	合芯动作拆解 (2)!272
+m_nNextAutoStep[33]= 110	NOT (m_nNextAutoStep[33]= 110)	包膜机械手气缸B52-HLQ8x20S松开mylar(时间0)	合芯动作拆解 (2)!273
+m_nNextAutoStep[34]= 110	NOT (m_nNextAutoStep[34]= 110)	包膜机械手气缸B52-HLQ8x20S松开mylar(时间0)	合芯动作拆解 (2)!273
+m_nNextAutoStep[33]= 130	NOT (m_nNextAutoStep[33]= 130)	等待Malay模组到达放料位	合芯动作拆解 (2)!274
+m_nNextAutoStep[34]= 130	NOT (m_nNextAutoStep[34]= 130)	等待Malay模组到达放料位	合芯动作拆解 (2)!274
+m_nNextAutoStep[33]= 140	NOT (m_nNextAutoStep[33]= 140)	包膜机械手PTH14模组走取膜位	合芯动作拆解 (2)!275
+m_nNextAutoStep[34]= 140	NOT (m_nNextAutoStep[34]= 140)	包膜机械手PTH14模组走取膜位	合芯动作拆解 (2)!275
+m_nNextAutoStep[33]= 160	NOT (m_nNextAutoStep[33]= 160)	等待Malay模组放料完成，机械手气缸B52-HLQ8x20S夹紧密mylar	合芯动作拆解 (2)!276
+m_nNextAutoStep[34]= 160	NOT (m_nNextAutoStep[34]= 160)	等待Malay模组放料完成，机械手气缸B52-HLQ8x20S夹紧密mylar	合芯动作拆解 (2)!276
+m_nNextAutoStep[33]= 300	NOT (m_nNextAutoStep[33]= 300)	等待允许包膜信号（治具未在回流）	合芯动作拆解 (2)!277
+m_nNextAutoStep[34]= 300	NOT (m_nNextAutoStep[34]= 300)	等待允许包膜信号（治具未在回流）	合芯动作拆解 (2)!277
+m_nNextAutoStep[33]= 315	m_nNextAutoStep[33]= 320	包膜机械手PTH14模组走45度包膜位	合芯动作拆解 (2)!278
+m_nNextAutoStep[34]= 315	m_nNextAutoStep[34]= 320	包膜机械手PTH14模组走45度包膜位	合芯动作拆解 (2)!278
+m_nNextAutoStep[33]= 320	m_nNextAutoStep[33]= 330	底部定型电机走工作位	合芯动作拆解 (2)!279
+m_nNextAutoStep[34]= 320	m_nNextAutoStep[34]= 330	底部定型电机走工作位	合芯动作拆解 (2)!279
+m_nNextAutoStep[33]= 330	NOT (m_nNextAutoStep[33]= 330)	包膜机械手PTH14模组走包膜位	合芯动作拆解 (2)!280
+m_nNextAutoStep[34]= 330	NOT (m_nNextAutoStep[34]= 330)	包膜机械手PTH14模组走包膜位	合芯动作拆解 (2)!280
+A		机构动作	合芯动作拆解 (2)!284
+B		机构动作	合芯动作拆解 (2)!284
+开始	结束		合芯动作拆解 (2)!285
+开始	结束		合芯动作拆解 (2)!285
+m_nNextAutoStep[22]= 500	NOT (m_nNextAutoStep[22]= 500)	等待允许走放料位	合芯动作拆解 (2)!287
+m_nNextAutoStep[22]= 500	NOT (m_nNextAutoStep[22]= 500)	等待允许走放料位	合芯动作拆解 (2)!287
+m_nNextAutoStep[22]= 510	NOT (m_nNextAutoStep[22]= 510)	取mylar直线电机平移1870mm至热熔平台上方	合芯动作拆解 (2)!288
+m_nNextAutoStep[22]= 510	NOT (m_nNextAutoStep[22]= 510)	取mylar直线电机平移1870mm至热熔平台上方	合芯动作拆解 (2)!288
+m_nNextAutoStep[23]= 500	NOT m_nNextAutoStep[23]= 500	下降取料前信号检测	合芯动作拆解 (2)!289
+m_nNextAutoStep[24]= 500	NOT m_nNextAutoStep[24]= 500	下降取料前信号检测	合芯动作拆解 (2)!289
+m_nNextAutoStep[23]= 510	NOT m_nNextAutoStep[23]= 510	取料机械手GTH12模组下降65mm（取mylar与底托同步）	合芯动作拆解 (2)!290
+m_nNextAutoStep[24]= 510	NOT m_nNextAutoStep[24]= 510	取料机械手GTH12模组下降65mm（取mylar与底托同步）	合芯动作拆解 (2)!290
+m_nNextAutoStep[23]= 540	NOT (m_nNextAutoStep[23]= 540)	取mylar机械手GTH12模组上升65mm	合芯动作拆解 (2)!291
+m_nNextAutoStep[24]= 540	NOT (m_nNextAutoStep[24]= 540)	取mylar机械手GTH12模组上升65mm	合芯动作拆解 (2)!291
+m_nNextAutoStep[22]= 540 AND m_nNextAutoStep[23]= 20	NOT m_nNextAutoStep[22]= 540	等待两侧机械手上升到位	合芯动作拆解 (2)!292
+m_nNextAutoStep[22]= 540 AND m_nNextAutoStep[24]= 20	NOT m_nNextAutoStep[22]= 540	等待两侧机械手上升到位	合芯动作拆解 (2)!292
+m_nNextAutoStep[22]= 100	NOT (m_nNextAutoStep[22]= 100)	等待mylar料仓允许取料信号	合芯动作拆解 (2)!293
+m_nNextAutoStep[22]= 100	NOT (m_nNextAutoStep[22]= 100)	等待mylar料仓允许取料信号	合芯动作拆解 (2)!293
+m_nNextAutoStep[22] = 10	NOT m_nNextAutoStep[22] = 10	mylar料仓信号检测	合芯动作拆解 (2)!294
+m_nNextAutoStep[22] = 10	NOT m_nNextAutoStep[22] = 10	mylar料仓信号检测	合芯动作拆解 (2)!294
+m_nNextAutoStep[22]= 110 OR m_nNextAutoStep[22]= 210	NOT (m_nNextAutoStep[22]= 110) AND NOT (m_nNextAutoStep[22]= 210)	取mylar直线电机平移1870mm至mylar料仓上方	合芯动作拆解 (2)!295
+m_nNextAutoStep[22]= 110 OR m_nNextAutoStep[22]= 210	NOT (m_nNextAutoStep[22]= 110) AND NOT (m_nNextAutoStep[22]= 210)	取mylar直线电机平移1870mm至mylar料仓上方	合芯动作拆解 (2)!295
+m_nNextAutoStep[23]= 110 OR m_nNextAutoStep[23]= 310	m_nNextAutoStep[23]= 120 OR m_nNextAutoStep[23]= 320	取mylar机械手GTH12模组下降80mm	合芯动作拆解 (2)!296
+m_nNextAutoStep[24]= 110 OR m_nNextAutoStep[24]= 310	m_nNextAutoStep[24]= 120 OR m_nNextAutoStep[24]= 320	取mylar机械手GTH12模组下降80mm	合芯动作拆解 (2)!296
+m_nNextAutoStep[23]= 120 OR m_nNextAutoStep[23]= 320	NOT (m_nNextAutoStep[23]= 120) AND NOT (m_nNextAutoStep[23]= 320)	mylar机械手开真空	合芯动作拆解 (2)!297
+m_nNextAutoStep[24]= 120 OR m_nNextAutoStep[24]= 320	NOT (m_nNextAutoStep[24]= 120) AND NOT (m_nNextAutoStep[24]= 320)	mylar机械手开真空	合芯动作拆解 (2)!297
+m_nNextAutoStep[23]= 200 OR 400	NOT m_nNextAutoStep[23]= 200 AND NOT 400	取mylar机械手GTH12模组抖膜上升位(开抖膜)	合芯动作拆解 (2)!298
+m_nNextAutoStep[24]= 200 OR 400	NOT m_nNextAutoStep[24]= 200 AND NOT 400	取mylar机械手GTH12模组抖膜上升位(开抖膜)	合芯动作拆解 (2)!298
+m_nNextAutoStep[23]= 220 OR 420	NOT m_nNextAutoStep[23]= 220 AND NOT 420	取mylar机械手GTH12模组抖膜下降位(开抖膜)	合芯动作拆解 (2)!299
+m_nNextAutoStep[24]= 220 OR 420	NOT m_nNextAutoStep[24]= 220 AND NOT 420	取mylar机械手GTH12模组抖膜下降位(开抖膜)	合芯动作拆解 (2)!299
+m_nNextAutoStep[23]= 150 OR m_nNextAutoStep[23]= 350	NOT m_nNextAutoStep[23]= 150 AND NOT m_nNextAutoStep[23]= 350	取mylar机械手GTH12模组上升80mm	合芯动作拆解 (2)!300
+m_nNextAutoStep[24]= 150 OR m_nNextAutoStep[24]= 350	NOT m_nNextAutoStep[24]= 150 AND NOT m_nNextAutoStep[24]= 350	取mylar机械手GTH12模组上升80mm	合芯动作拆解 (2)!300
+m_nNextAutoStep[22]= 130 AND m_nNextAutoStep[23]= 20	NOT m_nNextAutoStep[22]= 130	等待两侧机械手上升到位	合芯动作拆解 (2)!301
+m_nNextAutoStep[22]= 130 AND m_nNextAutoStep[24]= 20	NOT m_nNextAutoStep[22]= 130	等待两侧机械手上升到位	合芯动作拆解 (2)!301
+m_nNextAutoStep[25]= 500	NOT (m_nNextAutoStep[25]= 500)	等待热熔允许放料信号1	合芯动作拆解 (2)!302
+m_nNextAutoStep[25]= 500	NOT (m_nNextAutoStep[25]= 500)	等待热熔允许放料信号1	合芯动作拆解 (2)!302
+m_nNextAutoStep[25]= 510	NOT (m_nNextAutoStep[25]= 510)	取底托直线电机平移1450mm至热熔平台上方	合芯动作拆解 (2)!303
+m_nNextAutoStep[25]= 510	NOT (m_nNextAutoStep[25]= 510)	取底托直线电机平移1450mm至热熔平台上方	合芯动作拆解 (2)!303
+m_nNextAutoStep[25]= 540	NOT (m_nNextAutoStep[25]= 540)	等待热熔允许放料信号2	合芯动作拆解 (2)!304
+m_nNextAutoStep[25]= 540	NOT (m_nNextAutoStep[25]= 540)	等待热熔允许放料信号2	合芯动作拆解 (2)!304
+m_nNextAutoStep[26]= 520	NOT m_nNextAutoStep[26]= 520	取底托机械手下降65mm（取mylar与底托同步）	合芯动作拆解 (2)!305
+m_nNextAutoStep[27]= 520	NOT m_nNextAutoStep[27]= 520	取底托机械手下降65mm（取mylar与底托同步）	合芯动作拆解 (2)!305
+m_nNextAutoStep[23]= 520	NOT (m_nNextAutoStep[23]= 520)	热熔（过程中底托,Malay破真空）	合芯动作拆解 (2)!306
+m_nNextAutoStep[24]= 520	NOT (m_nNextAutoStep[24]= 520)	热熔（过程中底托,Malay破真空）	合芯动作拆解 (2)!306
+m_nNextAutoStep[26]= 550	NOT (m_nNextAutoStep[26]= 550)	取底托机械手上升65mm	合芯动作拆解 (2)!307
+m_nNextAutoStep[27]= 550	NOT (m_nNextAutoStep[27]= 550)	取底托机械手上升65mm	合芯动作拆解 (2)!307
+m_nNextAutoStep[25]= 100	NOT (m_nNextAutoStep[25]= 100)	等待底托料仓允许取料信号	合芯动作拆解 (2)!308
+m_nNextAutoStep[25]= 100	NOT (m_nNextAutoStep[25]= 100)	等待底托料仓允许取料信号	合芯动作拆解 (2)!308
+m_nNextAutoStep[25]= 110 OR m_nNextAutoStep[25]= 210	NOT (m_nNextAutoStep[25]= 110) AND NOT (m_nNextAutoStep[25]= 210)	取底托直线电机平移1450mm至底托料仓上方	合芯动作拆解 (2)!309
+m_nNextAutoStep[25]= 110 OR m_nNextAutoStep[25]= 210	NOT (m_nNextAutoStep[25]= 110) AND NOT (m_nNextAutoStep[25]= 210)	取底托直线电机平移1450mm至底托料仓上方	合芯动作拆解 (2)!309
+m_nNextAutoStep[26]= 110 OR m_nNextAutoStep[26]= 310	m_nNextAutoStep[26]= 120 OR m_nNextAutoStep[26]= 320	取底托机械手下降80mm	合芯动作拆解 (2)!310
+m_nNextAutoStep[27]= 110 OR m_nNextAutoStep[27]= 310	m_nNextAutoStep[27]= 120 OR m_nNextAutoStep[27]= 320	取底托机械手下降80mm	合芯动作拆解 (2)!310
+m_nNextAutoStep[26]= 120 OR m_nNextAutoStep[26]= 320	NOT (m_nNextAutoStep[26]= 120) AND NOT (m_nNextAutoStep[26]= 320)	底托机械手吸真空	合芯动作拆解 (2)!311
+m_nNextAutoStep[27]= 120 OR m_nNextAutoStep[27]= 320	NOT (m_nNextAutoStep[27]= 120) AND NOT (m_nNextAutoStep[27]= 320)	底托机械手吸真空	合芯动作拆解 (2)!311
+m_nNextAutoStep[26]=200 OR 400	NOT m_nNextAutoStep[26]=200 AND NOT 400	取底托机械手走抖膜上方位	合芯动作拆解 (2)!312
+m_nNextAutoStep[27]=200 OR 400	NOT m_nNextAutoStep[27]=200 AND NOT 400	取底托机械手走抖膜上方位	合芯动作拆解 (2)!312
+m_nNextAutoStep[26]=220 OR 420	NOT m_nNextAutoStep[26]=220 AND NOT 420	取底托机械手走抖膜下方位	合芯动作拆解 (2)!313
+m_nNextAutoStep[27]=220 OR 420	NOT m_nNextAutoStep[27]=220 AND NOT 420	取底托机械手走抖膜下方位	合芯动作拆解 (2)!313
+m_nNextAutoStep[26]=150 OR m_nNextAutoStep[26]=360	NOT m_nNextAutoStep[26]= 150 AND NOT  m_nNextAutoStep[26]=360	取底托机械手上升80mm	合芯动作拆解 (2)!314
+m_nNextAutoStep[27]=150 OR m_nNextAutoStep[27]=360	NOT m_nNextAutoStep[27]= 150 AND NOT m_nNextAutoStep[27]= 360	取底托机械手上升80mm	合芯动作拆解 (2)!314
+A		机构动作	合芯动作拆解 (2)!318
+B		机构动作	合芯动作拆解 (2)!318
+开始	结束		合芯动作拆解 (2)!319
+开始	结束		合芯动作拆解 (2)!319
+m_nNextAutoStep[28] =105	NOT (m_nNextAutoStep[28] =105)	热熔平台旋转，走取料位,寻边机构夹爪气B52-HFD20x20缸打开（定边气缸）	合芯动作拆解 (2)!320
+m_nNextAutoStep[28] =105	NOT (m_nNextAutoStep[29] =105)	热熔平台旋转，走取料位,寻边机构夹爪气B52-HFD20x20缸打开（定边气缸）	合芯动作拆解 (2)!320
+m_nNextAutoStep[28] =120	NOT (m_nNextAutoStep[28] =120)	等待放料完成	合芯动作拆解 (2)!321
+m_nNextAutoStep[29] =120	NOT (m_nNextAutoStep[29] =120)	等待放料完成	合芯动作拆解 (2)!321
+m_nNextAutoStep[28] =130	NOT (m_nNextAutoStep[28] =130)	底托检测	合芯动作拆解 (2)!322
+m_nNextAutoStep[29] =130	NOT (m_nNextAutoStep[29] =130)	底托检测	合芯动作拆解 (2)!322
+m_nNextAutoStep[28] =170	NOT (m_nNextAutoStep[28] =170)	底托热熔	合芯动作拆解 (2)!323
+m_nNextAutoStep[29] =170	NOT (m_nNextAutoStep[29] =170)	底托热熔	合芯动作拆解 (2)!323
+m_nNextAutoStep[28] =190	NOT m_nNextAutoStep[28] =190	热熔后冷却	合芯动作拆解 (2)!324
+m_nNextAutoStep[29] =190	NOT m_nNextAutoStep[29] =190	热熔后冷却	合芯动作拆解 (2)!324
+m_nNextAutoStep[28] =230	NOT (m_nNextAutoStep[28] =230)	等待底托取料机械手离开	合芯动作拆解 (2)!325
+m_nNextAutoStep[29] =230	NOT (m_nNextAutoStep[29] =230)	等待底托取料机械手离开	合芯动作拆解 (2)!325
+m_nNextAutoStep[28] =240	NOT m_nNextAutoStep[28] =240	平台双张判断延时	合芯动作拆解 (2)!326
+m_nNextAutoStep[29] =240	NOT m_nNextAutoStep[29] =240	平台双张判断延时	合芯动作拆解 (2)!326
+m_nNextAutoStep[28] =245	NOT (m_nNextAutoStep[28] =245)	热融平台破真空（时间0）	合芯动作拆解 (2)!327
+m_nNextAutoStep[29] =245	NOT (m_nNextAutoStep[29] =245)	热融平台破真空（时间0）	合芯动作拆解 (2)!327
+m_nNextAutoStep[28] =510	NOT (m_nNextAutoStep[28] =510)	热熔平台旋转，走放料位,寻边机构夹爪气B52-HFD20x20缸打开（定边气缸）	合芯动作拆解 (2)!328
+m_nNextAutoStep[29] =510	NOT (m_nNextAutoStep[29] =510)	热熔平台旋转，走放料位,寻边机构夹爪气B52-HFD20x20缸打开（定边气缸）	合芯动作拆解 (2)!328
+m_nNextAutoStep[28] =530	NOT (m_nNextAutoStep[28] =530)	等待取料完成	合芯动作拆解 (2)!329
+m_nNextAutoStep[29] =530	NOT (m_nNextAutoStep[29] =530)	等待取料完成	合芯动作拆解 (2)!329
+m_nNextAutoStep[28] =10	NOT (m_nNextAutoStep[28] =10)	电芯在位检测	合芯动作拆解 (2)!330
+m_nNextAutoStep[29] =10	NOT (m_nNextAutoStep[28] =10)	电芯在位检测	合芯动作拆解 (2)!330
+A		机构动作	合芯动作拆解 (2)!332
+B		机构动作	合芯动作拆解 (2)!332
+开始	结束		合芯动作拆解 (2)!333
+开始	结束		合芯动作拆解 (2)!333
+m_nNextAutoStep[30]= 110	NOT (m_nNextAutoStep[30]= 110)	mylar中转直线电机移动1050mm至热熔平台上方	合芯动作拆解 (2)!335
+m_nNextAutoStep[30]= 110	NOT (m_nNextAutoStep[30]= 110)	mylar中转直线电机移动1050mm至热熔平台上方	合芯动作拆解 (2)!335
+m_nNextAutoStep[30]= 120	NOT (m_nNextAutoStep[30]= 120)	等待取料条件(时间0)	合芯动作拆解 (2)!336
+m_nNextAutoStep[30]= 120	NOT (m_nNextAutoStep[30]= 120)	等待取料条件(时间0)	合芯动作拆解 (2)!336
+m_nNextAutoStep[31]= 110	NOT (m_nNextAutoStep[31]= 110)	mylar中转机械手PTH14模组下降180mm(热熔未开)	合芯动作拆解 (2)!337
+m_nNextAutoStep[32]= 110	NOT (m_nNextAutoStep[32]= 110)	mylar中转机械手PTH14模组下降180mm(热熔未开)	合芯动作拆解 (2)!337
+m_nNextAutoStep[31]= 120	NOT (m_nNextAutoStep[31]= 120)	夹紧气缸夹紧mylar，吸盘吸真空(热熔未开)	合芯动作拆解 (2)!338
+m_nNextAutoStep[32]= 120	NOT (m_nNextAutoStep[32]= 120)	夹紧气缸夹紧mylar，吸盘吸真空(热熔未开)	合芯动作拆解 (2)!338
+m_nNextAutoStep[31]= 140	NOT (m_nNextAutoStep[31]= 140)	热熔平台气缸打开，破真空(热熔未开)	合芯动作拆解 (2)!339
+m_nNextAutoStep[32]= 140	NOT (m_nNextAutoStep[32]= 140)	热熔平台气缸打开，破真空(热熔未开)	合芯动作拆解 (2)!339
+m_nNextAutoStep[31]= 150	NOT (m_nNextAutoStep[31]= 150)	mylar中转机械手PTH14模组上升180mm，安全位置(热熔未开)	合芯动作拆解 (2)!340
+m_nNextAutoStep[32]= 150	NOT (m_nNextAutoStep[32]= 150)	mylar中转机械手PTH14模组上升180mm，安全位置(热熔未开)	合芯动作拆解 (2)!340
+m_nNextAutoStep[30]= 140 AND m_nNextAutoStep[31]= 20	NOT m_nNextAutoStep[30]= 140	等待两侧机械手上升到位	合芯动作拆解 (2)!341
+m_nNextAutoStep[30]= 140 AND m_nNextAutoStep[32]= 20	NOT m_nNextAutoStep[30]= 140	等待两侧机械手上升到位	合芯动作拆解 (2)!341
+m_nNextAutoStep[31]= 200	NOT (m_nNextAutoStep[31]= 200)	机械手等待取料允许信号(热熔开)(时间0)	合芯动作拆解 (2)!342
+m_nNextAutoStep[32]= 200	NOT (m_nNextAutoStep[32]= 200)	机械手等待取料允许信号(热熔开)(时间0)	合芯动作拆解 (2)!342
+m_nNextAutoStep[31]= 210	NOT (m_nNextAutoStep[31]= 210)	mylar中转机械手PTH14模组下降180mm(热熔开)(时间0)	合芯动作拆解 (2)!343
+m_nNextAutoStep[32]= 210	NOT (m_nNextAutoStep[32]= 210)	mylar中转机械手PTH14模组下降180mm(热熔开)(时间0)	合芯动作拆解 (2)!343
+m_nNextAutoStep[31]= 230	NOT (m_nNextAutoStep[31]= 230)	夹紧气缸夹紧mylar，吸盘吸真空(热熔开)(时间0)	合芯动作拆解 (2)!344
+m_nNextAutoStep[32]= 230	NOT (m_nNextAutoStep[32]= 230)	夹紧气缸夹紧mylar，吸盘吸真空(热熔开)(时间0)	合芯动作拆解 (2)!344
+m_nNextAutoStep[31]= 235	NOT (m_nNextAutoStep[31]= 235)	等待热熔冷却完成(热熔开)(时间0)	合芯动作拆解 (2)!345
+m_nNextAutoStep[32]= 235	NOT (m_nNextAutoStep[31]= 235)	等待热熔冷却完成(热熔开)(时间0)	合芯动作拆解 (2)!345
+m_nNextAutoStep[31]= 260	NOT (m_nNextAutoStep[31]= 260)	寻边机构夹爪气B52-HFD20x20缸张开，热熔平台破真空(热熔开)(时0)	合芯动作拆解 (2)!346
+m_nNextAutoStep[32]= 260	NOT (m_nNextAutoStep[32]= 260)	寻边机构夹爪气B52-HFD20x20缸张开，热熔平台破真空(热熔开)(时0)	合芯动作拆解 (2)!346
+m_nNextAutoStep[31]= 270	NOT (m_nNextAutoStep[31]= 270)	mylar中转机械手PTH14模组上升180mm，安全位置(热熔开)(时间0)	合芯动作拆解 (2)!347
+m_nNextAutoStep[32]= 270	NOT (m_nNextAutoStep[32]= 270)	mylar中转机械手PTH14模组上升180mm，安全位置(热熔开)(时间0)	合芯动作拆解 (2)!347
+m_nNextAutoStep[30]= 300	NOT (m_nNextAutoStep[30]= 300)	mylar中转直线电机移动1050mm至包膜位上方	合芯动作拆解 (2)!348
+m_nNextAutoStep[30]= 300	NOT (m_nNextAutoStep[30]= 300)	mylar中转直线电机移动1050mm至包膜位上方	合芯动作拆解 (2)!348
+m_nNextAutoStep[30]= 310	NOT (m_nNextAutoStep[30]= 310)	等待允许放料信号	合芯动作拆解 (2)!349
+m_nNextAutoStep[30]= 310	NOT (m_nNextAutoStep[30]= 310)	等待允许放料信号	合芯动作拆解 (2)!349
+m_nNextAutoStep[31]= 310	NOT (m_nNextAutoStep[31]= 310)	mylar中转机械手PTH14模组升降走放料等待位	合芯动作拆解 (2)!350
+m_nNextAutoStep[32]= 310	NOT (m_nNextAutoStep[32]= 310)	mylar中转机械手PTH14模组升降走放料等待位	合芯动作拆解 (2)!350
+m_nNextAutoStep[31]= 330	NOT m_nNextAutoStep[31]= 330	等待包膜机构平移完成	合芯动作拆解 (2)!351
+m_nNextAutoStep[32]= 330	NOT m_nNextAutoStep[32]= 330	等待包膜机构平移完成	合芯动作拆解 (2)!351
+m_nNextAutoStep[31]= 340	NOT m_nNextAutoStep[31]= 340	mylar中转机械手PTH14模组升降走放料位	合芯动作拆解 (2)!352
+m_nNextAutoStep[32]= 340	NOT m_nNextAutoStep[32]= 340	mylar中转机械手PTH14模组升降走放料位	合芯动作拆解 (2)!352
+m_nNextAutoStep[31]= 350	not (m_nNextAutoStep[31]= 350)	包膜夹子气缸夹紧mylar	合芯动作拆解 (2)!353
+m_nNextAutoStep[32]= 350	not (m_nNextAutoStep[32]= 350)	包膜夹子气缸夹紧mylar	合芯动作拆解 (2)!353
+m_nNextAutoStep[31]= 380	m_nNextAutoStep[31]= 400	搬运mylar机械手夹紧气缸松开mylar	合芯动作拆解 (2)!354
+m_nNextAutoStep[32]= 380	m_nNextAutoStep[32]= 400	搬运mylar机械手夹紧气缸松开mylar	合芯动作拆解 (2)!354
+m_nNextAutoStep[31]= 400	NOT (m_nNextAutoStep[31]= 400)	mylar中转机械手PTH14模组上升350mm	合芯动作拆解 (2)!355
+m_nNextAutoStep[32]= 400	NOT (m_nNextAutoStep[32]= 400)	mylar中转机械手PTH14模组上升350mm	合芯动作拆解 (2)!355
+m_nNextAutoStep[30]= 330 AND m_nNextAutoStep[31]= 20	NOT m_nNextAutoStep[30]= 330	等待两侧机械手上升到位	合芯动作拆解 (2)!356
+m_nNextAutoStep[30]= 330 AND m_nNextAutoStep[32]= 20	NOT m_nNextAutoStep[30]= 330	等待两侧机械手上升到位	合芯动作拆解 (2)!356
+m_nNextAutoStep[30]= 100	NOT (m_nNextAutoStep[30]= 100)	等待走取料位条件	合芯动作拆解 (2)!357
+m_nNextAutoStep[30]= 100	NOT (m_nNextAutoStep[30]= 100)	等待走取料位条件	合芯动作拆解 (2)!357
+m_nNextAutoStep[30]= 10	NOT m_nNextAutoStep[30]= 10	在位检测感应	合芯动作拆解 (2)!358
+m_nNextAutoStep[30]= 10	m_nNextAutoStep[30]= 10	在位检测感应	合芯动作拆解 (2)!358
+A		机构动作	合芯动作拆解 (2)!361
+B		机构动作	合芯动作拆解 (2)!361
+开始	结束		合芯动作拆解 (2)!362
+开始	结束		合芯动作拆解 (2)!362
+m_nNextAutoStep[12]= 230	NOT (m_nNextAutoStep[12]= 230)	等待ML底托模组取料完成	合芯动作拆解 (2)!363
+m_nNextAutoStep[13]= 230	NOT (m_nNextAutoStep[13]= 230)	等待ML底托模组取料完成	合芯动作拆解 (2)!363
+m_nNextAutoStep[12]= 30	NOT m_nNextAutoStep[12]= 30	料仓上料检测	合芯动作拆解 (2)!364
+m_nNextAutoStep[13]= 30	NOT m_nNextAutoStep[13]= 30	料仓上料检测	合芯动作拆解 (2)!364
+m_nNextAutoStep[12]= 120	NOT m_nNextAutoStep[12]= 120	等待A,B仓送料完成	合芯动作拆解 (2)!365
+m_nNextAutoStep[13]= 120	NOT m_nNextAutoStep[13]= 120	等待A,B仓送料完成	合芯动作拆解 (2)!365
+m_nNextAutoStep[12]= 210	NOT (m_nNextAutoStep[12]= 210)	料仓挡板气缸伸出	合芯动作拆解 (2)!366
+m_nNextAutoStep[13]= 210	NOT (m_nNextAutoStep[13]= 210)	料仓挡板气缸伸出	合芯动作拆解 (2)!366
+m_nNextAutoStep[12]= 300	NOT m_nNextAutoStep[12]= 300	缺料执行退仓	合芯动作拆解 (2)!367
+m_nNextAutoStep[13]= 300	NOT m_nNextAutoStep[13]= 300	缺料执行退仓	合芯动作拆解 (2)!367
+m_nNextAutoStep[14]= 300	NOT (m_nNextAutoStep[14]= 300)	物料检测	合芯动作拆解 (2)!368
+m_nNextAutoStep[16]= 300	NOT (m_nNextAutoStep[16]= 300)	物料检测	合芯动作拆解 (2)!368
+m_nNextAutoStep[14]= 310	NOT (m_nNextAutoStep[14]= 310)	底托升降走补料位	合芯动作拆解 (2)!369
+m_nNextAutoStep[16]= 310	NOT (m_nNextAutoStep[16]= 310)	底托升降走补料位	合芯动作拆解 (2)!369
+m_nNextAutoStep[14]= 320	NOT (m_nNextAutoStep[14]= 320)	底托切离气缸伸出	合芯动作拆解 (2)!370
+m_nNextAutoStep[16]= 320	NOT (m_nNextAutoStep[16]= 320)	底托切离气缸伸出	合芯动作拆解 (2)!370
+m_nNextAutoStep[14]= 325	NOT (m_nNextAutoStep[14]= 325)	底托升降走检测位	合芯动作拆解 (2)!371
+m_nNextAutoStep[16]= 325	NOT (m_nNextAutoStep[16]= 325)	底托升降走检测位	合芯动作拆解 (2)!371
+m_nNextAutoStep[14]= 340	NOT (m_nNextAutoStep[14]= 340)	补塑盘底托升降点动上升检测信号	合芯动作拆解 (2)!372
+m_nNextAutoStep[16]= 340	NOT (m_nNextAutoStep[16]= 340)	补塑盘底托升降点动上升检测信号	合芯动作拆解 (2)!372
+m_nNextAutoStep[14]= 360	NOT m_nNextAutoStep[14]= 360	等待送料完成复位	合芯动作拆解 (2)!373
+m_nNextAutoStep[16]= 360	NOT m_nNextAutoStep[16]= 360	等待送料完成复位	合芯动作拆解 (2)!373
+A		机构动作	合芯动作拆解 (2)!376
+B		机构动作	合芯动作拆解 (2)!376
+开始	结束		合芯动作拆解 (2)!377
+开始	结束		合芯动作拆解 (2)!377
+m_nNextAutoStep[42]= 120	NOT (m_nNextAutoStep[42]= 120)	等待取胶完成	合芯动作拆解 (2)!378
+m_nNextAutoStep[44]= 120	NOT (m_nNextAutoStep[44]= 120)	等待取胶完成	合芯动作拆解 (2)!378
+m_nNextAutoStep[42]= 125	NOT (m_nNextAutoStep[42]= 125)	拉胶轴走夹胶位	合芯动作拆解 (2)!379
+m_nNextAutoStep[44]= 125	NOT (m_nNextAutoStep[44]= 125)	拉胶轴走夹胶位	合芯动作拆解 (2)!379
+m_nNextAutoStep[42]= 130	NOT (m_nNextAutoStep[42]= 130)	开胶气缸缩回	合芯动作拆解 (2)!380
+m_nNextAutoStep[44]= 130	NOT (m_nNextAutoStep[44]= 130)	开胶气缸缩回	合芯动作拆解 (2)!380
+m_nNextAutoStep[42]= 140	NOT (m_nNextAutoStep[42]= 140)	开胶气缸伸出	合芯动作拆解 (2)!381
+m_nNextAutoStep[44]= 140	NOT (m_nNextAutoStep[44]= 140)	开胶气缸伸出	合芯动作拆解 (2)!381
+m_nNextAutoStep[42]= 10	NOT m_nNextAutoStep[42]= 10	缺胶判断延时	合芯动作拆解 (2)!382
+m_nNextAutoStep[44]= 10	NOT m_nNextAutoStep[44]= 10	缺胶判断延时	合芯动作拆解 (2)!382
+m_nNextAutoStep[42]= 20	NOT (m_nNextAutoStep[42]= 20)	安全挡板打开	合芯动作拆解 (2)!383
+m_nNextAutoStep[44]= 20	NOT (m_nNextAutoStep[44]= 20)	安全挡板打开	合芯动作拆解 (2)!383
+m_nNextAutoStep[42]= 30	NOT (m_nNextAutoStep[42]= 30)	夹子气缸打开	合芯动作拆解 (2)!384
+m_nNextAutoStep[44]= 30	NOT (m_nNextAutoStep[44]= 30)	夹子气缸打开	合芯动作拆解 (2)!384
+m_nNextAutoStep[42]= 40	NOT (m_nNextAutoStep[42]= 40)	拉胶轴走夹胶位	合芯动作拆解 (2)!385
+m_nNextAutoStep[44]= 40	NOT (m_nNextAutoStep[44]= 40)	拉胶轴走夹胶位	合芯动作拆解 (2)!385
+m_nNextAutoStep[42]= 45	NOT (m_nNextAutoStep[42]= 45)	等待拉胶位允许	合芯动作拆解 (2)!386
+m_nNextAutoStep[44]= 45	NOT (m_nNextAutoStep[44]= 45)	等待拉胶位允许	合芯动作拆解 (2)!386
+m_nNextAutoStep[42]= 50	NOT (m_nNextAutoStep[42]= 50)	夹子气缸夹紧	合芯动作拆解 (2)!387
+m_nNextAutoStep[44]= 50	NOT (m_nNextAutoStep[44]= 50)	夹子气缸夹紧	合芯动作拆解 (2)!387
+m_nNextAutoStep[42]= 60	NOT (m_nNextAutoStep[42]= 60)	压紧气缸缩回	合芯动作拆解 (2)!388
+m_nNextAutoStep[44]= 60	NOT (m_nNextAutoStep[44]= 60)	压紧气缸缩回	合芯动作拆解 (2)!388
+m_nNextAutoStep[42]= 70	NOT (m_nNextAutoStep[42]= 70)	开胶气缸伸出	合芯动作拆解 (2)!389
+m_nNextAutoStep[44]= 70	NOT (m_nNextAutoStep[44]= 70)	开胶气缸伸出	合芯动作拆解 (2)!389
+m_nNextAutoStep[42]= 80	NOT (m_nNextAutoStep[42]= 80)	拉胶轴走拉胶位	合芯动作拆解 (2)!390
+m_nNextAutoStep[44]= 80	NOT (m_nNextAutoStep[44]= 80)	拉胶轴走拉胶位	合芯动作拆解 (2)!390
+m_nNextAutoStep[42]= 90	NOT (m_nNextAutoStep[42]= 90)	压紧气缸伸出	合芯动作拆解 (2)!391
+m_nNextAutoStep[44]= 90	NOT (m_nNextAutoStep[44]= 90)	压紧气缸伸出	合芯动作拆解 (2)!391
+m_nNextAutoStep[42]= 100	NOT m_nNextAutoStep[42]= 100	缺胶判断延时2	合芯动作拆解 (2)!392
+m_nNextAutoStep[44]= 100	NOT m_nNextAutoStep[44]= 100	缺胶判断延时2	合芯动作拆解 (2)!392

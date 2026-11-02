@@ -1,0 +1,172 @@
+﻿开始标签	结束标签	动作描述	人工源文件行号
+ST01.AutoStep[2]=110	ST01.AutoStep[2]=120	机台上料_Z轴下降到取料位	时序拆解!4
+ST01.AutoStep[2]=120	ST01.AutoStep[2]=120 AND RMOut01.Clamping_Signal	机台上料_电夹爪取料	时序拆解!5
+ST01.AutoStep[2]=125 OR ST01.AutoStep[2]=126	NOT abEM01ActionStart[3]	机台上料_数据传递&进站触发	时序拆解!6
+ST01.AutoStep[2]=130	NOT abEM01ActionStart[4]	机台上料_Z轴上升回安全位	时序拆解!7
+ST01.AutoStep[2]=150	NOT abEM01ActionStart[5]	机台上料_X轴移动至放料位&R轴旋转到放料位	时序拆解!8
+ST01.AutoStep[2]=200	NOT abEM01ActionStart[6]	机台上料_等待放料	时序拆解!9
+ST01.AutoStep[2]=210	ST01.AutoStep[2]=220	机台上料_Z轴下降到放料位	时序拆解!10
+ST01.AutoStep[2]=220	NOT abEM01ActionStart[8]	机台上料_电夹爪放料	时序拆解!11
+ST01.AutoStep[2]=230	NOT abEM01ActionStart[9]	机台上料_Z轴上升回安全位	时序拆解!12
+ST01.AutoStep[2]=10	ST01.AutoStep[2]=10 AND SV13.PosOK[1] AND SV18.PosOK[1]	机台上料_X轴移动至取料位&R轴旋转回取料位	时序拆解!13
+ST02.AutoStep[1]=10	ST02.AutoStep[1]=20	二次定位_平台去取料位	时序拆解!16
+ST02.AutoStep[1]=20	ST01.AutoStep[2]=210	二次定位_等待放料	时序拆解!17
+ST01.AutoStep[2]=210	ST01.AutoStep[2]=210 AND SV16.PosOK[3]	二次定位_Z轴到取料位	时序拆解!18
+ST01.AutoStep[2]=220	ST01.AutoStep[2]=230	二次定位_电夹爪放料	时序拆解!19
+ST01.AutoStep[2]=230	ST01.AutoStep[2]=230 AND SV16.PosOK[1]	二次定位_Z轴上升回安全位	时序拆解!20
+ST02.AutoStep[1]=20 AND ST02.Done[0]	ST02.AutoStep[1]=120	二次定位_平台去放料位	时序拆解!21
+ST02.AutoStep[1]=120	ST01.AutoStep[3]=110	二次定位_等待取料	时序拆解!22
+ST01.AutoStep[3]=110	ST01.AutoStep[3]=110 AND SV17.PosOK[2]	二次定位_Z轴下降到放料位	时序拆解!23
+ST01.AutoStep[3]=120	ST01.AutoStep[3]=130	二次定位_电夹爪放料	时序拆解!24
+ST01.AutoStep[3]=130	ST01.AutoStep[3]=130 AND SV17.PosOK[1]	二次定位_Z轴上升回安全位	时序拆解!25
+ST01.AutoStep[3]=110	ST01.AutoStep[3]=120	循环线上料_Z轴下降到取料位	时序拆解!28
+ST01.AutoStep[3]=120	NOT abEM01_2ActionStart[2]	循环线上料_电夹爪取料	时序拆解!29
+ST01.AutoStep[3]=130	NOT abEM01_2ActionStart[3]	循环线上料_Z轴上升回安全位	时序拆解!30
+ST01.AutoStep[3]=140	NOT abEM01_2ActionStart[4]	循环线上料_X轴移栽至放料位	时序拆解!31
+ST01.AutoStep[3]=200	NOT abEM01_2ActionStart[5]	循环线上料_等待放料信号	时序拆解!32
+ST01.AutoStep[3]=210	ST01.AutoStep[3]=220	循环线上料_Z轴下降到放料位	时序拆解!33
+ST01.AutoStep[3]=220	NOT abEM01_2ActionStart[7]	循环线上料_电夹爪放料	时序拆解!34
+ST01.AutoStep[3]=230	NOT abEM01_2ActionStart[8]	循环线上料_Z轴上升回安全位	时序拆解!35
+ST01.AutoStep[3]=10	ST01.AutoStep[3]=10 AND SV14.PosOK[1]	循环线上料_X轴移至取料位	时序拆解!36
+HJXHX_ST08.Signal[1]	ST11.AutoStep[1]=50	磁驱前进	时序拆解!39
+ST11.AutoStep[1]=50	ST11.AutoStep[1]=80	压板下降&焊接&压板上升	时序拆解!40
+HJXHX_ST07.Signal[1]	ST11.AutoStep[2]=50	磁驱前进	时序拆解!45
+ST11.AutoStep[2]=50	ST11.AutoStep[2]=80	压板下降&焊接&压板上升	时序拆解!46
+HJXHX_ST06.Signal[1]	ST11.AutoStep[3]=50	磁驱前进	时序拆解!51
+ST11.AutoStep[3]=50	ST11.AutoStep[3]=80	压板下降&焊接&压板上升	时序拆解!52
+HJXHX_ST05.Signal[1]	ST11.AutoStep[4]=50	磁驱前进	时序拆解!57
+ST11.AutoStep[4]=50	ST11.AutoStep[4]=80	压板下降&焊接&压板上升	时序拆解!58
+HJXHX_ST10.Signal[1]	ST10.AutoStep[1]=50	磁驱前进	时序拆解!63
+ST10.AutoStep[1]=50	ST10.AutoStep[1]=80	压板下降&焊接&压板上升	时序拆解!64
+HJXHX_ST11.Signal[1]	ST10.AutoStep[2]=50	磁驱前进	时序拆解!69
+ST10.AutoStep[2]=50	ST10.AutoStep[2]=80	压板下降&焊接&压板上升	时序拆解!70
+HJXHX_ST12.Signal[1]	ST10.AutoStep[3]=50	磁驱前进	时序拆解!75
+ST10.AutoStep[3]=50	ST10.AutoStep[3]=80	压板下降&焊接&压板上升	时序拆解!76
+HJXHX_ST13.Signal[1]	ST10.AutoStep[4]=50	磁驱前进	时序拆解!81
+ST10.AutoStep[4]=50	ST10.AutoStep[4]=80	压板下降&焊接&压板上升	时序拆解!82
+ST09.AutoStep[1]=1 AND HJXHX_ST09.Signal[1]	ST09.AutoStep[1]=10	动子进入上接驳位	时序拆解!87
+ST09.AutoStep[1]=10	ST09.AutoStep[1]=10 AND SV42.PosOK[2]	上接驳位Y轴移至回流侧	时序拆解!88
+ST09.AutoStep[1]=10 AND SV42.PosOK[2]	ST09.AutoStep[1]=20	动子出下接驳位	时序拆解!89
+ST09.AutoStep[1]=20	ST09.AutoStep[1]=20 AND SV42.PosOK[1]	上接驳位Y轴移回推进侧	时序拆解!90
+ST09.AutoStep[2]=1 AND HJXHX_ST19.Signal[1]	ST09.AutoStep[2]=20	动子进入下接驳位	时序拆解!93
+ST09.AutoStep[2]=20	ST09.AutoStep[2]=20 AND SV44.PosOK[1]	下接驳位Y轴移至推进侧	时序拆解!94
+"ST09.AutoStep[2]=1 AND HJXHX_ST20.Signal[1]
+ST09.AutoStep[2]=20 AND SV44.PosOK[1]"	ST09.AutoStep[2]=10	动子出下接驳位	时序拆解!95
+ST09.AutoStep[2]=10	ST09.AutoStep[2]=10 AND SV44.PosOK[2]	下接驳位Y轴移回流侧	时序拆解!96
+ST04.AutoStep[1]=50	ST04.AutoStep[1]=60	转接片上料_Z轴下降到取料位&取料吸片	时序拆解!99
+ST04.AutoStep[1]=60	ST04.AutoStep[1]=110	转接片上料_Z轴上升回安全位	时序拆解!100
+ST04.AutoStep[1]=110	ST04.AutoStep[1]=120	转接片上料_直线电机移栽	时序拆解!101
+ST04.AutoStep[1]=120	ST04.AutoStep[1]=130	转接片上料_Z轴下降到放料位	时序拆解!102
+ST04.AutoStep[1]=130	ST04.AutoStep[1]=140	转接片上料_放料破真空	时序拆解!103
+ST04.AutoStep[1]=140	ST04.AutoStep[1]=140 AND SV46.PosOK[1]	转接片上料_Z轴上升回安全位	时序拆解!104
+ST04.AutoStep[1]=20	ST04.AutoStep[1]=20 AND SV45.PosOK[1]	转接片上料_移栽	时序拆解!105
+ST05.AutoStep[1]=1	ST05.AutoStep[1]=10	转接片二次定位_气缸平移回原位	时序拆解!109
+ST05.AutoStep[1]=10 AND ( SV40.AbsEx[2] OR SV40.AbsEx[1])	ST05.AutoStep[1]=10 AND CY[28].M_Act	转接片二次定位_平台移栽至上片待取料位	时序拆解!110
+ST05.AutoStep[1]=10 AND CY[28].M_Act	ST05.AutoStep[1]=20 OR ST05.AutoStep[1]=200	转接片二次定位_气缸平移到接料位	时序拆解!111
+ST05.AutoStep[1]=20 OR ST05.AutoStep[1]=200	ST05.AutoStep[1]=1	转接片二次定位_等待蜘蛛手放料/取料	时序拆解!112
+ST06.AutoStep[3]=20 AND SV36.AbsEx[1]	ST06.AutoStep[3]=200	铜转接片换盘_Y轴移栽到取料位	时序拆解!115
+ST06.AutoStep[3]=200	ST06.AutoStep[3]=220	铜转接片换盘_气缸下降	时序拆解!116
+ST06.AutoStep[3]=220	ST06.AutoStep[3]=220 AND Input_From_RB1.Signal[16]	铜转接片换盘_等待托盘请求换盘信号	时序拆解!117
+ST06.AutoStep[3]=220 AND Input_From_RB1.Signal[16]	ST06.AutoStep[3]=10	铜转接片换盘_吸真空&气缸上升	时序拆解!118
+ST06.AutoStep[3]=10	ST06.AutoStep[1]=60	铜转接片换盘_Y轴移栽至放料位&上盘Z轴上升	时序拆解!119
+ST06.AutoStep[1]=60	ST06.AutoStep[1]=70	铜转接片换盘_上盘夹具气缸夹紧	时序拆解!120
+ST07.AutoStep[3]=20 AND SV39.AbsEx[1]	ST07.AutoStep[3]=200	铝转接片换盘_Y轴移栽到取料位	时序拆解!125
+ST07.AutoStep[3]=200	ST07.AutoStep[3]=220	铝转接片换盘_气缸下降	时序拆解!126
+ST07.AutoStep[3]=220	ST07.AutoStep[3]=220 AND Input_From_RB1.Signal[15]	铝转接片换盘_等待托盘请求换盘信号	时序拆解!127
+ST07.AutoStep[3]=220 AND Input_From_RB1.Signal[15]	ST07.AutoStep[3]=10	铝转接片换盘_吸真空&气缸上升	时序拆解!128
+ST07.AutoStep[3]=10	ST07.AutoStep[1]=60	铝转接片换盘_Y轴移栽至放料位&上盘Z轴上升	时序拆解!129
+ST07.AutoStep[1]=60	ST07.AutoStep[1]=70	铝转接片换盘_上盘夹具气缸夹紧	时序拆解!130
+ST12.AutoStep[1]=30 AND SV47.AbsEx[2]	ST12.AutoStep[1]=40	贴胶上芯_Z轴下降到取料位	时序拆解!135
+ST12.AutoStep[1]=40	ST12.AutoStep[1]=50	贴胶上芯_电夹爪取料	时序拆解!136
+ST12.AutoStep[1]=50	ST12.AutoStep[1]=200	贴胶上芯_Z轴上升回安全位	时序拆解!137
+ST12.AutoStep[1]=200	ST12.AutoStep[1]=210	贴胶上芯_X轴移至放料位	时序拆解!138
+ST12.AutoStep[1]=210	ST12.AutoStep[1]=210 AND SV47.AbsEx[3]	贴胶上芯_等待放料	时序拆解!139
+ST12.AutoStep[1]=210 AND SV47.AbsEx[3]	ST12.AutoStep[1]=220	贴胶上芯_Z轴下降到放料位	时序拆解!140
+ST12.AutoStep[1]=220	ST12.AutoStep[1]=230	贴胶上芯_电夹爪放料	时序拆解!141
+ST12.AutoStep[1]=230	ST12.AutoStep[1]=230 AND SV47.PosOK[1]	贴胶上芯_Z轴上升回安全位	时序拆解!142
+ST12.AutoStep[1]=20	ST12.AutoStep[1]=20 AND SV43.PosOK[1]	贴胶上芯_X轴移回取料位	时序拆解!143
+ST15.AutoStep[1]=25 AND SV81.AbsEx[2]	ST15.AutoStep[1]=25 AND SV81.PosOK[2]	贴胶循环线_贴胶皮带前进	时序拆解!146
+ST15.AutoStep[1]=25 AND SV81.PosOK[2]	ST12.AutoStep[1]=210 AND SV47.AbsEx[3]	贴胶循环线_等待放料信号	时序拆解!147
+ST12.AutoStep[1]=210 AND SV47.AbsEx[3]	ST12.AutoStep[1]=220	贴胶上芯_Z轴下降到放料位	时序拆解!148
+ST12.AutoStep[1]=220	ST12.AutoStep[1]=230	贴胶上芯_电夹爪放料	时序拆解!149
+ST12.AutoStep[1]=230	ST12.AutoStep[1]=230 AND SV47.PosOK[1]	贴胶上芯_Z轴上升回安全位	时序拆解!150
+ST13.AutoStep[3]=140	ST13.AutoStep[3]=160	A贴胶_Z轴下降到贴胶位&破真空	时序拆解!153
+ST13.AutoStep[3]=160	ST13.AutoStep[3]=30	A贴胶_Z轴上升	时序拆解!154
+ST13.AutoStep[3]=30	ST13.AutoStep[3]=40	A贴胶_X轴去吸胶位	时序拆解!155
+ST13.AutoStep[3]=40	ST13.AutoStep[3]=50	A贴胶_Z轴下降到吸胶位	时序拆解!156
+ST13.AutoStep[3]=50	ST13.AutoStep[3]=60	A贴胶_吸真空	时序拆解!157
+ST13.AutoStep[3]=60	ST13.AutoStep[3]=110	A贴胶_Z轴上升	时序拆解!158
+ST13.AutoStep[3]=110	ST13.AutoStep[3]=110 AND SV59.PosOK[2] AND SV56.PosOK[3] AND SV61.PosOK[2] AND SV57.PosOK[3]	A贴胶_X轴去贴胶位	时序拆解!159
+ST13.AutoStep[2]=20	ST13.AutoStep[2]=30	A拉胶_撑胶板去吸胶位	时序拆解!164
+ST13.AutoStep[2]=30	ST13.AutoStep[2]=40	A拉胶_撑胶	时序拆解!165
+ST13.AutoStep[2]=40	ST13.AutoStep[2]=50	A拉胶_切胶刀前进	时序拆解!166
+ST13.AutoStep[2]=50	ST13.AutoStep[2]=60	A拉胶_切胶刀回原位	时序拆解!167
+ST13.AutoStep[2]=60	ST13.AutoStep[2]=70	A拉胶_退胶	时序拆解!168
+ST13.AutoStep[2]=70	ST13.AutoStep[3]=40	A贴胶_Z轴下降到贴胶位&破真空	时序拆解!169
+ST13.AutoStep[3]=40	ST13.AutoStep[3]=60	A贴胶_Z轴上升	时序拆解!170
+ST13.AutoStep[3]=60	ST13.AutoStep[3]=110	A贴胶_X轴去吸胶位	时序拆解!171
+ST13.AutoStep[1]=20	NOT abEM13_3ActionStart[1]	A拉胶_拉胶轴去拉胶位	时序拆解!174
+ST13.AutoStep[1]=30 OR ST13.AutoStep[1]=40	NOT abEM13_3ActionStart[2]	A拉胶_夹子夹紧	时序拆解!175
+ST13.AutoStep[1]=60	NOT abEM13_3ActionStart[3]	A拉胶_拉胶轴回退切胶位	时序拆解!176
+ST13.AutoStep[2]=20	ST13.AutoStep[2]=30	A拉胶_撑胶板去吸胶位	时序拆解!177
+ST13.AutoStep[2]=30	ST13.AutoStep[2]=40	A拉胶_撑胶	时序拆解!178
+ST13.AutoStep[2]=40	ST13.AutoStep[2]=50	A拉胶_切胶刀前进	时序拆解!179
+ST13.AutoStep[2]=50	ST13.AutoStep[2]=60	A拉胶_切胶刀回原位	时序拆解!180
+ST13.AutoStep[2]=60	ST13.AutoStep[2]=70	A拉胶_退胶	时序拆解!181
+ST13.AutoStep[2]=70	ST13.AutoStep[2]=90	A拉胶_撑胶板去取胶位	时序拆解!182
+ST14.AutoStep[3]=140	ST14.AutoStep[3]=160	B贴胶_Z轴下降到贴胶位&破真空	时序拆解!185
+ST14.AutoStep[3]=160	ST14.AutoStep[3]=30	B贴胶_Z轴上升	时序拆解!186
+ST14.AutoStep[3]=30	ST14.AutoStep[3]=40	B贴胶_X轴去吸胶位	时序拆解!187
+ST14.AutoStep[3]=40	ST14.AutoStep[3]=50	B贴胶_Z轴下降到吸胶位	时序拆解!188
+ST14.AutoStep[3]=50	ST14.AutoStep[3]=60	B贴胶_吸真空	时序拆解!189
+ST14.AutoStep[3]=60	ST14.AutoStep[3]=110	B贴胶_Z轴上升	时序拆解!190
+ST14.AutoStep[3]=110	ST14.AutoStep[3]=110 AND SV73.PosOK[2] AND SV70.PosOK[3] AND SV75.PosOK[2] AND SV71.PosOK[3]	B贴胶_X轴去贴胶位	时序拆解!191
+ST14.AutoStep[2]=20	ST14.AutoStep[2]=30	B拉胶_撑胶板去吸胶位	时序拆解!196
+ST14.AutoStep[2]=30	ST14.AutoStep[2]=40	B拉胶_撑胶	时序拆解!197
+ST14.AutoStep[2]=40	ST14.AutoStep[2]=50	B拉胶_切胶刀前进	时序拆解!198
+ST14.AutoStep[2]=50	ST14.AutoStep[2]=60	B拉胶_切胶刀回原位	时序拆解!199
+ST14.AutoStep[2]=60	ST14.AutoStep[2]=70	B拉胶_退胶	时序拆解!200
+ST14.AutoStep[2]=70	ST14.AutoStep[3]=40	B贴胶_Z轴下降到贴胶位&破真空	时序拆解!201
+ST14.AutoStep[3]=40	ST14.AutoStep[3]=60	B贴胶_Z轴上升	时序拆解!202
+ST14.AutoStep[3]=60	ST14.AutoStep[3]=110	B贴胶_X轴去吸胶位	时序拆解!203
+ST14.AutoStep[1]=20	NOT abEM14_3ActionStart[1]	B拉胶_拉胶轴去拉胶位	时序拆解!206
+ST14.AutoStep[1]=30 OR ST14.AutoStep[1]=40	NOT abEM14_3ActionStart[2]	B拉胶_夹子夹紧	时序拆解!207
+ST14.AutoStep[1]=60	NOT abEM14_3ActionStart[3]	B拉胶_拉胶轴回退切胶位	时序拆解!208
+ST14.AutoStep[2]=20	ST14.AutoStep[2]=30	B拉胶_撑胶板去吸胶位	时序拆解!209
+ST14.AutoStep[2]=30	ST14.AutoStep[2]=40	B拉胶_撑胶	时序拆解!210
+ST14.AutoStep[2]=40	ST14.AutoStep[2]=50	B拉胶_切胶刀前进	时序拆解!211
+ST14.AutoStep[2]=50	ST14.AutoStep[2]=60	B拉胶_切胶刀回原位	时序拆解!212
+ST14.AutoStep[2]=60	ST14.AutoStep[2]=70	B拉胶_退胶	时序拆解!213
+ST14.AutoStep[2]=70	ST14.AutoStep[2]=90	B拉胶_撑胶板去取胶位	时序拆解!214
+ST16.AutoStep[1]=40	ST16.AutoStep[1]=50	贴胶下芯_Z轴下降到取料位	时序拆解!217
+ST16.AutoStep[1]=50	ST16.AutoStep[1]=60	贴胶下芯_电夹爪取料	时序拆解!218
+ST16.AutoStep[1]=60	ST16.AutoStep[1]=200	贴胶下芯_Z轴上升到安全位	时序拆解!219
+ST16.AutoStep[1]=200	ST16.AutoStep[1]=210	贴胶下芯_X轴移动至放料位（OK/NG）	时序拆解!220
+ST16.AutoStep[1]=210	ST16.AutoStep[1]=210 AND SV79.AbsEx[3]	等待_中转平台Ready信号	时序拆解!221
+ST16.AutoStep[1]=210 AND SV79.AbsEx[3]	ST16.AutoStep[1]=220	贴胶下芯_Z轴下降	时序拆解!222
+ST16.AutoStep[1]=220	ST16.AutoStep[1]=230	贴胶下芯_电夹爪放料-OK	时序拆解!223
+ST16.AutoStep[1]=230	NOT abEM16ActionStart[8]	贴胶下芯_Z轴上升-OK	时序拆解!224
+ST16.AutoStep[1]=300	ST16.AutoStep[1]=310	贴胶下芯_等待NG拉带有可放料信号 & Z轴下降到放料位-NG	时序拆解!225
+ST16.AutoStep[1]=310	ST16.AutoStep[1]=320	贴胶下芯_电夹爪放料-NG	时序拆解!226
+ST16.AutoStep[1]=320	NOT abEM16ActionStart[11]	贴胶下芯_Z轴上升-NG	时序拆解!227
+ST16.AutoStep[1]=20	ST16.AutoStep[1]=20 AND SV76.PosOK[1]	贴胶下芯_X轴移动取料位	时序拆解!228
+ST17.AutoStep[1]=10	ST17.AutoStep[1]=20	中转平台移至待贴胶下芯位	时序拆解!231
+ST17.AutoStep[1]=20	ST16.AutoStep[1]=210 AND SV79.AbsEx[3]	等待	时序拆解!232
+ST16.AutoStep[1]=210 AND SV79.AbsEx[3]	ST16.AutoStep[1]=220	贴胶下芯_Z轴下降到取料位	时序拆解!233
+ST16.AutoStep[1]=220	ST16.AutoStep[1]=230	贴胶下芯_电夹爪取料	时序拆解!234
+ST16.AutoStep[1]=230	ST16.AutoStep[1]=230 AND SV79.PosOK[1]	贴胶下芯_Z轴上升回安全位	时序拆解!235
+ST16.AutoStep[1]=230 AND SV79.PosOK[1]	ST17.AutoStep[1]=100	等待	时序拆解!236
+ST17.AutoStep[1]=100	ST17.AutoStep[1]=100 AND SV78.PosOK[2]	中转平台移至机台下料待取料位	时序拆解!237
+ST17.AutoStep[1]=100 AND SV78.PosOK[2]	ST18.AutoStep[1]=40 AND SV80.AbsEx[2]	等待	时序拆解!238
+ST18.AutoStep[1]=40 AND SV80.AbsEx[2]	ST18.AutoStep[1]=50	机台下料_Z轴下降到取料位	时序拆解!239
+ST18.AutoStep[1]=50	ST18.AutoStep[1]=60	机台下料_电夹爪取料	时序拆解!240
+ST18.AutoStep[1]=60	ST18.AutoStep[1]=200	机台下料_Z轴上升到安全位	时序拆解!241
+ST18.AutoStep[1]=40	ST18.AutoStep[1]=50	机台下料_Z轴下降到取料位	时序拆解!244
+ST18.AutoStep[1]=50	ST18.AutoStep[1]=60	机台下料_电夹爪取料	时序拆解!245
+ST18.AutoStep[1]=60	ST18.AutoStep[1]=200	机台下料_Z轴上升到安全位	时序拆解!246
+ST18.AutoStep[1]=200	ST18.AutoStep[1]=210	机台下料_X轴移至放料位	时序拆解!247
+ST18.AutoStep[1]=210	ST18.AutoStep[1]=210 SV80.AbsEx[3]	机台下料_等待放料	时序拆解!248
+ST18.AutoStep[1]=210 SV80.AbsEx[3]	ST18.AutoStep[1]=220	机台下料_Z轴下降到放料位	时序拆解!249
+ST18.AutoStep[1]=220	ST18.AutoStep[1]=230	机台下料_电夹爪放料	时序拆解!250
+ST18.AutoStep[1]=230	ST18.AutoStep[1]=230 AND SV80.PosOK[1]	机台下料_Z轴上升到安全位	时序拆解!251
+ST18.AutoStep[1]=30	ST18.AutoStep[1]=30 AND SV77.PosOK[1]	机台下料_X轴移回取料位	时序拆解!252

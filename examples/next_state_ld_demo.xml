@@ -1,0 +1,17 @@
+<project><pou name="Demo"><body><LD>
+ <leftPowerRail localId="0"/>
+ <inVariable localId="1"><expression>Cell.Phase[4]</expression></inVariable>
+ <inVariable localId="2"><expression>500</expression></inVariable>
+ <block localId="3" typeName="EQ"><inputVariables>
+ <variable formalParameter="IN1"><connectionPointIn><connection refLocalId="1"/></connectionPointIn></variable>
+ <variable formalParameter="IN2"><connectionPointIn><connection refLocalId="2"/></connectionPointIn></variable>
+ </inputVariables><outputVariables><variable formalParameter="OUT"/></outputVariables></block>
+ <contact localId="4"><connectionPointIn><connection refLocalId="3" formalParameter="OUT"/></connectionPointIn><variable>Axis.Arrived</variable></contact>
+ 
+ <inVariable localId="5"><expression>530</expression></inVariable>
+ <block localId="6" typeName="MOVE"><inputVariables>
+ <variable formalParameter="EN"><connectionPointIn><connection refLocalId="4"/></connectionPointIn></variable>
+ <variable formalParameter="IN"><connectionPointIn><connection refLocalId="5"/></connectionPointIn></variable>
+ </inputVariables><outputVariables><variable formalParameter="OUT"><connectionPointOut/></variable></outputVariables></block>
+ <outVariable localId="7"><connectionPointIn><connection refLocalId="6" formalParameter="OUT"/></connectionPointIn><expression>Cell.Phase[4]</expression></outVariable>
+ </LD></body></pou></project>

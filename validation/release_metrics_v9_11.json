@@ -1,0 +1,123 @@
+{
+  "version": "9.11.0",
+  "source_sha256": "2dae58114ff273f7b9bbd1bf1ab7d0b2b435808ed284186e0be98a757a176447",
+  "gt_sha256": "50fd0bf15d9e2eb0aaf40e1f809417866cfc4e8f714fe30f3647c01078ea2330",
+  "baseline_version": "9.10",
+  "tests_passed": 230,
+  "gt_used_only_after_prediction": true,
+  "opencode_llm_session_executed": false,
+  "prediction_candidate_pairs.csv": {
+    "baseline_rows": 3601,
+    "new_rows": 3793,
+    "old_unique_pairs_missing": 0,
+    "new_unique_pairs_added": 4
+  },
+  "prediction_atomic_pairs.csv": {
+    "baseline_rows": 1887,
+    "new_rows": 1891,
+    "old_unique_pairs_missing": 0,
+    "new_unique_pairs_added": 4
+  },
+  "collection": {
+    "input_atomic_pairs": 1891,
+    "collection_pairs": 1887,
+    "merged_intervals_shown": 2,
+    "constituent_rows_hidden_in_collection_only": 6,
+    "raw_atomic_not_mutated": true,
+    "no_gt_access": true,
+    "main_output": "prediction_collection_pairs.csv"
+  },
+  "counts": {
+    "full_candidates": 16498,
+    "filtered_candidates": 7070
+  },
+  "raw_evaluation": {
+    "version": "9.11",
+    "gt_rows": 523,
+    "candidates": 3793,
+    "categories": {
+      "布尔结构命中": 293,
+      "同起点/终点不同": 20,
+      "没有检索到相关候选": 43,
+      "一对一匹配冲突": 23,
+      "同终点/起点不同": 12,
+      "严格起止命中": 120,
+      "GT写法待核验": 12
+    },
+    "label_pair_matches": 413,
+    "additional_source_model_matches": 0,
+    "unique_scored_gt": 413,
+    "prediction_normalization": {
+      "input_rows": 3793,
+      "output_rows": 3793,
+      "row_count_preserved": true,
+      "converted_rows": 0,
+      "review_rows": 1646,
+      "categories": {
+        "待核验-后继证据不完整": 1646,
+        "无需转换": 2147
+      },
+      "source_sha256": "2dae58114ff273f7b9bbd1bf1ab7d0b2b435808ed284186e0be98a757a176447",
+      "limits": [
+        "Native IEC61131-10 Rung/port adapter; no whole-program execution or CT timestamp proof.",
+        "Unresolved FB outputs, edge contacts, inline ST and dynamic writers retained with uncertainty.",
+        "Comments are descriptive only; no GT or annotation monitor values used as transition evidence.",
+        "Port references are scoped per rung; custom extensions outside supported bodies need review."
+      ]
+    },
+    "gt_normalization": {
+      "input_rows": 523,
+      "output_rows": 523,
+      "row_count_preserved": true,
+      "converted_rows": 0,
+      "review_rows": 493,
+      "categories": {
+        "待核验-后继证据不完整": 463,
+        "待核验-起点与退出集合不一致": 18,
+        "无需转换": 30,
+        "待核验-表达式不支持": 12
+      },
+      "source_sha256": "2dae58114ff273f7b9bbd1bf1ab7d0b2b435808ed284186e0be98a757a176447",
+      "limits": [
+        "Native IEC61131-10 Rung/port adapter; no whole-program execution or CT timestamp proof.",
+        "Unresolved FB outputs, edge contacts, inline ST and dynamic writers retained with uncertainty.",
+        "Comments are descriptive only; no GT or annotation monitor values used as transition evidence.",
+        "Port references are scoped per rung; custom extensions outside supported bodies need review."
+      ]
+    },
+    "source_sha256": "2dae58114ff273f7b9bbd1bf1ab7d0b2b435808ed284186e0be98a757a176447",
+    "scope": "Each GT matches ONE existing pair; no cross-row path/splicing; duplicate equivalent pairs have capacity one.",
+    "important": "Source-model match is not proof of physical action completeness or acquisition time equality."
+  },
+  "collection_evaluation": {
+    "version": "9.11",
+    "evaluation_mode": "atomic_single_pair_with_branch_diagnostics",
+    "gt_rows": 523,
+    "candidates": 1887,
+    "unique_candidate_pairs": 1887,
+    "categories": {
+      "有条件的迁移替代": 370,
+      "复合语义待核验": 22,
+      "复合分支齐全-仅诊断": 59,
+      "布尔结构命中": 8,
+      "同起点/终点不同": 47,
+      "GT写法待核验": 12,
+      "严格起止命中": 4,
+      "没有检索到相关候选": 1
+    },
+    "label_pair_matches": 12,
+    "additional_source_model_matches": 0,
+    "unique_scored_gt": 12,
+    "gt_rows_with_all_known_atomic_branches_present": 441,
+    "branch_diagnostic_rows": 520,
+    "branch_diagnostic_hits": 509,
+    "conditional_matches_not_scored": 370,
+    "compound_groups_not_scored": 59,
+    "source_sha256": "2dae58114ff273f7b9bbd1bf1ab7d0b2b435808ed284186e0be98a757a176447",
+    "scope": "原始GT严格分数仅允许一条已有完整候选；OR分支表只作诊断，不放宽为跨行拼接",
+    "important": "全部已知分支存在≠所有真实分支已发现≠物理动作覆盖或在线计时等价；分支分母不同，不与旧411/523混算"
+  },
+  "deterministic_repeat_atomic": true,
+  "deterministic_repeat_collection": true,
+  "evaluation_frozen_hashes_verified": true
+}

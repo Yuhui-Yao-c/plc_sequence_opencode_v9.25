@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLC 步序采集工作流</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+    <!-- ============ Sidebar ============ -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-icon">PLC</div>
+            <div class="logo-text">
+                <div class="logo-title">步序采集</div>
+                <div class="logo-version">v9.25</div>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-label">历史记录</div>
+            <div id="history-list" class="history-list">
+                <div class="history-empty">加载中...</div>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="btn btn-ghost btn-sm" onclick="newRun()">+ 新建运行</button>
+        </div>
+    </aside>
+
+    <!-- ============ Main ============ -->
+    <main class="main">
+
+        <!-- Step 1: Input -->
+        <section class="card" id="card-input">
+            <div class="card-header">
+                <div class="step-badge">1</div>
+                <h2 class="card-title">输入参数</h2>
+                <div class="card-spacer"></div>
+                <span class="card-tag" id="input-tag"></span>
+                <button class="collapse-btn" id="input-collapse" onclick="toggleInputCard()" title="折叠/展开">&minus;</button>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-row full">
+                        <label>源码 XML <span class="req">*</span></label>
+                        <div class="input-group">
+                            <input type="text" id="source" class="form-input" placeholder="选择或输入 XML 文件路径" oninput="updateCommandPreview()">
+                            <button class="btn btn-outline" onclick="browseFile('source','file','xml','选择源码 XML')">浏览</button>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label>匹配格式 <span class="req">*</span></label>
+                        <input type="text" id="pattern" class="form-input" value="*" placeholder="glob 或 re:正则" oninput="updateCommandPreview()">
+                        <div class="form-hint">通配符 <code>ST*</code> 或正则 <code>re:EM\d+\.Process</code></div>
+                    </div>
+
+                    <div class="form-row">
+                        <label>输出目录 <span class="req">*</span></label>
+                        <input type="text" id="out" class="form-input" placeholder="如 outputs/转接片" oninput="updateCommandPreview()">
+                        <div class="form-hint">预测结果输出路径</div>
+                    </div>
+
+                    <div class="form-row">
+                        <label>Trace 文件 <span class="opt">可选</span></label>
+                        <div class="input-group">
+                            <input type="text" id="trace" class="form-input" placeholder=".trace 文件路径" oninput="updateCommandPreview()">
+                            <button class="btn btn-outline" onclick="browseFile('trace','file','trace','选择 Trace 文件')">浏览</button>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label>人工采集表 <span class="opt">可选</span></label>
+                        <div class="input-group">
+                            <input type="text" id="manual" class="form-input" placeholder=".xls/.xlsx 人工表" oninput="updateCommandPreview()">
+                            <button class="btn btn-outline" onclick="browseFile('manual','file','excel','选择人工采集表')">浏览</button>
+                        </div>
+                    </div>
+
+                    <div class="form-row full">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="force" onchange="updateCommandPreview()">
+                            <span>覆盖已有输出目录 (<code>--force</code>)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="command-preview">
+                    <span class="command-label">命令预览</span>
+                    <pre id="command-preview" class="command-code"></pre>
+                </div>
+
+                <div class="form-actions">
+                    <button id="btn-predict" class="btn btn-primary" onclick="startPredict()">
+                        <span class="btn-icon">&#9654;</span> 开始预测
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 2: Execution Log -->
+        <section class="card hidden" id="card-log">
+            <div class="card-header">
+                <div class="step-badge">2</div>
+                <h2 class="card-title">执行日志</h2>
+                <div class="card-spacer"></div>
+                <span id="log-status" class="badge">运行中</span>
+                <span id="log-time" class="text-muted ml-12"></span>
+            </div>
+            <div class="card-body">
+                <div id="log-output" class="log-terminal">
+                    <div class="log-line log-info">等待输出...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 3: Results Dashboard -->
+        <section class="card hidden" id="card-results">
+            <div class="card-header">
+                <div class="step-badge">3</div>
+                <h2 class="card-title">结果概览</h2>
+                <div class="card-spacer"></div>
+                <span id="results-tag" class="card-tag"></span>
+            </div>
+            <div class="card-body">
+                <div class="stats-grid" id="stats-grid"></div>
+
+                <div id="coverage-section" class="hidden mt-16">
+                    <h3 class="subsection-title">覆盖评价</h3>
+                    <div id="coverage-info" class="coverage-box"></div>
+                </div>
+
+                <div id="trace-section" class="hidden mt-16">
+                    <h3 class="subsection-title">Trace 分析</h3>
+                    <div id="trace-info" class="trace-box"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 4: B-tier Processing -->
+        <section class="card hidden" id="card-btier">
+            <div class="card-header">
+                <div class="step-badge">4</div>
+                <h2 class="card-title">批次处理状态</h2>
+                <div class="card-spacer"></div>
+                <span id="btier-tag" class="badge"></span>
+            </div>
+            <div class="card-body">
+                <div id="batch-status" class="batch-status-grid"></div>
+
+                <div class="info-banner mt-16">
+                    <div class="info-icon">&#9432;</div>
+                    <div class="info-text">
+                        <strong>工艺批次</strong> 和 <strong>B档动作描述批次</strong> 需在 OpenCode 会话中由 Agent 处理。
+                        处理完成后点击「刷新状态」，全部就绪后可执行 Finish。
+                    </div>
+                </div>
+
+                <div class="form-actions mt-16">
+                    <button class="btn btn-outline" onclick="refreshBatches()">刷新状态</button>
+                    <button id="btn-finish" class="btn btn-primary" onclick="startFinish()" disabled>
+                        <span class="btn-icon">&#9654;</span> 执行 Finish
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 5: Pairs Table -->
+        <section class="card hidden" id="card-pairs">
+            <div class="card-header">
+                <div class="step-badge">5</div>
+                <h2 class="card-title">预测对列表</h2>
+                <div class="card-spacer"></div>
+                <span id="pairs-source-tag" class="card-tag"></span>
+            </div>
+            <div class="card-body">
+                <div class="table-toolbar">
+                    <input type="text" id="pairs-search" class="form-input" placeholder="搜索开始/结束标签、动作描述..." oninput="debounceSearch()">
+                    <span id="pairs-count" class="text-muted"></span>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="pairs-table">
+                        <thead id="pairs-thead"></thead>
+                        <tbody id="pairs-tbody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="pairs-pagination"></div>
+            </div>
+        </section>
+
+        <!-- Step 6: Downloads -->
+        <section class="card hidden" id="card-downloads">
+            <div class="card-header">
+                <div class="step-badge">6</div>
+                <h2 class="card-title">交付文件</h2>
+            </div>
+            <div class="card-body">
+                <div id="downloads-list" class="downloads-grid"></div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

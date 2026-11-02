@@ -1,0 +1,14 @@
+# ================================================================
+# SOURCE FILES SHA256 MANIFEST v1
+# Generated: 2026-10-27 20:03:46
+# Root: E:\users\yaoyuhui\步序采集汇总\工程优化\plc-sequence-opencode-v9.13
+# Row format: <relpath>|<size_bytes>|<sha256_hex>
+# Purpose: integrity verification only; hashes cannot restore content.
+# ================================================================
+source/包mylar/步序时长采集-XM2-L5-包mylar-20260913.xlsx|112557|4BF0B3BF2E5E65436B4C644418FFFA4098758AB9B12B11974645A87251DAD549
+source/包mylar/合并XML-完整包.xml|69156000|8671A1548610B31BEE38E468D3A284F6FFC8FFCAEBC0FD31F0BA980D0B9F03AD
+source/超声/XM22PPM_L5B_20260826.xml|89875469|3D44112C7A970DD5A38F2DAF46220913F28A24DDA1DC5D2893DCC188CA726DBF
+source/超声/步序时长采集-XM2-L5-超声波-20260910.xls|227840|33810F73699D4746074B9D79CE239A55B43A443230457677BD3FFD532F95D9B6
+source/转接片/1.JMLEDQA10_CATL_厦门时代_转接片_20260813.xml|46874189|01F32BE2D722B85E7D978A0FDB8FE0D394D7D7D0EC77A387E70FED3ED8E5A359
+source/转接片/4.厦门2转接片 22PPM转接片焊接机步序采集表-20260905步序拆解(已自动还原).xls|758784|4E65F20FBA4D12173CE689E0A2FE74C48DB18AC2B180334222E1F228B126BDC7
+# ===== TOTAL: 6 files | 207004839 bytes =====
