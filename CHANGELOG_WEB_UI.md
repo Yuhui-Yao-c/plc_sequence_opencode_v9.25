@@ -45,3 +45,13 @@
 - 前端仅提交 `web_request.json` 配置；Flask 只负责启动与取消 OpenCode、观察磁盘检查点、下载文件。无独立的阶段调度，旧 `/api/predict` 和 `/api/finish` 统一返回 410。
 - 保存请求清单以支持在 predict 尚未完成时恢复运行。OpenCode 正常退出但缺少有效结果或 Excel 时，后台仍明确标记失败。
 - 增加 Runner 状态、提前 finish 阻断、恢复跳过已处理 predict、路径安全等测试。
+
+## 本地原生 Agent 对齐修复
+
+- 原先 Web 强制选用 `plc-web-orchestrator`，并强制每批 Task 调用，与本地默认 `plc-sequence` 不一致，造成批次运行能力与停机行为差异。
+- Web 改为使用 `plc-sequence`，按 `XML 匹配格式 [trace] [人工表]` 原有输入顺序发送给 Agent，仅附加结果目录。
+- 不再向 Agent 附加 `web_request.json` 作为编排协议，恢复仍保留该文件记录。
+- `PLC_OPENCODE_MODEL` 可指定 Web 使用与 TUI 相同的模型。
+- 新主控 Agent 和单批子 Agent 仍保留供实验，但不再是主流程的必选依赖。
+- 修复 Web 预检中非空白字符规范化的正则表达式，增加原生入口和可选输入测试。
+- Flask 保持只读进度监视和最后交付验收；不执行确定性 predict/finish。

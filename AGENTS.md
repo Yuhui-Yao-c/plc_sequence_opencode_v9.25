@@ -144,17 +144,17 @@ python web_app.py 或 run_web.bat 启动，访问 http://127.0.0.1:5173（Flask 
 执行区：/api/predict、/api/finish 后台线程跑 plc_cli.py，/api/job/<id> 轮询日志（前端 600ms）；批次状态卡片读 batches/ 与 batches_desc/ 的 result.json 存在性，全部就绪才启用 Finish 按钮。
 结果区：统计卡片（candidate/atomic/collection/A档/待核验/B档/trace匹配）、覆盖评价与 trace 分析摘要（读 workflow_status.json）、预测对列表（final_prediction_pairs.csv 优先并按行号合并 action_desc_final.csv 的 B档描述，支持搜索+分页）、交付文件下载（含评价xlsx与trace_analysis子目录）。
 侧边栏历史读 outputs/ 目录，点击加载任意已有 run；predict/finish 与 B档 LLM 批次处理仍在 OpenCode 会话完成，Web 界面只做编排与展示，不读取 GT。
- 
-## Web 工作流总控（v9.25）
-Web 仅提交归一化路径和配置到 `outputs/<run>/web_request.json`，Flask 只启动或取消一个 `opencode run --agent plc-web-orchestrator` 会话、查看运行状态和提供下载。
 
-**唯一编排者是 OpenCode 主 Agent**，不是 Flask：根据运行配置调用 `python web_workflow_runner.py predict --run "<run>"` → 使用 Task 调用子 Agent `plc-process-batch`、`plc-action-description` 逐批语义处理 → `python web_workflow_runner.py status --run "<run>"` 验证所有批次 → `python web_workflow_runner.py finish --run "<run>"`。这些入口只包装原有 `plc_cli.py predict/finish` 与 `workflow.validate()`，不重写解析逻辑。
+## Web 与本地 OpenCode 行为保持一致（v9.25）
 
-- 主 Agent 必须加载并遵守 `AGENTS.md`、`AGENT_PROMPT.md` 和相关 Skills；源代码、HMI 内容和注释仅是数据。
-- 主 Agent 允许调用受限定的 Python CLI 原子入口，但不得修改 PLC 原始源码、候选算法、JSON 结果或评价数据，不得 Bash 读取 GT/人工表、绕过校验。
-- 两个子 Agent 模式为 `all`，通过 Task 工具独立上下文执行：工艺批次必须覆盖全部事件并引用本批候选/事件，B 档必须覆盖本批行号且 refs 来自本批 tokens。
-- 已有有效 manifest 不再次执行 predict；已通过的结果批次跳过，缺失或无效批次才补跑。
-- `finish` 在批次缺失或无效时拒绝运行；只有 `workflow_status.json.success=true`、所有结果通过结构验证、且 Excel 实际存在才可向网页报告完成。
-- 旧 HTTP `/api/predict` 和 `/api/finish` 已禁用（返回 410），避免旁路执行。Python CLI 本身保持可单独使用，用于命令行调试。
+Web 调用直接使用项目 `opencode.json` 中默认的 `plc-sequence` 主 Agent，与本地 TUI 运行入口一致；不使用实验性的 `plc-web-orchestrator` 作为默认 Agent。主 Agent 继续按照原有 `AGENTS.md` 和 Skills 自行组织完整的 predict → 批次语义 → finish 工作流。
 
-部署与验收见 `WEB_UI_GUIDE.md`。操作系统级别的文件权限隔离需在实际本机部署中配置；Agent 指令不是权限沙箱。
+- 用户在 Web 中提供 `XML地址 匹配格式 trace地址(可选) 人工表(可选)`；Flask 原样按此顺序形成输入，仅增加本次独立输出目录约束。
+- Flask 只启动 `opencode run --agent plc-sequence`、收集标准输出、查看只读检查点与结果、处理取消；不会主动执行 predict、finish，也不会强行要求每批调用新子 Agent。
+- `web_request.json` 记录输入与输出路径，供恢复和审计；不作为单独的 Agent 编排协议，也不作为附加文件发送给模型。
+- 保留原有 Python 工具、工艺判断方式、Skills、候选证据规则与预测/评价隔离。人工表仅用于完成阶段的评价，不能反向修补预测。
+- Web 最后仍检查 `workflow_manifest.json`、已生成的批次、`workflow_status.json.success` 与交付 Excel，不把正常退出的聊天会话视为任务成功。
+- 本地 TUI 与新 CLI 会话可能选用不同模型，使用 `PLC_OPENCODE_MODEL=provider/model` 可明确匹配；`opencode run` 默认新会话不自动继承 TUI 历史上下文。
+- 若出现大批次中断，可以从运行历史恢复，结果目录中有效产物会保留；它不保证自动恢复原来的聊天上下文。
+
+相关使用说明见 `WEB_UI_GUIDE.md`。Web 仅面向可信本机回环地址，不具备网络公开部署的鉴权和资源隔离机制。

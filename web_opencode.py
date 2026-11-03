@@ -17,10 +17,12 @@ from pathlib import Path
 from typing import Any
 
 
-ORCHESTRATOR_AGENT = "plc-web-orchestrator"
+# Match the agent used by `opencode` in the original project/TUI.
+# The experimental web orchestrator and batch-specific agents remain optional.
+ORCHESTRATOR_AGENT = "plc-sequence"
 PROCESS_AGENT = "plc-process-batch"
 ACTION_AGENT = "plc-action-description"
-REQUIRED_AGENTS = (ORCHESTRATOR_AGENT, PROCESS_AGENT, ACTION_AGENT)
+REQUIRED_AGENTS = (ORCHESTRATOR_AGENT,)
 
 
 @dataclass(frozen=True)
@@ -68,7 +70,7 @@ def find_opencode_binary() -> str | None:
 
 
 def inspect_opencode(project_root: Path) -> dict[str, Any]:
-    """Check CLI and the orchestrator/subagents without exposing provider secrets."""
+    """Check CLI and the native plc-sequence agent without exposing secrets."""
     binary = find_opencode_binary()
     result: dict[str, Any] = {
         "available": False,
@@ -242,12 +244,14 @@ def result_is_valid(spec: BatchSpec) -> tuple[bool, str]:
     actual_ids = {str(x) for x in descs}
     missing = sorted(expected_ids - actual_ids)
     extra = sorted(actual_ids - expected_ids)
-    if missing:
-        return False, f"B档结果缺少 {len(missing)} 行描述：{', '.join(missing[:5])}"
     if extra:
         return False, f"B档结果包含本批次以外的行ID：{', '.join(extra[:5])}"
+    # Match action_describe.cmd_validate(): missing B-tier rows fall back to
+    # A-tier (or remain pending review); they are not a fatal batch error.
     for row in expected_rows:
         row_id = str(row.get("id", ""))
+        if row_id not in descs:
+            continue
         item = descs.get(row_id)
         if not isinstance(item, dict) or not isinstance(item.get("ok"), bool):
             return False, f"B档行 {row_id} 缺少 ok 标记"
@@ -257,10 +261,17 @@ def result_is_valid(spec: BatchSpec) -> tuple[bool, str]:
             expected_refs = {str(x.get("tok", "")) for x in row.get("tokens", [])}
             if not desc:
                 return False, f"B档行 {row_id} 的 desc 为空"
-            if not isinstance(refs, list) or {str(x) for x in refs} != expected_refs:
-                return False, f"B档行 {row_id} 的 refs 与本行 token 不完全一致"
+            if not isinstance(refs, list):
+                return False, f"B档行 {row_id} 的 refs 必须是列表"
+            # v9.25 contract is refs SUBSET of tokens, not exact equality.
+            # A short focused action may cite only one of several tokens.
+            unexpected = {str(x) for x in refs} - expected_refs
+            if unexpected:
+                return False, f"B档行 {row_id} 引用了本行以外的 token"
         elif not str(item.get("reason", "")).strip():
             return False, f"B档行 {row_id} 标记失败但没有 reason"
+    if missing:
+        return True, f"B档结果结构通过；缺少 {len(missing)} 行，finish 将按原规则A档兜底/标为待补充"
     return True, "B档结果结构检查通过"
 
 

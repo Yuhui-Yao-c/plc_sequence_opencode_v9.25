@@ -34,7 +34,10 @@ class WebOpenCodeTests(unittest.TestCase):
         (run / "batches/B00001.input.json").write_text(json.dumps(process_input), encoding="utf-8")
         desc_input = {
             "batch_id": 1,
-            "rows": [{"id": "0", "kind": "步进", "tokens": [{"tok": "EM01.Axis_Z1", "word": "Z轴", "action": "伺服定位"}]}],
+            "rows": [{"id": "0", "kind": "步进", "tokens": [
+                {"tok": "EM01.Axis_Z1", "word": "Z轴", "action": "伺服定位"},
+                {"tok": "EM01.Alarm", "word": "报警", "action": "报警"}
+            ]}],
             "rules": {"max_len": 25},
             "task": "动作描述",
         }
@@ -75,6 +78,11 @@ class WebOpenCodeTests(unittest.TestCase):
             self.assertIn("没有进入", reason)
 
             broken["steps"][0]["证据事件ID"] = ["E0000001"]
+            # Normalized labels treat all whitespace as insignificant.
+            broken["steps"][0]["开始标签"] = "Step = 10"
+            spec.output_path.write_text(json.dumps(broken), encoding="utf-8")
+            self.assertTrue(result_is_valid(spec)[0])
+
             broken["steps"][0]["开始标签"] = "Step=999"
             spec.output_path.write_text(json.dumps(broken), encoding="utf-8")
             valid, reason = result_is_valid(spec)
@@ -112,7 +120,19 @@ class WebOpenCodeTests(unittest.TestCase):
             spec.output_path.write_text(json.dumps(broken), encoding="utf-8")
             self.assertFalse(result_is_valid(spec)[0])
 
+            # Original v9.25 validation allows a focused subset of all tokens.
             broken["descs"]["0"]["refs"] = ["EM01.Axis_Z1"]
+            spec.output_path.write_text(json.dumps(broken), encoding="utf-8")
+            self.assertTrue(result_is_valid(spec)[0])
+
+            # Missing B-tier rows must not reject the batch: finish uses A fallback.
+            spec.output_path.write_text(json.dumps({
+                "batch_id": 1, "descs": {}
+            }), encoding="utf-8")
+            valid, message = result_is_valid(spec)
+            self.assertTrue(valid)
+            self.assertIn("兜底", message)
+
             broken["descs"]["unexpected"] = {"ok": True, "desc": "额外行", "refs": [], "kind": "步进"}
             spec.output_path.write_text(json.dumps(broken), encoding="utf-8")
             self.assertFalse(result_is_valid(spec)[0])
@@ -126,7 +146,7 @@ class WebOpenCodeTests(unittest.TestCase):
                 "#!/bin/sh\n"
                 "if [ \"$1\" = \"--version\" ]; then echo 'opencode 1.2.3'; exit 0; fi\n"
                 "if [ \"$1\" = \"agent\" ] && [ \"$2\" = \"list\" ]; then "
-                "echo 'plc-web-orchestrator'; echo 'plc-process-batch'; echo 'plc-action-description'; exit 0; fi\n"
+                "echo 'plc-sequence'; exit 0; fi\n"
                 "exit 1\n",
                 encoding="utf-8",
             )
@@ -142,7 +162,44 @@ class WebOpenCodeTests(unittest.TestCase):
                     os.environ["OPENCODE_BIN"] = previous
             self.assertTrue(status["available"])
             self.assertTrue(status["agents_ready"])
-            self.assertEqual(set(status["agents"]), {"plc-web-orchestrator", "plc-process-batch", "plc-action-description"})
+            self.assertEqual(set(status["agents"]), {"plc-sequence"})
+
+    def test_native_web_uses_original_agent_and_four_fields(self):
+        from web_app import _build_native_command
+        with tempfile.TemporaryDirectory() as tmp:
+            run = Path(tmp) / "outputs" / "job1"
+            run.mkdir(parents=True)
+            (run / "web_request.json").write_text(json.dumps({
+                "source": "C:/PLC/source.xml",
+                "pattern": "ST*.AutoStep[*]",
+                "trace": "C:/PLC/runtime.trace",
+                "manual": "C:/PLC/manual.xlsx",
+                "out": str(run),
+            }), encoding="utf-8")
+            command = _build_native_command("opencode", run, False)
+            self.assertEqual(command[:4], ["opencode", "run", "--agent", "plc-sequence"])
+            self.assertNotIn("--file", command)
+            self.assertNotIn("plc-web-orchestrator", command)
+            prompt = command[-1]
+            self.assertTrue(prompt.startswith(
+                "C:/PLC/source.xml ST*.AutoStep[*] C:/PLC/runtime.trace C:/PLC/manual.xlsx"))
+            self.assertIn(str(run), prompt)
+            self.assertNotIn("web_workflow_runner.py", prompt)
+
+    def test_native_web_handles_omitted_optional_inputs(self):
+        from web_app import _build_native_command
+        with tempfile.TemporaryDirectory() as tmp:
+            run = Path(tmp) / "outputs" / "job2"
+            run.mkdir(parents=True)
+            (run / "web_request.json").write_text(json.dumps({
+                "source": "C:/PLC/file with spaces.xml",
+                "pattern": "ST*.AutoStep[*]",
+                "trace": "", "manual": "", "out": str(run),
+            }), encoding="utf-8")
+            command = _build_native_command("opencode", run, False)
+            self.assertTrue(command[-1].startswith(
+                '"C:/PLC/file with spaces.xml" ST*.AutoStep[*]'))
+            self.assertNotIn("plc-web-orchestrator", command[-1])
 
     def test_opencode_command_is_noninteractive_and_batch_scoped(self):
         with tempfile.TemporaryDirectory() as tmp:

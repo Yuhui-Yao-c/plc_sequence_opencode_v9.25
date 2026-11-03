@@ -80,18 +80,19 @@ Excel仍使用既有artifact_tool导出器，安装基础requirements仅含解�
 
 新增规则见 `.opencode/skills/plc-cross-fb-transport/SKILL.md`；验证见 `RELEASE_v9_12.md`。
 
-## v9.25 OpenCode 主控 Web 工作台
+## v9.25 Web：复用与本地相同的 plc-sequence Agent
 
-本地 Flask 仅提供 HTTP 接口；Web 任务由一次 `opencode run --agent plc-web-orchestrator` 会话接管。OpenCode 依次调用现有 Python predict 原子能力、两个语义子 Agent 和 Python finish 原子能力，Flask 只负责转发配置、监控检查点与下载交付文件。
+页面仅提交 `XML 源码路径 + 变量模式 + 可选 Trace + 可选人工表`；Flask 用项目默认 `plc-sequence` Agent 启动 `opencode run`，并指定本次输出目录。原有 AGENTS.md、Skills、Python 工具和批次处理行为不变，不强制使用新建的 Web orchestrator / 单批子 Agent。
 
 ```bash
 python -m pip install -r requirements.txt
 opencode --version
-opencode auth list
 opencode agent list
 python web_app.py
 ```
 
-默认访问 `http://127.0.0.1:5173`；Windows 也可运行 `run_web.bat`。页面只需选择源码、变量模式、输出目录和可选 Trace/人工表，然后点击「开始完整分析」。已完成的批次可在恢复模式跳过，未形成 manifest 时也可以从保存的 web_request 配置恢复。
+访问 `http://127.0.0.1:5173`。界面提供运行日志、只读批次进度、恢复和结果下载。
 
-Python 模块 `plc_cli.py` 仍可独立用于命令行测试，但 Web 不再直接调用它；详细流程、权限、异常恢复见 [WEB_UI_GUIDE.md](WEB_UI_GUIDE.md)。
+如果你在本地交互式 OpenCode 会话中手动选了特定模型，可设置 `PLC_OPENCODE_MODEL=provider/model`，使 Web 使用同一模型。CLI 的新会话不共享原 TUI 的聊天历史。
+
+更详细说明参见 [WEB_UI_GUIDE.md](WEB_UI_GUIDE.md)。
