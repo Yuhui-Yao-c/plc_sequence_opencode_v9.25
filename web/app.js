@@ -165,8 +165,9 @@ function updatePipeline(stage, status) {
   if (status === "failed" || status === "cancelled") return;
   const text = String(stage || "");
   let index = 0;
-  if (/OpenCode|Agent|工艺分析|动作描述/i.test(text)) index = 1;
+  if (/Agent 批次|工艺分析|动作描述/i.test(text)) index = 1;
   if (/Finish|交付|校验/i.test(text)) index = 2;
+  if (/源码解析|predict/i.test(text)) index = 0;
   ids.forEach((id, i) => {
     if (i < index) $(id).classList.add("done");
     if (i === index) $(id).classList.add("active");
