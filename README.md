@@ -80,9 +80,9 @@ Excel仍使用既有artifact_tool导出器，安装基础requirements仅含解�
 
 新增规则见 `.opencode/skills/plc-cross-fb-transport/SKILL.md`；验证见 `RELEASE_v9_12.md`。
 
-## v9.25 Web 控制台（完整工作流）
+## v9.25 OpenCode 主控 Web 工作台
 
-项目提供本地页面版工作台，能够真实调用 Python CLI 与 OpenCode CLI，而不是仅展示模拟进度。
+本地 Flask 仅提供 HTTP 接口；Web 任务由一次 `opencode run --agent plc-web-orchestrator` 会话接管。OpenCode 依次调用现有 Python predict 原子能力、两个语义子 Agent 和 Python finish 原子能力，Flask 只负责转发配置、监控检查点与下载交付文件。
 
 ```bash
 python -m pip install -r requirements.txt
@@ -92,10 +92,6 @@ opencode agent list
 python web_app.py
 ```
 
-浏览器默认访问 `http://127.0.0.1:5173`；Windows 也可双击 `run_web.bat`。页面会按顺序执行 predict、逐批 OpenCode 工艺分析、逐批 B 档动作描述、finish 校验与 Excel 交付。任务中断后，可从历史运行记录恢复，只重跑缺失或结构无效的批次。
+默认访问 `http://127.0.0.1:5173`；Windows 也可运行 `run_web.bat`。页面只需选择源码、变量模式、输出目录和可选 Trace/人工表，然后点击「开始完整分析」。已完成的批次可在恢复模式跳过，未形成 manifest 时也可以从保存的 web_request 配置恢复。
 
-- 默认仅监听本机回环地址。
-- OpenCode CLI 必须已安装并完成模型认证；页面会检查 CLI 版本与项目批次 Agent 是否加载。
-- 如 CLI 不在 PATH，可设置 `OPENCODE_BIN` 指向可执行文件。
-- 人工采集表仅用于 finish 阶段覆盖评价，不会进入 OpenCode Agent 上下文。
-- 详细说明见 [WEB_UI_GUIDE.md](WEB_UI_GUIDE.md)。
+Python 模块 `plc_cli.py` 仍可独立用于命令行测试，但 Web 不再直接调用它；详细流程、权限、异常恢复见 [WEB_UI_GUIDE.md](WEB_UI_GUIDE.md)。

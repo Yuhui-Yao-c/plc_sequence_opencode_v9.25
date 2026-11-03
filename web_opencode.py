@@ -3,7 +3,8 @@
 """OpenCode batch orchestration helpers for the PLC Sequence Agent Web UI.
 
 The browser never calls OpenCode directly. Flask starts the local OpenCode CLI,
-one bounded task per prepared batch, then validates the produced result files."""
+one bounded task per prepared batch, then validates the produced result files.
+"""
 from __future__ import annotations
 
 import json
@@ -16,9 +17,10 @@ from pathlib import Path
 from typing import Any
 
 
+ORCHESTRATOR_AGENT = "plc-web-orchestrator"
 PROCESS_AGENT = "plc-process-batch"
 ACTION_AGENT = "plc-action-description"
-REQUIRED_AGENTS = (PROCESS_AGENT, ACTION_AGENT)
+REQUIRED_AGENTS = (ORCHESTRATOR_AGENT, PROCESS_AGENT, ACTION_AGENT)
 
 
 @dataclass(frozen=True)
@@ -26,8 +28,7 @@ class BatchSpec:
     kind: str
     batch_id: str
     input_path: Path
-    output_path: Path
-    agent: str
+    output_path: Path    agent: str
 
 
 def _run_capture(command: list[str], cwd: Path, timeout: int = 12) -> subprocess.CompletedProcess:
@@ -67,7 +68,7 @@ def find_opencode_binary() -> str | None:
 
 
 def inspect_opencode(project_root: Path) -> dict[str, Any]:
-    """Check CLI and the two batch agents without exposing provider secrets."""
+    """Check CLI and the orchestrator/subagents without exposing provider secrets."""
     binary = find_opencode_binary()
     result: dict[str, Any] = {
         "available": False,
@@ -211,12 +212,12 @@ def result_is_valid(spec: BatchSpec) -> tuple[bool, str]:
             if any(eid not in event_ids for eid in eids):
                 return False, f"steps[{index}] 引用了本批次以外的事件ID"
             if cids:
-                start = re.sub(r"\\s+", "", str(step.get("开始标签", ""))).lower()
-                end = re.sub(r"\\s+", "", str(step.get("结束标签", ""))).lower()
+                start = re.sub(r"\s+", "", str(step.get("开始标签", ""))).lower()
+                end = re.sub(r"\s+", "", str(step.get("结束标签", ""))).lower()
                 referenced = [candidate_rows[cid] for cid in cids]
-                if not any(start == re.sub(r"\\s+", "", str(row.get("开始标签", ""))).lower() for row in referenced):
+                if not any(start == re.sub(r"\s+", "", str(row.get("开始标签", ""))).lower() for row in referenced):
                     return False, f"steps[{index}] 开始标签无法由引用候选核验"
-                if end and not any(end == re.sub(r"\\s+", "", str(row.get("结束标签", ""))).lower() for row in referenced):
+                if end and not any(end == re.sub(r"\s+", "", str(row.get("结束标签", ""))).lower() for row in referenced):
                     return False, f"steps[{index}] 结束标签无法由引用候选核验"
             accounted.update(eids)
         for index, item in enumerate(unresolved):

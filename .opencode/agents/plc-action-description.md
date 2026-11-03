@@ -1,6 +1,6 @@
 ---
 description: 处理单个 B 档 PLC 动作描述批次，输出受词条约束的中文动作描述
-mode: primary
+mode: all
 permission:
   read:
     "*": allow

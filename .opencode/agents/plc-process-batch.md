@@ -1,6 +1,6 @@
 ---
 description: 处理单个 PLC 工艺分析批次，按源码证据写回结构化结果
-mode: primary
+mode: all
 permission:
   read:
     "*": allow

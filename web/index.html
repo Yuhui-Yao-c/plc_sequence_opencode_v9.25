@@ -68,7 +68,7 @@
             <div class="section-header">
               <div class="section-title-wrap">
                 <span class="section-index">01</span>
-                <div><h2>创建分析任务</h2><p>配置源码与输出位置，启动完整工作流。</p></div>
+                <div><h2>创建分析任务</h2><p>提交源码与输出信息，由 OpenCode Harness 统一调度完整工作流。</p></div>
               </div>
               <span class="subtle-tag">PREDICT → OPENCODE → FINISH</span>
             </div>
@@ -117,7 +117,7 @@
 
               <div class="form-note">
                 <span class="note-icon">i</span>
-                <span>完整工作流将依次执行 Python predict、OpenCode 工艺批次与 B 档描述批次、Python finish。Agent 结果会经过结构与证据引用校验，未通过时不会生成“已完成”的交付状态。</span>
+                <span>页面只向 OpenCode 提交任务；由主 Agent 调用 Python predict、工艺及 B 档子 Agent、Python finish。Agent 结果会经过结构与证据引用校验，未通过时不会生成“已完成”的交付状态。</span>
               </div>
 
               <div class="form-footer">

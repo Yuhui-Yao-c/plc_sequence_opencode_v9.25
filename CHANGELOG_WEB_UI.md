@@ -36,3 +36,12 @@
 两个单批 Agent 显式允许 read / glob / grep / list / skill；只允许 `outputs/**` 编辑；显式拒绝 bash、task、外部目录、webfetch 和 websearch。输出路径使用项目相对路径，以匹配受限写权限。
 
 批次 Agent 另行拒绝读取 `.xls`、`.xlsx`、`.xlsm` 文件，确保人工采集表只留在 finish 的评价链路。
+
+
+## Web Harness 调度入口修正（2026-11-03）
+
+- 将 Flask 先 predict、逐批启动 OpenCode、最后 finish 的硬编排替换为一次 `plc-web-orchestrator` 主 Agent 会话。
+- 引入 `web_workflow_runner.py` 的 `predict/status/finish` Python 原子能力。它们由 OpenCode 主 Agent 通过 Bash 决策调用，保留原有 `plc_cli.py` 与 `workflow.validate()`，不重写提取算法。- `plc-process-batch` 与 `plc-action-description` 设为 `mode: all`，允许由主 Agent 的 Task 工具调用，每批隔离上下文。
+- 前端仅提交 `web_request.json` 配置；Flask 只负责启动与取消 OpenCode、观察磁盘检查点、下载文件。无独立的阶段调度，旧 `/api/predict` 和 `/api/finish` 统一返回 410。
+- 保存请求清单以支持在 predict 尚未完成时恢复运行。OpenCode 正常退出但缺少有效结果或 Excel 时，后台仍明确标记失败。
+- 增加 Runner 状态、提前 finish 阻断、恢复跳过已处理 predict、路径安全等测试。

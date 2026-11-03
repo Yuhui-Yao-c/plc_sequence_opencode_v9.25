@@ -237,7 +237,7 @@ async function startWorkflow(event) {
     $("active-run-tag").textContent = data.run_name;
     $("active-run-content").innerHTML = `<div class="active-run-row"><strong>${escapeHtml(data.run_name)}</strong><span>完整工作流正在执行</span></div>`;
     appendLog(`任务已创建：${data.run_name}`);
-    appendLog("后端将自动运行 predict → OpenCode 批次 → finish。");
+    appendLog("OpenCode 主 Agent 已接收任务，将统一调用 predict、批次 Agent 和 finish。");
     startPolling();
     loadHistory();
   } catch (error) {
@@ -363,8 +363,9 @@ async function loadRunResults(runName) {
     $("result-status").textContent = info.finished ? "交付已完成" : "尚未完成";
     $("result-status").className = `status-pill ${info.finished ? "status-success" : "status-warning"}`;
     renderStats(info);
-    renderActiveRun(info);    const totalPending = (info.batches?.process?.pending || 0) + (info.batches?.b_tier?.pending || 0);
-    $("btn-resume").hidden = Boolean(info.finished) || !info.manifest;
+    renderActiveRun(info);
+    const totalPending = (info.batches?.process?.pending || 0) + (info.batches?.b_tier?.pending || 0);
+    $("btn-resume").hidden = Boolean(info.finished) || !info.can_resume;
     $("btn-resume").textContent = totalPending ? `继续未完成批次（${totalPending}）` : "继续校验与交付";
     await Promise.all([loadPairs(1), loadBatches(), loadFiles()]);
     $("result-panel").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -516,7 +517,6 @@ async function viewBatch(type, batchId) {
     showToast(`读取批次失败：${error.message}`, "error");
   }
 }
-
 // ---------------------------------------------------------------------------
 // Delivery files
 // ---------------------------------------------------------------------------

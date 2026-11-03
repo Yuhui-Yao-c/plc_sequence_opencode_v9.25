@@ -126,7 +126,7 @@ class WebOpenCodeTests(unittest.TestCase):
                 "#!/bin/sh\n"
                 "if [ \"$1\" = \"--version\" ]; then echo 'opencode 1.2.3'; exit 0; fi\n"
                 "if [ \"$1\" = \"agent\" ] && [ \"$2\" = \"list\" ]; then "
-                "echo 'plc-process-batch'; echo 'plc-action-description'; exit 0; fi\n"
+                "echo 'plc-web-orchestrator'; echo 'plc-process-batch'; echo 'plc-action-description'; exit 0; fi\n"
                 "exit 1\n",
                 encoding="utf-8",
             )
@@ -142,7 +142,7 @@ class WebOpenCodeTests(unittest.TestCase):
                     os.environ["OPENCODE_BIN"] = previous
             self.assertTrue(status["available"])
             self.assertTrue(status["agents_ready"])
-            self.assertEqual(set(status["agents"]), {"plc-process-batch", "plc-action-description"})
+            self.assertEqual(set(status["agents"]), {"plc-web-orchestrator", "plc-process-batch", "plc-action-description"})
 
     def test_opencode_command_is_noninteractive_and_batch_scoped(self):
         with tempfile.TemporaryDirectory() as tmp:
