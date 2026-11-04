@@ -1,0 +1,24 @@
+{
+  "successful": true,
+  "cases_passed": 11,
+  "cases": [
+    "GET / serves exact uploaded index.html",
+    "GET /app.js matches uploaded bytes",
+    "GET /style.css matches uploaded bytes",
+    "GET /api/runs handles missing outputs directory",
+    "Run scan returns isolated fixture",
+    "Run status handles unfinished workflow",
+    "Prediction preview joins A-tier descriptions",
+    "Download returns exact CSV bytes",
+    "Missing run returns 404 JSON",
+    "Unavailable OpenCode proxy returns explicit 502",
+    "Empty prediction request returns 400 without launching OpenCode"
+  ],
+  "node_version": "v24.22.1",
+  "python_version": "3.12.14",
+  "limits": [
+    "OpenCode executable is not installed; no real LLM session was run.",
+    "Windows batch launcher and native file picker were not exercised on Linux.",
+    "No production PLC XML or output folders are included in the bundle."
+  ]
+}

@@ -138,9 +138,8 @@ action_describe.py describe_token 注入变量文档：从 rest 中提取具体�
 action_wordbook.json member_patterns 扩展：Cy_*.Auto_R→气缸复位、Axis.Stop_Auto→伺服停止、Axis.JOG_Auto→伺服点动、Mo_.StartRight→电机正转启动、LinkOut_Request→送出请求信号、Station.User_Alarm→工位报警。
 workflow.py B 档状态如实报告（b_tier_input_count/b_tier_result_count/b_tier_pending），未处理时报警。
 转接片验证：唯一描述 46→264，超长(>30字符) 39→9（全是A档步注释原文），B档拼接超长 39→0。
-## Web 界面（web_app.py，v9.25 附带工具）
-python web_app.py 或 run_web.bat 启动，访问 http://127.0.0.1:5173（Flask 静态页 web/index.html + app.js + style.css）。
-输入区四字段：源码XML/匹配格式/输出目录 + 可选 Trace/人工表，浏览按钮经 /api/browse 调 tkinter 原生文件对话框；命令预览实时生成 predict 命令。
-执行区：/api/predict、/api/finish 后台线程跑 plc_cli.py，/api/job/<id> 轮询日志（前端 600ms）；批次状态卡片读 batches/ 与 batches_desc/ 的 result.json 存在性，全部就绪才启用 Finish 按钮。
-结果区：统计卡片（candidate/atomic/collection/A档/待核验/B档/trace匹配）、覆盖评价与 trace 分析摘要（读 workflow_status.json）、预测对列表（final_prediction_pairs.csv 优先并按行号合并 action_desc_final.csv 的 B档描述，支持搜索+分页）、交付文件下载（含评价xlsx与trace_analysis子目录）。
-侧边栏历史读 outputs/ 目录，点击加载任意已有 run；predict/finish 与 B档 LLM 批次处理仍在 OpenCode 会话完成，Web 界面只做编排与展示，不读取 GT。
+<!-- Web 界面（web_app.py）已于本次清理移除：web_app.py / web/ / web_llm_batch.py / web_config.json / web_runs.json / web_uploads / run_web.bat 全部删除。predict/finish/coverage 命令行流程不受影响。如需恢复，参见历史快照 PROJECT_SNAPSHOT_V9.15.txt（亦已删除，需从外部备份恢复）。 -->
+## Web 界面（web_app.py，重做版）
+`python web_app.py` 启动，访问 http://127.0.0.1:5173（Flask 静态页 web/index.html + app.js + style.css，无前端框架无构建步骤）。
+左侧历史 Run 列表（扫描 outputs/ 读 workflow_manifest.json + workflow_status.json），右侧五段：①发起新任务表单（源码XML/pattern/输出目录/可选manual/可选trace，文件选择经 /api/browse 调 web_browse.py 的 tkinter 对话框）②状态卡片+批次进度条（候选数/工艺批次/B档批次/交付行数/覆盖率）③实时日志（/api/predict、/api/finish 后台 subprocess 跑 plc_cli.py，/api/job/<id> 轮询，PYTHONIOENCODING=utf-8 解决中文）④结果表格（读 final_prediction_pairs.csv + action_desc_final.csv 合并，分页+搜索，6列：工位/动作描述/动作变量/开始标签/结束标签/备注）⑤交付文件下载（步序采集表xlsx/覆盖评价xlsx/trace分析/原始CSV）。
+全局锁保证一次只跑一个 predict/finish；前端只读产物+触发CLI，绝不修改预测或写 result.json。predict/finish 与 B档 LLM 批次处理仍在 OpenCode 会话完成，Web 界面只做编排与展示，不读取 GT。

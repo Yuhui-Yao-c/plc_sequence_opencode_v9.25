@@ -2,12 +2,24 @@
   "$schema": "https://opencode.ai/config.json",
   "default_agent": "plc-sequence",
   "permission": {
-    "webfetch": "deny",
-    "websearch": "deny",
-    "external_directory": "ask",
+    "read": "allow",
+    "glob": "allow",
+    "grep": "allow",
+    "list": "allow",
+    "edit": "allow",
+    "write": "allow",
+    "bash": "allow",
+    "task": "allow",
     "skill": {
       "plc-boundary-normalization": "allow",
-      "plc-coverage-evaluation": "allow"
-    }
+      "plc-coverage-evaluation": "allow",
+      "plc-signal-tail-merge": "allow",
+      "plc-cross-fb-transport": "allow",
+      "plc-feedback-successor": "allow",
+      "plc-station-identity": "allow"
+    },
+    "external_directory": "ask",
+    "webfetch": "deny",
+    "websearch": "deny"
   }
 }

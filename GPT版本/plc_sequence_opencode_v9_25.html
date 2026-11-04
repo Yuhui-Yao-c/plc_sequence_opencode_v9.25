@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="PLC Sequence Agent v9.25 汇报版：从 PLC 原始 XML 到步序证据、工艺语义和 Excel 采集交付。">
+<title>PLC Sequence Agent v9.25｜工程汇报</title>
+<style>
+:root{
+  --page:#edf1f6; --paper:#ffffff; --ink:#172b45; --ink2:#314761;
+  --muted:#66788e; --soft:#8b9aab; --line:#dce4ec;
+  --blue:#3567a7; --blue-pale:#edf4fc; --teal:#16818a; --teal-pale:#eaf6f5;
+  --orange:#b96e2d; --orange-pale:#fbf2e9; --green:#287b58; --green-pale:#edf7f1;
+  --violet:#7358a8; --violet-pale:#f2eff9; --red:#b34e53; --red-pale:#fbefef;
+  --shadow:0 18px 50px rgba(31,51,75,.10);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:"Aptos","Segoe UI","Microsoft YaHei",Arial,sans-serif;color:var(--ink)}
+body{background:var(--page);overflow-x:hidden}
+button,select{font:inherit}
+button{cursor:pointer}
+.topbar{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 max(24px,calc((100vw - 1420px)/2));background:rgba(255,255,255,.94);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+.brand{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:800;letter-spacing:.08em;color:#233b58}
+.brand-mark{width:30px;height:30px;border-radius:8px;background:var(--ink);color:white;display:grid;place-items:center;font-size:10px;letter-spacing:0}
+.top-right{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:11px}
+.version{padding:5px 9px;border-radius:99px;background:var(--teal-pale);color:var(--teal);font-weight:800}
+.progress{height:3px;background:#dfe6ed;position:sticky;top:58px;z-index:29}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--teal));transition:width .25s}
+.workspace{min-height:calc(100vh - 58px);display:flex;flex-direction:column;align-items:center;padding:24px 20px 18px}
+.deck{width:min(1320px,calc(100vw - 40px));}
+.slide{display:none;position:relative;width:100%;aspect-ratio:16/9;min-height:620px;max-height:calc(100vh - 142px);overflow:auto;background:var(--paper);border:1px solid #e1e7ee;border-radius:15px;box-shadow:var(--shadow);padding:48px 58px 42px;flex-direction:column}
+.slide.active{display:flex}
+.slide:focus{outline:none}
+.slide-head{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:20px}
+.kicker{font-size:10px;font-weight:850;letter-spacing:.16em;color:var(--teal);text-transform:uppercase}
+.chapter{font-size:10px;color:var(--soft);letter-spacing:.08em}
+h1,h2,h3,h4,p{margin-top:0}
+.slide h1{font-size:clamp(28px,3vw,42px);line-height:1.16;letter-spacing:-.035em;margin:8px 0 12px;color:var(--ink)}
+.slide h2{font-size:clamp(23px,2.3vw,31px);line-height:1.22;letter-spacing:-.025em;margin:4px 0 8px;color:var(--ink)}
+.slide h3{font-size:16px;line-height:1.3;margin:0 0 8px;color:var(--ink)}
+.slide h4{font-size:12px;margin:0 0 7px;color:var(--ink)}
+.lead{font-size:14px;line-height:1.65;color:var(--muted);max-width:960px;margin:0 0 23px}
+.slide-body{flex:1;min-height:0}
+.slide-foot{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-top:16px;padding-top:10px;border-top:1px solid #edf0f4;color:#9aa7b5;font-size:9px}
+.slide-foot b{color:#73869a;font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:11px;padding:17px 18px;min-width:0}
+.panel.blue{background:var(--blue-pale);border-color:#d8e5f4}
+.panel.teal{background:var(--teal-pale);border-color:#d2eae8}
+.panel.orange{background:var(--orange-pale);border-color:#f0dfce}
+.panel.green{background:var(--green-pale);border-color:#d8eadf}
+.panel.violet{background:var(--violet-pale);border-color:#e2dbf0}
+.panel.red{background:var(--red-pale);border-color:#efdada}
+.panel p{font-size:12px;line-height:1.6;color:var(--muted);margin:0}
+.panel ul{margin:8px 0 0;padding-left:17px;color:var(--muted);font-size:11px;line-height:1.65}
+.panel li{margin:3px 0}
+.label{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:5px;background:#f0f3f7;color:#536980;font-size:9px;font-weight:800;letter-spacing:.04em}
+.label.blue{background:#e1edf9;color:var(--blue)}
+.label.teal{background:#dff1ef;color:var(--teal)}
+.label.orange{background:#f8e9da;color:var(--orange)}
+.label.green{background:#dff0e5;color:var(--green)}
+.label.violet{background:#eae4f5;color:var(--violet)}
+.label.red{background:#f7e3e3;color:var(--red)}
+.big-num{font-size:27px;font-weight:850;letter-spacing:-.04em;color:var(--ink);line-height:1}
+.muted{color:var(--muted)}
+.tiny{font-size:10px;color:var(--soft)}
+.mono{font-family:Consolas,"SFMono-Regular",monospace;letter-spacing:-.02em}
+.emph{font-weight:800;color:var(--ink)}
+.callout{padding:12px 15px;border-left:3px solid var(--teal);background:#f1f8f7;border-radius:0 8px 8px 0;font-size:11px;line-height:1.6;color:#496c70}
+.callout.orange{border-color:var(--orange);background:#fbf5ee;color:#765a40}
+.callout.red{border-color:var(--red);background:#fcf3f3;color:#795154}
+.callout strong{color:var(--ink)}
+.flowline{display:flex;align-items:stretch;gap:8px}
+.flowbox{flex:1;min-width:0;padding:13px 12px;border:1px solid var(--line);border-radius:9px;background:#fbfcfe;position:relative}
+.flowbox .n{font-size:9px;color:#96a4b3;font-weight:800;letter-spacing:.1em}
+.flowbox b{display:block;font-size:12px;margin:6px 0;color:var(--ink)}
+.flowbox small{display:block;color:var(--muted);font-size:10px;line-height:1.5}
+.flowbox.src{border-top:3px solid var(--blue)}
+.flowbox.py{border-top:3px solid var(--teal)}
+.flowbox.agent{border-top:3px solid var(--violet)}
+.flowbox.out{border-top:3px solid var(--green)}
+.arrow{display:grid;place-items:center;color:#9aabba;font-size:21px;flex:0 0 16px}
+.phase{font-size:10px;font-weight:850;letter-spacing:.13em;color:#7d8da0;margin:0 0 9px}
+.phase-line{height:1px;background:#e8edf2;flex:1;margin-left:10px}
+.phase-row{display:flex;align-items:center;margin:14px 0 8px}
+.code{background:#f6f8fa;border:1px solid #e1e7ed;border-radius:8px;overflow:hidden}
+.code-head{padding:7px 11px;background:#edf1f5;border-bottom:1px solid #e1e7ed;font-size:9px;color:#697c91;font-weight:800;display:flex;justify-content:space-between}
+.code pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;padding:12px 14px;font:10px/1.65 Consolas,"SFMono-Regular",monospace;color:#334a63}
+.code .hl{color:#0b7d83;font-weight:800}
+.logic{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;align-items:center}
+.logic-node{min-height:94px;padding:12px 8px;border:1px solid #dbe4ec;border-radius:8px;background:#f8fafc;text-align:center;display:flex;flex-direction:column;justify-content:center}
+.logic-node .id{font:800 10px Consolas,monospace;color:#8b9aaa}
+.logic-node b{font-size:11px;margin:7px 0 4px}
+.logic-node small{font-size:9px;color:var(--muted);line-height:1.4}
+.logic-node.active{background:var(--teal-pale);border-color:#b9dedb}
+.logic-node.target{background:var(--green-pale);border-color:#c7e4d1}
+.logic-arrow{display:none}
+.logic-equation{padding:11px 14px;background:#f4f8fb;border:1px solid #dce7ef;border-radius:8px;font:700 13px Consolas,monospace;color:#276d77;text-align:center;margin-top:12px}
+.ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.level{border:1px solid var(--line);border-radius:9px;padding:13px 12px;background:#fff;min-height:168px;position:relative}
+.level:before{content:"";height:4px;position:absolute;top:0;left:0;right:0;border-radius:9px 9px 0 0;background:#a8b6c5}
+.level:nth-child(2):before{background:#d5a05e}.level:nth-child(3):before{background:#6c9bc9}.level:nth-child(4):before{background:#3d9c9a}.level:nth-child(5):before{background:#8972b8}
+.level .lv{font-size:9px;font-weight:850;color:#8b99a8;letter-spacing:.1em}
+.level b{display:block;font-size:12px;margin:10px 0 6px}
+.level p{font-size:10px;line-height:1.55;color:var(--muted);margin:0}
+.level .file{font:9px Consolas,monospace;color:#66819b;margin-top:9px;overflow-wrap:anywhere}
+.step-stack{display:grid;gap:9px}
+.step{display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:start}
+.step .no{width:27px;height:27px;border-radius:7px;background:#eaf1f8;color:var(--blue);display:grid;place-items:center;font-size:11px;font-weight:850}
+.step b{display:block;font-size:12px;margin-bottom:3px}
+.step p{font-size:10px;line-height:1.5;color:var(--muted);margin:0}
+.transform{padding:14px;border-radius:9px;border:1px solid var(--line);background:#fbfcfd;min-height:145px}
+.transform .letter{font-size:9px;font-weight:900;letter-spacing:.12em;color:var(--teal)}
+.transform h3{font-size:13px;margin:7px 0}
+.transform p{font-size:10px;line-height:1.5;color:var(--muted);margin:0}
+.transform .example{margin-top:10px;padding:7px 8px;border-radius:6px;background:#f0f4f7;font:9px/1.55 Consolas,monospace;color:#415a72}
+.tag-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{font-size:9px;padding:4px 7px;border-radius:5px;background:#f0f3f6;color:#5c7085}
+.table{width:100%;border-collapse:collapse;font-size:10px}
+.table th{text-align:left;padding:9px 10px;background:#eef3f7;color:#4c6279;font-weight:850;border-bottom:1px solid #dfe6ed}
+.table td{padding:9px 10px;border-bottom:1px solid #edf1f4;color:#53677d;vertical-align:top;line-height:1.5}
+.table tr:last-child td{border-bottom:0}
+.table code{font:9px Consolas,monospace;color:#247b80}
+.mini-file{padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;min-width:0}
+.mini-file code{display:block;font:10px Consolas,monospace;color:#2b6673;overflow-wrap:anywhere}
+.mini-file small{display:block;font-size:9px;color:var(--muted);line-height:1.45;margin-top:6px}
+.sheet{display:grid;grid-template-columns:1.1fr 1.25fr .65fr 1.35fr 1.35fr 1.35fr 1fr;gap:2px;background:#d9e1e8;border:1px solid #d9e1e8;border-radius:8px;overflow:hidden}
+.cell{background:#fff;padding:10px 7px;min-height:55px;font-size:9px;color:#53677c;overflow-wrap:anywhere}
+.cell.head{background:#eaf0f5;font-weight:850;color:#344e68;min-height:34px}
+.cell.hl{background:#edf7f5;color:#176d71;font-weight:700}
+.controls{width:min(1320px,calc(100vw - 40px));display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:12px}
+.ctrl-group{display:flex;align-items:center;gap:8px}
+.ctrl{border:1px solid #d4dde6;background:#fff;color:#40566e;border-radius:7px;padding:8px 12px;font-size:10px;font-weight:750}
+.ctrl:hover{background:#f7fafc;border-color:#aebdca}
+.ctrl.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.ctrl:disabled{opacity:.35;cursor:not-allowed}
+.counter{font:800 11px Consolas,monospace;color:#687b90;min-width:56px;text-align:center}
+select.ctrl{max-width:210px}
+.notes{display:none;width:min(1320px,calc(100vw - 40px));margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:13px 16px;color:var(--muted);font-size:11px;line-height:1.65}
+.notes.show{display:block}
+.notes strong{color:var(--ink)}
+.cover{padding:0;overflow:hidden}
+.cover-inner{height:100%;display:grid;grid-template-columns:1.12fr .88fr}
+.cover-left{padding:64px 0 52px 62px;display:flex;flex-direction:column;justify-content:center}
+.cover-left .kicker{font-size:11px}
+.cover-left h1{font-size:clamp(38px,4.3vw,58px);line-height:1.12;margin:18px 0 17px;max-width:680px}
+.cover-left h1 span{color:var(--teal)}
+.cover-left .lead{font-size:15px;max-width:620px}
+.cover-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.cover-meta span{font-size:9px;color:#5d7186;background:#f1f4f7;border:1px solid #e2e8ee;padding:6px 9px;border-radius:5px}
+.cover-right{background:#f3f7fa;border-left:1px solid #e5ebf0;padding:54px 40px;display:flex;flex-direction:column;justify-content:center;gap:13px}
+.cover-stage{padding:16px 18px;border-radius:9px;background:#fff;border:1px solid #e0e7ed;box-shadow:0 5px 14px rgba(35,57,78,.04);position:relative}
+.cover-stage b{display:block;font-size:13px;margin:4px 0}
+.cover-stage small{font-size:10px;color:var(--muted)}
+.cover-stage .num{font:800 9px Consolas,monospace;color:#8a9bac}
+.cover-stage:after{content:"↓";position:absolute;bottom:-19px;left:50%;color:#91a4b5;font-size:15px}
+.cover-stage:last-child:after{display:none}
+.cover-stage.s1{border-left:4px solid var(--blue)}
+.cover-stage.s2{border-left:4px solid var(--violet)}
+.cover-stage.s3{border-left:4px solid var(--green)}
+.cover-foot{position:absolute;bottom:20px;left:62px;font-size:9px;color:#9aa8b6}
+.source-links{display:flex;gap:7px;flex-wrap:wrap}
+.source-links a{font-size:9px;color:#356a87;text-decoration:none;border:1px solid #d9e5ec;background:#f7fafc;padding:6px 8px;border-radius:5px}
+.source-links a:hover{background:#eaf4f7}
+@media(max-width:950px){
+ .slide{padding:30px 28px 28px;min-height:650px;max-height:none;aspect-ratio:auto}
+ .grid4,.grid5{grid-template-columns:repeat(2,1fr)}
+ .ladder{grid-template-columns:repeat(3,1fr)}
+ .cover-inner{grid-template-columns:1fr}.cover-left{padding:42px 35px}.cover-right{display:none}.cover-foot{left:35px}
+}
+@media(max-width:650px){
+ .topbar{padding:0 14px}.top-right span:not(.version){display:none}
+ .workspace{padding:12px 8px}.deck,.controls,.notes{width:100%}
+ .slide{padding:25px 18px;min-height:78vh;border-radius:9px}
+ .grid2,.grid3,.grid4,.grid5{grid-template-columns:1fr}
+ .flowline{flex-direction:column}.arrow{transform:rotate(90deg);height:14px}
+ .ladder{grid-template-columns:1fr 1fr}
+ .sheet{min-width:760px}.sheet-scroll{overflow:auto}
+ .slide h2{font-size:23px}
+ .controls{flex-wrap:wrap}.ctrl-group{gap:5px}.ctrl{padding:8px 9px}
+ .counter{min-width:45px}
+}
+@media print{
+ @page{size:16in 9in landscape;margin:0}
+ html,body{background:#fff!important}
+ .topbar,.progress,.controls,.notes{display:none!important}
+ .workspace{display:block;padding:0!important}
+ .deck{width:100%!important}
+ .slide,.slide.active{display:flex!important;width:100%!important;height:9in!important;min-height:0!important;max-height:none!important;aspect-ratio:16/9!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:.55in .68in .45in!important;overflow:hidden!important;page-break-after:always;break-after:page}
+ .slide:last-child{page-break-after:auto;break-after:auto}
+ .cover{padding:0!important}
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><div class="brand-mark">PLC</div><span>PLC SEQUENCE AGENT · ENGINEERING PRESENTATION</span></div>
+  <div class="top-right"><span>从源码解析到采集交付</span><span class="version">VERSION 9.25</span></div>
+</header>
+<div class="progress"><span id="progressBar"></span></div>
+<div class="workspace">
+<div class="deck" id="deck">
+
+<!-- 01 -->
+<section class="slide cover active" data-title="项目概览" data-note="开场可以先强调：本项目不是让大模型直接阅读 XML 后自由生成 Excel，而是把源码解析、逻辑证据、工艺理解和交付组装拆成可追溯的环节。Python 负责确定性事实，大模型负责证据约束下的语义解释，最后仍由程序校验和生成交付物。">
+  <div class="cover-inner">
+    <div class="cover-left">
+      <div class="kicker">PLC SEQUENCE AGENT / V9.25</div>
+      <h1>从原始 PLC 源码<br><span>到步序采集交付</span></h1>
+      <p class="lead">一套面向多厂商 PLC 工程的步序发现、控制关系还原、工艺语义整理与交付表生成工作流。</p>
+      <div class="cover-meta">
+        <span>源码解析</span><span>逻辑证据</span><span>OpenCode Agent</span><span>Excel 交付</span>
+      </div>
+      <div class="cover-foot">工程汇报版 · 依据 plc_sequence_opencode_v9.25 仓库代码整理</div>
+    </div>
+    <div class="cover-right">
+      <div class="cover-stage s1"><span class="num">01 / SOURCE & PYTHON</span><b>解析 PLC 源码，恢复可追溯事实</b><small>状态、连线、赋值、反馈、事件与迁移证据</small></div>
+      <div class="cover-stage s2"><span class="num">02 / OPENCODE AGENT</span><b>理解工艺过程与动作语义</b><small>按控制器和证据批次分析，不凭空补造边界</small></div>
+      <div class="cover-stage s3"><span class="num">03 / PYTHON DELIVERY</span><b>校验、归档并生成采集表</b><small>候选池、复核队列、工位分组与 Excel</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 -->
+<section class="slide" data-title="项目目标" data-note="建议用三个问题解释系统目标。第一，PLC 程序中有哪些状态和值；第二，状态如何在条件控制下迁移；第三，这些状态区间对应什么工艺过程和动作。三类问题需要不同证据，不能用变量名或状态号直接推断全部答案。">
+  <div class="slide-head"><div><div class="kicker">01 / PURPOSE</div><h2>项目要解决的不是一个问题，而是三个层次的问题</h2></div><div class="chapter">项目目标</div></div>
+  <p class="lead">从 PLC 程序到工程采集表，中间必须经过“状态发现—逻辑解释—工艺表达”，不能把它压缩成一次文本生成。</p>
+  <div class="slide-body">
+    <div class="grid3">
+      <div class="panel blue">
+        <span class="label blue">问题 1 · 状态发现</span>
+        <div class="big-num" style="margin:15px 0 10px">WHAT</div>
+        <h3>程序里有哪些步序？</h3>
+        <p>识别状态变量、状态值、比较表达式、赋值目标及其所属控制器/程序单元。</p>
+      </div>
+      <div class="panel teal">
+        <span class="label teal">问题 2 · 控制关系</span>
+        <div class="big-num" style="margin:15px 0 10px">HOW</div>
+        <h3>步序如何发生跳转？</h3>
+        <p>还原比较条件、触点、逻辑连接、MOVE 使能、反馈门控和状态写入路径。</p>
+      </div>
+      <div class="panel violet">
+        <span class="label violet">问题 3 · 工艺语义</span>
+        <div class="big-num" style="margin:15px 0 10px">WHY</div>
+        <h3>这段状态代表什么动作？</h3>
+        <p>结合源码注释、变量文档、动作证据和上下文，解释工艺类型、统计对象与中文动作描述。</p>
+      </div>
+    </div>
+    <div style="height:15px"></div>
+    <div class="panel">
+      <div class="phase">从技术事实到交付表达</div>
+      <div class="flowline">
+        <div class="flowbox src"><span class="n">SOURCE FACTS</span><b>源码事实</b><small>状态 / 条件 / 写入 / 注释</small></div><div class="arrow">→</div>
+        <div class="flowbox py"><span class="n">LOGIC EVIDENCE</span><b>逻辑证据</b><small>候选 / 迁移 / 反馈 / 边界</small></div><div class="arrow">→</div>
+        <div class="flowbox agent"><span class="n">PROCESS SEMANTICS</span><b>工艺语义</b><small>过程类型 / 起止含义 / 动作描述</small></div><div class="arrow">→</div>
+        <div class="flowbox out"><span class="n">DELIVERY</span><b>交付视图</b><small>工位分组 / 采集标签 / 备注</small></div>
+      </div>
+    </div>
+    <div class="callout orange" style="margin-top:14px"><strong>核心原则：</strong>发现了状态，不代表已经证明迁移；证明了局部迁移，也不代表已经证明机械动作完成。系统必须保留证据层级和待核验状态。</div>
+  </div>
+  <div class="slide-foot"><span>核心概念：状态事实 ≠ 控制迁移 ≠ 物理动作</span><b>02 / 15</b></div>
+</section>
+
+<!-- 03 -->
+<section class="slide" data-title="总体流程" data-note="按命令入口解释实际流程：predict 只接受 PLC 源码、可选 pattern、manual、trace，不接收 GT。predict 先完成解析、候选、迁移图、边界投影、批次输入及动作描述批次准备。随后由 OpenCode 处理两类批次。finish 再校验、合并、生成工艺视图、描述和 Excel。">
+  <div class="slide-head"><div><div class="kicker">02 / END-TO-END WORKFLOW</div><h2>整体采用三段式：确定性解析 → Agent 理解 → 确定性交付</h2></div><div class="chapter">总体流程</div></div>
+  <p class="lead">Python 不负责猜测工艺语义；OpenCode 不直接替代 XML 解析器。两者通过结构化候选、事件、迁移图和批次 JSON 协作。</p>
+  <div class="slide-body">
+    <div class="phase-row"><div class="phase">A · PREDICT / 源码解析与批次准备</div><div class="phase-line"></div></div>
+    <div class="flowline">
+      <div class="flowbox src"><span class="n">01</span><b>原始 PLC 文件</b><small>PLCopen / SMC2 / Omron</small></div><div class="arrow">→</div>
+      <div class="flowbox py"><span class="n">02</span><b>格式适配</b><small>识别方言、解析网络</small></div><div class="arrow">→</div>
+      <div class="flowbox py"><span class="n">03</span><b>证据与候选</b><small>状态、事件、迁移图</small></div><div class="arrow">→</div>
+      <div class="flowbox py"><span class="n">04</span><b>边界处理</b><small>首出口、原子化、合并</small></div><div class="arrow">→</div>
+      <div class="flowbox agent"><span class="n">05</span><b>批次输入</b><small>按控制器组织证据</small></div>
+    </div>
+    <div class="phase-row" style="margin-top:20px"><div class="phase">B · OPENCODE / 工艺与动作语义理解</div><div class="phase-line"></div></div>
+    <div class="grid2">
+      <div class="panel violet"><span class="label violet">工艺分析批次</span><h3 style="margin-top:9px">候选 + 事件 → 工艺语义</h3><p>过程类型、统计对象、起点含义、终点含义、工艺依据、边界依据；不能确定的事件进入 unresolved。</p></div>
+      <div class="panel blue"><span class="label blue">动作描述批次</span><h3 style="margin-top:9px">源码词条 + 上下文 → 中文描述</h3><p>A 档优先使用源码注释；B 档只补充缺失描述，聚焦每行一个主要动作。</p></div>
+    </div>
+    <div class="phase-row" style="margin-top:20px"><div class="phase">C · FINISH / 校验与交付</div><div class="phase-line"></div></div>
+    <div class="flowline">
+      <div class="flowbox py"><span class="n">06</span><b>批次校验</b><small>ID、标签、事件覆盖</small></div><div class="arrow">→</div>
+      <div class="flowbox py"><span class="n">07</span><b>工艺契约</b><small>推荐待复核 / 证据不足</small></div><div class="arrow">→</div>
+      <div class="flowbox out"><span class="n">08</span><b>交付文件</b><small>CSV / Excel / 审计队列</small></div>
+    </div>
+    <div class="callout" style="margin-top:14px"><strong>执行入口：</strong><span class="mono">python plc_cli.py predict</span> → OpenCode 逐批处理 → <span class="mono">python plc_cli.py finish --run ...</span></div>
+  </div>
+  <div class="slide-foot"><span>主入口：plc_cli.py · 主编排：workflow.py</span><b>03 / 15</b></div>
+</section>
+
+<!-- 04 -->
+<section class="slide" data-title="源码适配" data-note="这里重点讲通用性。项目不是先把 XML 全部转成纯文本再让模型猜，而是按方言恢复各自的结构。PLCopen 追踪 localId/refLocalId；SMC2 从 XML 内嵌 JSON 网络恢复 CLs/VLs 逻辑网格；Omron 原生格式按 Rung、端口连接和 BodyContent 类型解析。之后再进入统一的证据模型。">
+  <div class="slide-head"><div><div class="kicker">03 / SOURCE ADAPTERS</div><h2>面对不同 PLC 厂商，先恢复各自的程序结构</h2></div><div class="chapter">源码适配</div></div>
+  <p class="lead">v9.25 的格式分流依据 XML 根节点、命名空间和容器结构，不依赖工位名称、项目名称或人工答案。</p>
+  <div class="slide-body">
+    <div class="grid3">
+      <div class="panel blue" style="min-height:300px">
+        <span class="label blue">PLCopen XML</span>
+        <h3 style="margin-top:12px">LD / FBD / ST</h3>
+        <div class="big-num" style="font-size:19px;margin:15px 0;color:var(--blue)">localId ↔ refLocalId</div>
+        <ul>
+          <li>恢复网络节点与连接关系</li>
+          <li>识别 EQ、触点、AND / OR / NOT</li>
+          <li>追踪 MOVE.EN 门控和 OUT 写入目标</li>
+          <li>解析 ST 中 IF / ELSIF / CASE 状态赋值</li>
+          <li>专项识别跨 FB 触发—接收协议</li>
+        </ul>
+        <div class="tag-row"><span class="tag">recall.py</span><span class="tag">event_graph_v6.py</span><span class="tag">successor_graph.py</span></div>
+      </div>
+      <div class="panel orange" style="min-height:300px">
+        <span class="label orange">SMC2 XML</span>
+        <h3 style="margin-top:12px">XML 容器 + 内嵌 JSON 网络</h3>
+        <div class="big-num" style="font-size:19px;margin:15px 0;color:var(--orange)">CLs / VLs</div>
+        <ul>
+          <li>读取 entry 中的 JSON 网络</li>
+          <li>按横向单元、纵向连接恢复逻辑路径</li>
+          <li>解析比较、MOVE、触点及嵌入式 ST</li>
+          <li>未识别单元、未知写入和函数输出保留 blocker</li>
+        </ul>
+        <div class="tag-row"><span class="tag">smc2_adapter.py</span><span class="tag">smc2_controlflow.py</span></div>
+      </div>
+      <div class="panel teal" style="min-height:300px">
+        <span class="label teal">Omron IEC 61131-10</span>
+        <h3 style="margin-top:12px">Sysmac 原生 XML 结构</h3>
+        <div class="big-num" style="font-size:19px;margin:15px 0;color:var(--teal)">Rung / Port</div>
+        <ul>
+          <li>解析 connectionPointOutId / refConnectionPointOutId</li>
+          <li>识别原生 FBD 比较块、MOVE 与线圈</li>
+          <li>解析 BodyContent 中 ST / InlineST</li>
+          <li>未知 BodyContent 类型和写入保留审计信息</li>
+        </ul>
+        <div class="tag-row"><span class="tag">omron_native.py</span><span class="tag">successor_graph.py</span></div>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:15px;padding:13px 16px">
+      <div class="phase">统一输出层</div>
+      <div class="flowline">
+        <div class="flowbox src"><b>PLCopen 结构</b><small>节点与连接</small></div><div class="arrow">+</div>
+        <div class="flowbox src"><b>SMC2 结构</b><small>网络与逻辑网格</small></div><div class="arrow">+</div>
+        <div class="flowbox src"><b>Omron 结构</b><small>Rung 与端口</small></div><div class="arrow">→</div>
+        <div class="flowbox out"><b>统一迁移证据</b><small class="mono">source_transition_graph.json</small></div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-foot"><span>格式适配 ≠ 统一抹平差异；未解析部分保留为审计信息</span><b>04 / 15</b></div>
+</section>
+
+<!-- 05 -->
+<section class="slide" data-title="XML 到迁移" data-note="这一页是整场汇报最值得停留讲解的例子。XML 中的 localId 不是步号，它只是节点身份。程序沿 refLocalId 追踪连接，看到 EQ 比较 Cell.Phase[4] == 500，比较输出进入 Axis.Arrived 触点，再进入 MOVE.EN；MOVE.IN 为 530，OUT 写回 Cell.Phase[4]。所以局部迁移 500→530 来自控制连线与写入目标，而不是数值大小。">
+  <div class="slide-head"><div><div class="kicker">04 / XML → LOGIC → TRANSITION</div><h2>从 XML 得到步序跳转：核心是追踪“谁控制了写入”</h2></div><div class="chapter">解析示例</div></div>
+  <p class="lead">采用仓库自带的 <span class="mono">examples/next_state_ld_demo.xml</span> 教学样例，展示 PLCopen LD 的局部迁移还原过程。</p>
+  <div class="slide-body grid2" style="grid-template-columns:1.02fr .98fr">
+    <div>
+      <div class="code">
+        <div class="code-head"><span>① 原始 XML 结构（关键字段）</span><span>PLCopen LD</span></div>
+        <pre>&lt;inVariable localId="1"&gt;
+  &lt;expression&gt;<span class="hl">Cell.Phase[4]</span>&lt;/expression&gt;
+&lt;/inVariable&gt;
+&lt;inVariable localId="2"&gt;
+  &lt;expression&gt;<span class="hl">500</span>&lt;/expression&gt;
+&lt;/inVariable&gt;
+&lt;block localId="3" typeName="EQ"&gt;
+  &lt;connection refLocalId="1"/&gt;
+  &lt;connection refLocalId="2"/&gt;
+&lt;/block&gt;
+&lt;contact localId="4"&gt;
+  &lt;connection refLocalId="3"/&gt;
+  &lt;variable&gt;<span class="hl">Axis.Arrived</span>&lt;/variable&gt;
+&lt;/contact&gt;
+&lt;block localId="6" typeName="MOVE"&gt;
+  &lt;input formalParameter="EN"&gt;
+    &lt;connection refLocalId="4"/&gt;
+  &lt;/input&gt;
+  &lt;input formalParameter="IN"&gt;530&lt;/input&gt;
+&lt;/block&gt;
+&lt;outVariable localId="7"&gt;
+  &lt;connection refLocalId="6"/&gt;
+  &lt;expression&gt;<span class="hl">Cell.Phase[4]</span>&lt;/expression&gt;
+&lt;/outVariable&gt;</pre>
+      </div>
+      <div class="callout" style="margin-top:11px"><strong>解析关键：</strong>localId 标识节点；refLocalId 建立节点之间的控制连接；MOVE 的 EN、IN、OUT 分别决定执行条件、写入值和写入对象。</div>
+    </div>
+    <div>
+      <div class="panel" style="padding:15px">
+        <div class="phase">② 解析器还原出的逻辑链</div>
+        <div class="logic" style="grid-template-columns:1fr 22px 1fr;gap:5px">
+          <div class="logic-node active"><span class="id">localId 3</span><b>EQ 比较</b><small>Cell.Phase[4] = 500</small></div>
+          <div class="arrow">+</div>
+          <div class="logic-node active"><span class="id">localId 4</span><b>反馈触点</b><small>Axis.Arrived</small></div>
+        </div>
+        <div style="text-align:center;color:#91a2b2;margin:7px 0">↓ 共同构成 MOVE.EN 门控</div>
+        <div class="logic-node" style="min-height:74px"><span class="id">localId 6</span><b>MOVE</b><small>EN = 比较条件 AND 到位触点；IN = 530</small></div>
+        <div style="text-align:center;color:#91a2b2;margin:7px 0">↓ OUT 写回同一状态变量</div>
+        <div class="logic-node target" style="min-height:74px"><span class="id">localId 7</span><b>状态写入</b><small>Cell.Phase[4] := 530</small></div>
+        <div class="logic-equation">Cell.Phase[4] = 500 AND Axis.Arrived<br>→ Cell.Phase[4] := 530</div>
+      </div>
+      <div class="panel green" style="margin-top:12px">
+        <span class="label green">③ 可得到的局部迁移</span>
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin:13px 0">
+          <div style="text-align:center"><div class="big-num">500</div><small class="muted">当前状态</small></div>
+          <div style="font-size:24px;color:var(--green)">→</div>
+          <div style="text-align:center"><div class="big-num" style="color:var(--green)">530</div><small class="muted">写入后状态</small></div>
+        </div>
+        <p>迁移依据是 MOVE 的使能路径与 OUT 写入目标，不是状态号相邻或数值递增。</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-foot"><span>源码局部证明：条件路径 + 写入目标 + 来源节点</span><b>05 / 15</b></div>
+</section>
+
+<!-- 06 -->
+<section class="slide" data-title="证据分层" data-note="这页用于解释为什么候选池需要高召回，而不能把所有候选都直接视为最终事实。状态观察只是发现线索；同网络共现只是观察；显式连线提高了控制关系证据；完整局部门控与写入才构成更强的局部迁移证据；跨 FB 和信号收尾则是专项协议证据。每一级都有边界，不能将共现等同因果。">
+  <div class="slide-head"><div><div class="kicker">05 / EVIDENCE MODEL</div><h2>候选不是结论：系统按证据强度逐级提高可信度</h2></div><div class="chapter">证据模型</div></div>
+  <p class="lead">不同来源可以共同描述一段逻辑，但“观察到”“连接到”“控制了写入”是不同强度的事实。</p>
+  <div class="slide-body">
+    <div class="ladder">
+      <div class="level"><div class="lv">LEVEL 01</div><b>状态值观察</b><p>从比较、赋值和 MOVE 目标中发现状态变量和值，形成高召回候选。</p><div class="file">recall_candidates.csv</div></div>
+      <div class="level"><div class="lv">LEVEL 02</div><b>同域事件观察</b><p>同一网络或程序单元出现命令、反馈、状态目标；共现不等于因果。</p><div class="file">event_graph.csv</div></div>
+      <div class="level"><div class="lv">LEVEL 03</div><b>显式连线追踪</b><p>从 EQ 状态锚点沿连接追踪到 MOVE.EN 或动作节点。</p><div class="file">control_relations / action_trace</div></div>
+      <div class="level"><div class="lv">LEVEL 04</div><b>局部迁移证据</b><p>恢复门控、写入目标、作用域及阻断项，得到可解释的迁移关系。</p><div class="file">source_transition_graph.json</div></div>
+      <div class="level"><div class="lv">LEVEL 05</div><b>专项协议证据</b><p>跨 FB 触发—接收、InlineST 副作用与信号收尾等专门关系。</p><div class="file">cross_fb / signal lineage</div></div>
+    </div>
+    <div class="grid2" style="margin-top:15px">
+      <div class="panel teal"><h3>证据链回答什么？</h3><p>某条候选从哪个控制器、哪个 POU、哪个网络或节点发现；由哪些比较、触点、写入和反馈支撑。</p></div>
+      <div class="panel red"><h3>证据链不能自动回答什么？</h3><p>不能仅凭同域共现证明因果；不能凭 Done / Arrived 变量名证明物理完成；不能凭步号相邻证明程序迁移。</p></div>
+    </div>
+    <div class="callout orange" style="margin-top:13px"><strong>工程红线：</strong>未知函数、动态写入、分支旁路、作用域歧义和不完整路径必须保留为 blocker 或待核验信息，不应静默删掉。</div>
+  </div>
+  <div class="slide-foot"><span>主要模块：recall.py · event_graph_v6.py · successor_graph.py · fb_transport.py</span><b>06 / 15</b></div>
+</section>
+
+<!-- 07 -->
+<section class="slide" data-title="候选与边界" data-note="先讲候选池，再讲边界变换。全量解析生成候选和事件；pattern 是解析之后的变量范围筛选，不是从原始 XML 里搜索字符串。边界模块做四类不同工作：首出口规范化、OR 原子化、反馈后继替代、动作与信号收尾合并。特别强调最后一种会改变采集时间跨度，原始段必须留档。">
+  <div class="slide-head"><div><div class="kicker">06 / CANDIDATES & BOUNDARIES</div><h2>从候选状态对，到可采集的起止边界</h2></div><div class="chapter">候选与边界</div></div>
+  <p class="lead">边界处理不是“把状态号排一遍”，而是依据源码迁移图和门控证据，转换候选的表达形式与采集粒度。</p>
+  <div class="slide-body">
+    <div class="panel" style="padding:14px 16px">
+      <div class="phase">候选生成与筛选顺序</div>
+      <div class="flowline">
+        <div class="flowbox src"><b>全量源码解析</b><small>状态观察 / 事件 / 迁移图</small></div><div class="arrow">→</div>
+        <div class="flowbox py"><b>完整候选池</b><small>候选 ID / 控制器 / 来源</small></div><div class="arrow">→</div>
+        <div class="flowbox py"><b>变量范围筛选</b><small>可选 --pattern</small></div><div class="arrow">→</div>
+        <div class="flowbox py"><b>边界规范化</b><small>迁移证据约束</small></div><div class="arrow">→</div>
+        <div class="flowbox out"><b>采集视图</b><small>原子对 / 收尾合并</small></div>
+      </div>
+      <p class="tiny" style="margin:9px 0 0">candidate_filter.py 使用符号识别、glob 或 re: 正则匹配开始/结束标签；process_focus_queue 是审查优先队列，不替代主候选池。</p>
+    </div>
+    <div class="grid4" style="margin-top:14px">
+      <div class="transform"><div class="letter">A / FIRST EXIT</div><h3>状态集合首出口</h3><p>沿有来源的迁移边搜索第一次离开指定状态集合的出口，不按步号大小推断。</p><div class="example">100 → 135<br>100 → NOT(100)<br>规范为 100 → 135</div></div>
+      <div class="transform"><div class="letter">B / ATOMIC</div><h3>复合边界原子化</h3><p>可证明的 OR 分支拆成独立原子对；AND 门控不能为了简洁而直接删除。</p><div class="example">(S=100 OR S=200)<br>→ 两条独立分支</div></div>
+      <div class="transform"><div class="letter">C / FEEDBACK</div><h3>反馈条件后继</h3><p>当反馈是直接迁移必要条件时，可将反馈条件边界映射到状态后继；不宣称布尔等价。</p><div class="example">S=70 AND F<br>MOVE: S:=4<br>候选：70 → 4</div></div>
+      <div class="transform"><div class="letter">D / SIGNAL TAIL</div><h3>动作与信号收尾合并</h3><p>若后段只是动作的信号/数据收尾且没有新动作，可在采集视图合并。</p><div class="example">原始：A→B，B→C<br>采集：A→C<br>保留原始段与 lineage</div></div>
+    </div>
+    <div class="callout orange" style="margin-top:13px"><strong>时间口径：</strong>收尾合并会把 B 阶段内部延时纳入 A→C 的计时跨度；它不是原图新增一条直接迁移边。OR 分支分别计时，AND 条件保留。</div>
+  </div>
+  <div class="slide-foot"><span>主要模块：boundary_normalizer.py · atomic_boundaries.py · feedback_successor.py · signal_tail_merge.py</span><b>07 / 15</b></div>
+</section>
+
+<!-- 08 -->
+<section class="slide" data-title="OpenCode Harness" data-note="这里说明 OpenCode 是 Harness：opencode.json 选择默认 agent；.opencode/agents/plc-sequence.md 提供主 Agent 指引；AGENTS.md 提供项目规则；.opencode/skills 下的专项技能提供可调用的领域方法；AGENT_PROMPT.md 定义批次输出协议。Python 负责准备批次和证据，Agent 只在批次证据范围内解释。">
+  <div class="slide-head"><div><div class="kicker">07 / OPENCODE HARNESS</div><h2>OpenCode 的作用：把结构化证据转化为工程语义</h2></div><div class="chapter">Agent 工作方式</div></div>
+  <p class="lead">OpenCode 并不是一个“读完全部 PLC XML 就自由发挥”的黑盒，而是由主 Agent、项目规则、专项 Skills 和批次协议共同约束的执行环境。</p>
+  <div class="slide-body">
+    <div class="grid2">
+      <div class="panel violet">
+        <span class="label violet">Agent 配置层</span>
+        <div class="step-stack" style="margin-top:13px">
+          <div class="step"><div class="no">1</div><div><b>opencode.json</b><p>指定默认 Agent：plc-sequence。</p></div></div>
+          <div class="step"><div class="no">2</div><div><b>.opencode/agents/plc-sequence.md</b><p>主 Agent 的任务路由、工作模式与证据要求。</p></div></div>
+          <div class="step"><div class="no">3</div><div><b>AGENTS.md</b><p>项目级工作规则、预测/评价隔离、交付约束。</p></div></div>
+          <div class="step"><div class="no">4</div><div><b>.opencode/skills/*</b><p>边界规范化、跨 FB、反馈后继、信号收尾等专项能力。</p></div></div>
+          <div class="step"><div class="no">5</div><div><b>AGENT_PROMPT.md</b><p>每批输入/输出字段和 JSON 结果契约。</p></div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <span class="label teal">批次数据层</span>
+        <div style="margin-top:13px" class="flowline">
+          <div class="flowbox src"><b>候选池</b><small>candidate ID<br>控制器 / 起止标签</small></div><div class="arrow">+</div>
+          <div class="flowbox src"><b>事件池</b><small>event ID<br>guard / feedback / next</small></div>
+        </div>
+        <div style="text-align:center;color:#8fa0b0;margin:9px">↓ 按控制器与证据关联组织</div>
+        <div class="panel blue" style="padding:13px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:12px">B00001.input.json</b><span class="label blue">默认 ≤120 候选/批</span></div>
+          <p style="margin-top:7px">携带 candidates、events、controller、batch_id 和任务规则。</p>
+        </div>
+        <div style="text-align:center;color:#8fa0b0;margin:9px">↓ OpenCode Agent</div>
+        <div class="panel green" style="padding:13px">
+          <b style="font-size:12px">B00001.result.json</b>
+          <p style="margin-top:7px"><span class="mono">steps</span> + <span class="mono">unresolved_events</span>，每条结果引用候选 ID / 事件 ID。</p>
+        </div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:14px"><strong>批次组织不是机械切片：</strong>候选先按控制器分组，事件按 guard / next_state 与候选关联；溢出批次只重复引用相关证据行。无法关联的事件进入独立批次，不静默丢弃。</div>
+  </div>
+  <div class="slide-foot"><span>主要模块：workflow.py · agent.py · .opencode/agents · .opencode/skills</span><b>08 / 15</b></div>
+</section>
+
+<!-- 09 -->
+<section class="slide" data-title="双 Agent 工作流" data-note="强调两个批次目录解决不同问题。工艺分析的输出包括过程类型、统计对象、起点终点含义、工艺依据和边界依据；动作描述则生成短中文动作语句。动作描述先 A 档确定性提取源码注释和词条，B 档 LLM 只补充 A 档空白。v9.25 改进包括独立执行注释提取、注入变量文档、收敛动作重点和显式报告 B 档完成状态。">
+  <div class="slide-head"><div><div class="kicker">08 / TWO AGENT TASKS</div><h2>两条独立任务流：解释“是什么过程”与描述“做了什么动作”</h2></div><div class="chapter">语义与描述</div></div>
+  <p class="lead">工艺分析与动作描述不是同一项任务。一个负责建立工艺语义，另一个负责形成可读的中文动作文本。</p>
+  <div class="slide-body grid2">
+    <div class="panel violet" style="padding:20px">
+      <span class="label violet">A · 工艺分析批次</span>
+      <h3 style="margin-top:12px">回答：这段状态区间代表什么过程？</h3>
+      <div class="flowline" style="margin:14px 0">
+        <div class="flowbox src"><b>候选 + 事件</b><small>状态与控制证据</small></div><div class="arrow">→</div><div class="flowbox agent"><b>工艺判断</b><small>过程类型与边界解释</small></div>
+      </div>
+      <div class="phase">要求 Agent 填写</div>
+      <ul>
+        <li>过程类型：机械动作、加工保持、检测测量、工艺等待、交接数据等</li>
+        <li>统计对象、起点含义、终点含义</li>
+        <li>工艺依据、边界依据与证据引用</li>
+        <li>不能确定的事件进入 <span class="mono">unresolved_events</span></li>
+      </ul>
+      <div class="tag-row"><span class="tag">batches/*.input.json</span><span class="tag">batches/*.result.json</span></div>
+    </div>
+    <div class="panel blue" style="padding:20px">
+      <span class="label blue">B · 动作描述批次</span>
+      <h3 style="margin-top:12px">回答：工程人员应该怎样读懂这一行？</h3>
+      <div class="flowline" style="margin:14px 0">
+        <div class="flowbox src"><b>A 档源码事实</b><small>步注释 / 变量文档</small></div><div class="arrow">→</div><div class="flowbox agent"><b>B 档 LLM</b><small>补充缺失短描述</small></div>
+      </div>
+      <div class="phase">描述生成顺序</div>
+      <ul>
+        <li>优先使用 <span class="mono">step_comments.json</span> 中的源码步注释</li>
+        <li>结合动作变量词条与变量文档识别机构成员</li>
+        <li>只处理 A 档空白行，并参考前后行上下文</li>
+        <li>一行突出一个主要动作重点，避免变量堆砌</li>
+      </ul>
+      <div class="tag-row"><span class="tag">action_desc_a.csv</span><span class="tag">batches_desc/</span><span class="tag">action_desc_final.csv</span></div>
+    </div>
+  </div>
+  <div class="panel orange" style="margin-top:14px;padding:13px 16px">
+    <b style="font-size:11px">v9.25 描述链路改进</b>
+    <div class="grid4" style="margin-top:9px">
+      <div><span class="label orange">稳定提取</span><p style="margin-top:6px">注释提取独立执行，避免互相依赖。</p></div>
+      <div><span class="label orange">信息补全</span><p style="margin-top:6px">将变量文档注入 B 档上下文。</p></div>
+      <div><span class="label orange">描述收敛</span><p style="margin-top:6px">每行一个主要动作重点。</p></div>
+      <div><span class="label orange">状态透明</span><p style="margin-top:6px">记录 input / result / pending 数量。</p></div>
+    </div>
+  </div>
+  <div class="slide-foot"><span>主要模块：action_describe.py · extract_step_comments.py · extract_variable_docs.py</span><b>09 / 15</b></div>
+</section>
+
+<!-- 10 -->
+<section class="slide" data-title="结果校验" data-note="finish 不是简单拼接 JSON。它逐批验证 batch_id、候选和事件 ID 是否存在且属于当前批次；起止标签能否由引用候选核验；每个事件是否被某条 step 引用或进入 unresolved_events。通过后才生成 final_sequence、工艺契约视图和 Excel。">
+  <div class="slide-head"><div><div class="kicker">09 / FINISH & VALIDATION</div><h2>finish 不只是汇总：它负责验证 Agent 结果能否被源码证据支撑</h2></div><div class="chapter">结果校验</div></div>
+  <p class="lead">每个批次都必须满足可追溯协议。没有来源的步骤、越批引用、标签不匹配或遗漏事件都会形成校验问题。</p>
+  <div class="slide-body">
+    <div class="grid2">
+      <div class="panel">
+        <span class="label blue">逐批校验</span>
+        <div class="step-stack" style="margin-top:14px">
+          <div class="step"><div class="no">1</div><div><b>批次身份正确</b><p>result.json 中的 batch_id 必须与输入批次一致。</p></div></div>
+          <div class="step"><div class="no">2</div><div><b>证据 ID 合法</b><p>候选 ID / 事件 ID 必须存在，且属于当前批次，不能越批引用。</p></div></div>
+          <div class="step"><div class="no">3</div><div><b>起止标签可核验</b><p>开始标签、结束标签必须能由引用候选对应核验。</p></div></div>
+          <div class="step"><div class="no">4</div><div><b>事件完整覆盖</b><p>每个事件必须进入 steps 的证据引用，或进入 unresolved_events。</p></div></div>
+        </div>
+      </div>
+      <div class="panel teal">
+        <span class="label teal">校验通过后生成</span>
+        <div class="step-stack" style="margin-top:14px">
+          <div class="step"><div class="no">A</div><div><b>final_sequence.csv</b><p>工艺语义草表，保留候选及证据引用。</p></div></div>
+          <div class="step"><div class="no">B</div><div><b>工艺契约检查</b><p>检查过程类型、统计对象、起止含义、工艺依据与边界依据。</p></div></div>
+          <div class="step"><div class="no">C</div><div><b>final_process_steps.csv</b><p>工艺契约结果为“推荐待复核”的子集。</p></div></div>
+          <div class="step"><div class="no">D</div><div><b>process_review_queue.csv</b><p>证据或字段仍不足、需要进一步复核的记录。</p></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid3" style="margin-top:15px">
+      <div class="panel green"><div class="big-num" style="color:var(--green)">PASS</div><h3 style="margin-top:7px">批次完整</h3><p>批次齐全、引用有效、事件均有归宿。</p></div>
+      <div class="panel orange"><div class="big-num" style="color:var(--orange)">REVIEW</div><h3 style="margin-top:7px">证据待补</h3><p>保留记录并说明待核验原因，不静默删除。</p></div>
+      <div class="panel red"><div class="big-num" style="color:var(--red)">BLOCK</div><h3 style="margin-top:7px">协议错误</h3><p>批次缺失、越批引用或标签不匹配时不视为成功。</p></div>
+    </div>
+  </div>
+  <div class="slide-foot"><span>主校验：workflow.py · validate()</span><b>10 / 15</b></div>
+</section>
+
+<!-- 11 -->
+<section class="slide" data-title="交付文件" data-note="这页要避免把所有 CSV 混为一个最终结果。prediction_candidate_pairs 是完整候选档案；prediction_atomic_pairs 是原子化视图；prediction_collection_pairs 是动作收尾合并后的采集视图。finish 后 final_sequence 是语义草表，final_process_steps 是工艺契约精选子集，而 final_prediction_pairs 才是 Excel 生成器实际读取的数据源。">
+  <div class="slide-head"><div><div class="kicker">10 / OUTPUT CONTRACT</div><h2>项目最终产物不是单一 CSV，而是一组分工明确的数据视图</h2></div><div class="chapter">交付文件</div></div>
+  <p class="lead">主采集表强调可读性；完整档案、条件文件、lineage 和复核队列负责保留证据与转换过程。</p>
+  <div class="slide-body">
+    <table class="table">
+      <thead><tr><th style="width:25%">文件 / 视图</th><th style="width:24%">所处阶段</th><th>主要作用</th><th style="width:20%">理解重点</th></tr></thead>
+      <tbody>
+        <tr><td><code>prediction_candidate_pairs.csv</code></td><td>predict · 完整候选</td><td>保存源码解析得到的完整候选对及来源信息。</td><td>高召回候选档案</td></tr>
+        <tr><td><code>prediction_atomic_pairs.csv</code></td><td>predict · 原子视图</td><td>将可证明的复合边界投影为非复合原子对。</td><td>分支与 lineage 可追溯</td></tr>
+        <tr><td><code>prediction_collection_pairs.csv</code></td><td>predict · 采集视图</td><td>在原子视图上执行符合条件的动作/信号收尾合并。</td><td>面向采集跨度</td></tr>
+        <tr><td><code>final_sequence.csv</code></td><td>finish · 语义草表</td><td>合并 Agent 的工艺类型、统计对象、起止含义和证据说明。</td><td>工艺解释视图</td></tr>
+        <tr><td><code>final_process_steps.csv</code></td><td>finish · 工艺精选</td><td>通过工艺契约、标记为推荐待复核的子集。</td><td>不是 Excel 主数据源</td></tr>
+        <tr><td><code>final_prediction_pairs.csv</code></td><td>finish · 最终预测</td><td>完整预测候选与不重复的 Agent 提议对，经原子化/采集视图处理。</td><td><strong>Excel 生成器实际读取</strong></td></tr>
+        <tr><td><code>unresolved_events.csv</code> / <code>process_review_queue.csv</code></td><td>finish · 审计复核</td><td>保留未解决事件与证据/字段不足的工艺记录。</td><td>问题不静默消失</td></tr>
+      </tbody>
+    </table>
+    <div class="grid2" style="margin-top:13px">
+      <div class="panel blue"><h3>完整归档</h3><p><span class="mono">final_prediction_pairs_full.csv</span>、<span class="mono">final_sequence_raw.csv</span>、<span class="mono">final_process_steps_raw.csv</span> 保存采集投影前的完整版本。</p></div>
+      <div class="panel orange"><h3>边界审计</h3><p><span class="mono">prediction_atomic_conditions.json</span>、<span class="mono">prediction_atomic_lineage.csv</span>、<span class="mono">prediction_atomic_review.csv</span> 记录原式、分支、证据与不能投影的原因。</p></div>
+    </div>
+    <div class="callout orange" style="margin-top:12px"><strong>最重要的区分：</strong><span class="mono">final_prediction_pairs.csv</span> 是 Excel 输入；<span class="mono">final_process_steps.csv</span> 是工艺契约筛选后的推荐待复核子集。两者用途不同。</div>
+  </div>
+  <div class="slide-foot"><span>主编排：workflow.py · 原子化：atomic_boundaries.py · 采集视图：signal_tail_merge.py</span><b>11 / 15</b></div>
+</section>
+
+<!-- 12 -->
+<section class="slide" data-title="Excel 交付表" data-note="解释 Excel 的七列和各列来源。构成要素由 POU 路径、工位身份映射、变量文档等确定；动作描述由 A/B 档合并；时长只有提供 Trace 才能回填；动作变量是证据引用；起止标签来自 final_prediction_pairs；备注优先使用网络注释或复核提示。工位分组是展示结构，排序不等于执行顺序。">
+  <div class="slide-head"><div><div class="kicker">11 / WORKSTATION DELIVERY</div><h2>最终交付：把机器可追溯的候选整理为工程人员可读的采集表</h2></div><div class="chapter">Excel 交付</div></div>
+  <p class="lead">finish 调用 <span class="mono">gen_workstation_xlsx.py</span>，读取 <span class="mono">final_prediction_pairs.csv</span>，按工位组织并生成“工序名_步序采集表.xlsx”。</p>
+  <div class="slide-body">
+    <div class="panel" style="padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px"><b style="font-size:13px">步序采集表 · 字段结构示意</b><span class="label green">最终阅读视图</span></div>
+      <div class="sheet-scroll">
+        <div class="sheet">
+          <div class="cell head">构成要素</div><div class="cell head">动作描述</div><div class="cell head">时长(ms)</div><div class="cell head">动作变量（引用）</div><div class="cell head">开始标签</div><div class="cell head">结束标签</div><div class="cell head">备注</div>
+          <div class="cell hl">EM01_示例工位</div><div class="cell">伺服轴移动至取料位</div><div class="cell">—</div><div class="cell">Axis_Z1 / MoveCmd</div><div class="cell mono">Cell.Phase[4]=500</div><div class="cell mono">Cell.Phase[4]=530</div><div class="cell">网络注释 / 待复核提示</div>
+        </div>
+      </div>
+      <p class="tiny" style="margin:9px 0 0">以上为字段布局示意，不是实际生产工序结果；无 Trace 时长留空。</p>
+    </div>
+    <div class="grid3" style="margin-top:14px">
+      <div class="panel blue"><span class="label blue">构成要素</span><h3 style="margin-top:9px">工位身份</h3><p>结合 POU 路径、station_identity.json、变量文档与子工位信息确定分组；缺少身份文档会进入审计。</p></div>
+      <div class="panel teal"><span class="label teal">动作描述 / 变量</span><h3 style="margin-top:9px">动作语义与证据引用</h3><p>描述来自 A/B 档合并；动作变量提供证据引用；备注优先采用对应网络的具体源码注释。</p></div>
+      <div class="panel green"><span class="label green">时长 / 排序</span><h3 style="margin-top:9px">可选运行时信息</h3><p>提供 Trace 后才匹配跳变并回填时长。工位、变量和状态值排序便于查找，不代表 PLC 执行顺序。</p></div>
+    </div>
+    <div class="callout" style="margin-top:13px"><strong>Excel 的定位：</strong>它是工程阅读与采集交付物；底层 CSV、证据图和 lineage 才是复核、追溯与评价的依据。</div>
+  </div>
+  <div class="slide-foot"><span>交付生成器：gen_workstation_xlsx.py</span><b>12 / 15</b></div>
+</section>
+
+<!-- 13 -->
+<section class="slide" data-title="评价与能力边界" data-note="把预测、人工覆盖评价和 Trace 运行时验证分开讲。predict 不接收 GT，防止人工答案参与候选生成。--manual 是 finish 后自动做覆盖评价的输入；evaluate 是单独的预测与 GT 对比命令；--trace 是对已有预测进行运行时跳变匹配和时长回填。它们不能混成同一证据。">
+  <div class="slide-head"><div><div class="kicker">12 / VALIDATION & LIMITS</div><h2>预测、人工评价与运行时验证相互隔离</h2></div><div class="chapter">评价与边界</div></div>
+  <p class="lead">项目不仅需要告诉使用者“做到了什么”，也必须明确哪些结论仍然需要人工或现场证据。</p>
+  <div class="slide-body">
+    <div class="grid3">
+      <div class="panel blue">
+        <span class="label blue">预测 / predict</span><h3 style="margin-top:10px">源码 → 候选与证据</h3>
+        <p>主预测入口不接受 GT 参数，不从人工答案生成候选；可选 pattern 用于变量范围筛选。</p>
+        <div class="tag-row"><span class="tag">source XML</span><span class="tag">candidate pool</span></div>
+      </div>
+      <div class="panel orange">
+        <span class="label orange">覆盖评价 / evaluate</span><h3 style="margin-top:10px">预测 + 人工表</h3>
+        <p>独立比较预测与人工基准，输出命中、遗漏和评价指标；评价结果不回写预测。</p>
+        <div class="tag-row"><span class="tag">--manual</span><span class="tag">--gt</span></div>
+      </div>
+      <div class="panel green">
+        <span class="label green">运行时 / trace</span><h3 style="margin-top:10px">预测 + 运行记录</h3>
+        <p>匹配已有状态跳变、发生次数和持续时间，可为 Excel 时长列回填实测数据。</p>
+        <div class="tag-row"><span class="tag">--trace</span><span class="tag">runtime evidence</span></div>
+      </div>
+    </div>
+    <div class="phase-row" style="margin-top:18px"><div class="phase">需要明确的能力边界</div><div class="phase-line"></div></div>
+    <div class="grid2">
+      <div class="panel red"><h3>静态源码不能自动证明</h3><ul><li>全工程所有写入路径均已穷尽</li><li>PLC 扫描顺序、任务并发与外部 FB 副作用</li><li>机构在物理层面确实完成了动作</li></ul></div>
+      <div class="panel orange"><h3>当前主预测链的输入范围</h3><ul><li>主入口为 PLC XML / SMC2 容器或其文本导出</li><li>变量文档、网络注释、步注释从 PLC 源码提取</li><li>当前主预测链没有 HMI 二进制或独立 IO 表解析步骤</li></ul></div>
+    </div>
+    <div class="callout orange" style="margin-top:13px"><strong>结论表达要克制：</strong>“局部源码迁移证据成立”不等于“物理动作已经验证”；“推荐待复核”也不等于最终人工确认。</div>
+  </div>
+  <div class="slide-foot"><span>独立证据：source code · manual baseline · runtime trace</span><b>13 / 15</b></div>
+</section>
+
+<!-- 14 -->
+<section class="slide" data-title="v9.25 改进与源码索引" data-note="本页适合回答为什么当前版本更适合工程化。v9.25 在动作描述方面修复注释提取流程的异常依赖、注入变量文档、收敛每行动作重点、暴露 B 档批次完成状态。若领导追问如何落到代码，可以沿入口 plc_cli.py、编排 workflow.py、解析 agent.py 与格式适配器、边界模块、动作描述和 Excel 生成器逐层定位。">
+  <div class="slide-head"><div><div class="kicker">13 / V9.25 ENGINEERING</div><h2>v9.25 的重点：让流程更稳定、语义更清晰、交付状态可检查</h2></div><div class="chapter">版本与源码</div></div>
+  <p class="lead">版本改进不仅是增加解析规则，也包括减少隐式依赖、提高动作描述质量，以及让未完成工作显式暴露。</p>
+  <div class="slide-body">
+    <div class="grid2">
+      <div class="panel">
+        <table class="table">
+          <thead><tr><th>改进点</th><th>v9.25 处理方式</th></tr></thead>
+          <tbody>
+            <tr><td>注释提取稳定性</td><td>变量文档、网络注释、步注释提取独立执行，避免异常嵌套依赖。</td></tr>
+            <tr><td>动作成员识别</td><td>从动作成员链提取变量名，查询变量文档并注入描述上下文。</td></tr>
+            <tr><td>中文描述聚焦</td><td>明确一行一个主要动作重点，避免多个机构与信号堆砌。</td></tr>
+            <tr><td>B 档任务状态</td><td>记录 input、result 与 pending 数量；未处理时明确提示。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel blue">
+        <span class="label blue">建议源码阅读路径</span>
+        <div class="step-stack" style="margin-top:13px">
+          <div class="step"><div class="no">1</div><div><b>入口与编排</b><p>plc_cli.py → workflow.py</p></div></div>
+          <div class="step"><div class="no">2</div><div><b>源码解析</b><p>agent.py → source_format.py → 各格式适配器</p></div></div>
+          <div class="step"><div class="no">3</div><div><b>边界与证据</b><p>successor_graph.py → boundary_normalizer.py → atomic_boundaries.py → signal_tail_merge.py</p></div></div>
+          <div class="step"><div class="no">4</div><div><b>语义与交付</b><p>process_contract.py → action_describe.py → gen_workstation_xlsx.py</p></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:14px">
+      <div class="phase">仓库关键入口</div>
+      <div class="source-links">
+        <a href="https://github.com/Yuhui-Yao-c/plc_sequence_opencode_v9.25/blob/main/plc_cli.py" target="_blank">plc_cli.py</a>
+        <a href="https://github.com/Yuhui-Yao-c/plc_sequence_opencode_v9.25/blob/main/workflow.py" target="_blank">workflow.py</a>
+        <a href="https://github.com/Yuhui-Yao-c/plc_sequence_opencode_v9.25/blob/main/agent.py" target="_blank">agent.py</a>
+        <a href="https://github.com/Yuhui-Yao-c/plc_sequence_opencode_v9.25/blob/main/successor_graph.py" target="_blank">successor_graph.py</a>
+        <a href="https://github.com/Yuhui-Yao-c/plc_sequence_opencode_v9.25/blob/main/boundary_normalizer.py" target="_blank">boundary_normalizer.py</a>
+        <a href="https://github.com/Yuhui-Yao-c/plc_sequence_opencode_v9.25/blob/main/atomic_boundaries.py" target="_blank">atomic_boundaries.py</a>
+        <a href="https://github.com/Yuhui-Yao-c/plc_sequence_opencode_v9.25/blob/main/action_describe.py" target="_blank">action_describe.py</a>
+        <a href="https://github.com/Yuhui-Yao-c/plc_sequence_opencode_v9.25/blob/main/gen_workstation_xlsx.py" target="_blank">gen_workstation_xlsx.py</a>
+        <a href="https://github.com/Yuhui-Yao-c/plc_sequence_opencode_v9.25/blob/main/CHANGELOG_V9.25.md" target="_blank">CHANGELOG_V9.25.md</a>
+        <a href="https://github.com/Yuhui-Yao-c/plc_sequence_opencode_v9.25/tree/main/.opencode/skills" target="_blank">OpenCode Skills</a>
+      </div>
+    </div>
+    <div class="callout orange" style="margin-top:12px"><strong>版本核对提示：</strong>仓库中 README.md / VERSION 存在旧版标记；说明 v9.25 功能时应以 CHANGELOG_V9.25.md 和实际代码调用链为准。</div>
+  </div>
+  <div class="slide-foot"><span>版本依据：CHANGELOG_V9.25.md · 实际代码入口与模块实现</span><b>14 / 15</b></div>
+</section>
+
+<!-- 15 -->
+<section class="slide" data-title="总结" data-note="收尾时可以用一句话概括：系统把 PLC 源码变成可追溯的逻辑证据，再把逻辑证据转成工程语义，最后组装为可采集、可复核的交付表。它的价值不只是自动填表，而是把过去分散在程序、经验和人工表格中的判断拆成有来源、有边界、有审计记录的步骤。">
+  <div class="slide-head"><div><div class="kicker">14 / SUMMARY</div><h2>最终形成的是一条可追溯的工程数据链</h2></div><div class="chapter">汇报总结</div></div>
+  <p class="lead">从原始 XML 到 Excel，不是一次转换，而是连续完成结构恢复、逻辑证明、语义解释与交付校验。</p>
+  <div class="slide-body">
+    <div class="flowline" style="margin:20px 0 18px">
+      <div class="flowbox src" style="padding:18px"><span class="n">01 / SOURCE</span><b>PLC 原始源码</b><small>多厂商格式与程序结构</small></div><div class="arrow">→</div>
+      <div class="flowbox py" style="padding:18px"><span class="n">02 / EVIDENCE</span><b>候选与逻辑证据</b><small>状态、控制、迁移、边界</small></div><div class="arrow">→</div>
+      <div class="flowbox agent" style="padding:18px"><span class="n">03 / SEMANTICS</span><b>工艺语义与动作描述</b><small>Agent 证据约束下解释</small></div><div class="arrow">→</div>
+      <div class="flowbox out" style="padding:18px"><span class="n">04 / DELIVERY</span><b>采集表与审计文件</b><small>可阅读、可复核、可追溯</small></div>
+    </div>
+    <div class="grid3">
+      <div class="panel blue"><h3>自动化发现</h3><p>减少人工逐网络查找状态、比较条件、写入目标和反馈关系的工作量。</p></div>
+      <div class="panel violet"><h3>语义化整理</h3><p>将程序变量与控制关系转换为工程人员理解的工艺过程和动作描述。</p></div>
+      <div class="panel green"><h3>证据化交付</h3><p>保留候选、来源、事件、转换血缘和待核验队列，支持复查与后续评价。</p></div>
+    </div>
+    <div style="margin-top:22px;padding:20px 22px;background:#f2f7f8;border:1px solid #d9e9e8;border-radius:10px;text-align:center">
+      <div style="font-size:10px;letter-spacing:.15em;color:var(--teal);font-weight:850">THE KEY MESSAGE</div>
+      <div style="font-size:21px;line-height:1.45;font-weight:850;color:var(--ink);margin-top:7px">不是让大模型“猜出一张表”，<br>而是让每一条交付记录都能回到源码证据。</div>
+    </div>
+  </div>
+  <div class="slide-foot"><span>PLC Sequence Agent v9.25 · 工程汇报版</span><b>15 / 15</b></div>
+</section>
+
+</div>
+
+<div class="controls">
+  <div class="ctrl-group">
+    <button class="ctrl" id="prevBtn" aria-label="上一页">← 上一页</button>
+    <button class="ctrl primary" id="nextBtn" aria-label="下一页">下一页 →</button>
+  </div>
+  <div class="ctrl-group">
+    <select class="ctrl" id="jumpSelect" aria-label="跳转章节"></select>
+    <span class="counter" id="counter">01 / 15</span>
+    <button class="ctrl" id="notesBtn">讲解备注</button>
+    <button class="ctrl" id="printBtn">打印 / PDF</button>
+    <button class="ctrl" id="fullBtn">全屏</button>
+  </div>
+</div>
+<div class="notes" id="notesBox" aria-live="polite"></div>
+</div>
+<script>
+(function(){
+ const slides=[...document.querySelectorAll('.slide')];
+ const prev=document.getElementById('prevBtn');
+ const next=document.getElementById('nextBtn');
+ const counter=document.getElementById('counter');
+ const progress=document.getElementById('progressBar');
+ const jump=document.getElementById('jumpSelect');
+ const notesBtn=document.getElementById('notesBtn');
+ const notesBox=document.getElementById('notesBox');
+ let index=0;
+ slides.forEach((s,i)=>{
+   const opt=document.createElement('option');
+   opt.value=i; opt.textContent=String(i+1).padStart(2,'0')+' · '+s.dataset.title;
+   jump.appendChild(opt);
+ });
+ function show(n){
+   index=Math.max(0,Math.min(slides.length-1,n));
+   slides.forEach((s,i)=>{s.classList.toggle('active',i===index);s.setAttribute('aria-hidden',i===index?'false':'true');});
+   counter.textContent=String(index+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+   progress.style.width=((index+1)/slides.length*100)+'%';
+   prev.disabled=index===0; next.disabled=index===slides.length-1;
+   jump.value=String(index);
+   notesBox.innerHTML='<strong>本页讲解提示：</strong> '+(slides[index].dataset.note||'');
+   notesBox.classList.remove('show');
+   notesBtn.textContent='讲解备注';
+   slides[index].scrollTop=0;
+ }
+ prev.addEventListener('click',()=>show(index-1));
+ next.addEventListener('click',()=>show(index+1));
+ jump.addEventListener('change',e=>show(Number(e.target.value)));
+ notesBtn.addEventListener('click',()=>{
+   const open=notesBox.classList.toggle('show');
+   notesBtn.textContent=open?'收起备注':'讲解备注';
+ });
+ document.getElementById('printBtn').addEventListener('click',()=>window.print());
+ document.getElementById('fullBtn').addEventListener('click',()=>{
+   if(!document.fullscreenElement){document.documentElement.requestFullscreen?.();}
+   else{document.exitFullscreen?.();}
+ });
+ document.addEventListener('keydown',e=>{
+   if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();show(index+1);}
+   if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();show(index-1);}
+   if(e.key==='Home'){show(0);}
+   if(e.key==='End'){show(slides.length-1);}
+   if(e.key.toLowerCase()==='n' && !['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)){notesBtn.click();}
+ });
+ show(0);
+})();
+</script>
+</body>
+</html>

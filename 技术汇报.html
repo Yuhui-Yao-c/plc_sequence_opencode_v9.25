@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLC 步序采集工作流 · 工程汇报</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#f7f9fc;color:#1a2a3a;
+    font-family:"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  .deck{position:relative;width:100vw;height:100vh}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:3.2vh 4.2vw 5.5vh;overflow:hidden}
+  .slide.active{display:flex;animation:fadeIn .35s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+  /* 标题区 */
+  .slide-head{display:flex;align-items:flex-end;justify-content:space-between;gap:1.5vw;margin-bottom:1.4vh;flex-shrink:0;padding-bottom:1vh;border-bottom:3px solid #3282b8}
+  .slide h1{font-size:2.7vw;font-weight:700;color:#0f4c75;letter-spacing:.3px;line-height:1.18}
+  .slide h1 .sub{font-size:1.3vw;color:#6c7a89;font-weight:400;margin-left:.8vw}
+  .kicker{font-size:.85vw;font-weight:800;letter-spacing:.14em;color:#16818a;text-transform:uppercase;margin-bottom:.4vh}
+  .chapter{font-size:.95vw;color:#8a9baa;letter-spacing:.05em}
+  .slide h2{font-size:1.6vw;color:#bb6900;margin:.8vh 0 .5vh;flex-shrink:0}
+  .slide h3{font-size:1.25vw;color:#0f4c75;margin:0 0 .5vh}
+  .slide h4{font-size:1.05vw;color:#1a2a3a;margin:0 0 .4vh}
+  .lead{font-size:1.15vw;line-height:1.6;color:#4a5a6a;max-width:80vw;margin:0 0 1.2vh;flex-shrink:0}
+  /* 主体撑满 */
+  .body{flex:1;display:flex;flex-direction:column;gap:1.1vh;min-height:0}
+  .body>*{flex-shrink:0}
+  .grow{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0}
+  .slide p,.slide li{font-size:1.12vw;line-height:1.55}
+  .slide ul,.slide ol{margin:.4vh 0 .4vh 1.4vw}
+  .slide li{margin:.25vh 0}
+  .small{font-size:.95vw;color:#6c7a89}
+  .tiny{font-size:.85vw;color:#8a9baa}
+  .muted{color:#6c7a89}
+  .emph{font-weight:700;color:#0f4c75}
+  .mono{font-family:"JetBrains Mono","Consolas","Courier New",monospace;letter-spacing:-.01em}
+  code{font-family:"JetBrains Mono","Consolas",monospace;background:#e3f2fd;padding:.1em .4em;border-radius:3px;color:#0f4c75;font-size:.88em}
+  pre{background:#fff;border:1px solid #cfe2f3;border-radius:6px;padding:1.1vh 1.1vw;overflow:auto;font-size:1vw;line-height:1.5;color:#1a2a3a;margin:.4vh 0;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  pre .hl{color:#0b7d83;font-weight:700}
+  /* 表格 */
+  table{border-collapse:collapse;width:100%;margin:.4vh 0;font-size:1vw;background:#fff}
+  th,td{border:1px solid #cfe2f3;padding:.55vh .7vw;text-align:left;vertical-align:top}
+  th{background:#0f4c75;color:#fff;font-weight:600;font-size:1vw}
+  tr:nth-child(even) td{background:#f0f7fc}
+  /* 网格 */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.2vw}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1vw}
+  .grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.9vw}
+  .grid2.grow,.grid3.grow,.grid4.grow{flex:1;min-height:0}
+  /* 卡片 */
+  .panel{background:#fff;border:1px solid #cfe2f3;border-radius:8px;padding:1.2vh 1.2vw;box-shadow:0 1px 3px rgba(0,0,0,.05);min-width:0}
+  .panel.grow{flex:1;display:flex;flex-direction:column}
+  .panel.blue{background:#edf4fc;border-color:#d8e5f4}
+  .panel.teal{background:#eaf6f5;border-color:#d2eae8}
+  .panel.orange{background:#fbf2e9;border-color:#f0dfce}
+  .panel.green{background:#edf7f1;border-color:#d8eadf}
+  .panel.violet{background:#f2eff9;border-color:#e2dbf0}
+  .panel.red{background:#fbefef;border-color:#efdada}
+  .panel h3{font-size:1.2vw;margin:0 0 .4vh}
+  .panel p{font-size:1.05vw;margin:0}
+  .panel ul{margin:.4vh 0 0;padding-left:1.3vw;color:#4a5a6a;font-size:1vw;line-height:1.55}
+  .panel li{margin:.2vh 0}
+  .label{display:inline-flex;align-items:center;gap:.3vw;padding:.3vh .6vw;border-radius:4px;background:#f0f3f7;color:#536980;font-size:.85vw;font-weight:700}
+  .label.blue{background:#e1edf9;color:#3567a7}
+  .label.teal{background:#dff1ef;color:#16818a}
+  .label.orange{background:#f8e9da;color:#b96e2d}
+  .label.green{background:#dff0e5;color:#287b58}
+  .label.violet{background:#eae4f5;color:#7358a8}
+  .label.red{background:#f7e3e3;color:#b34e53}
+  .bignum{font-size:2.2vw;font-weight:850;letter-spacing:-.03em;color:#0f4c75;line-height:1}
+  /* 流程线 */
+  .flowline{display:flex;align-items:stretch;gap:.7vw}
+  .flowbox{flex:1;min-width:0;padding:1vh 1vw;border:1px solid #cfe2f3;border-radius:7px;background:#fbfcfe;position:relative}
+  .flowbox .n{font-size:.8vw;color:#96a4b3;font-weight:800;letter-spacing:.06em}
+  .flowbox b{display:block;font-size:1.1vw;margin:.4vh 0;color:#1a2a3a}
+  .flowbox small{display:block;color:#6c7a89;font-size:.9vw;line-height:1.4}
+  .flowbox.src{border-top:3px solid #3567a7}
+  .flowbox.py{border-top:3px solid #16818a}
+  .flowbox.agent{border-top:3px solid #7358a8}
+  .flowbox.out{border-top:3px solid #287b58}
+  .arrow{display:grid;place-items:center;color:#9aabba;font-size:1.7vw;flex:0 0 1.2vw}
+  /* 阶段标题 */
+  .phase{font-size:.85vw;font-weight:800;letter-spacing:.1em;color:#7d8da0;margin:0 0 .5vh}
+  .phase-row{display:flex;align-items:center;margin:.6vh 0 .4vh}
+  .phase-line{height:1px;background:#e8edf2;flex:1;margin-left:.8vw}
+  /* 代码框 */
+  .code{background:#f6f8fa;border:1px solid #e1e7ed;border-radius:7px;overflow:hidden}
+  .code-head{padding:.5vh .9vw;background:#edf1f5;border-bottom:1px solid #e1e7ed;font-size:.8vw;color:#697c91;font-weight:700;display:flex;justify-content:space-between}
+  .code pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;padding:.9vh 1vw;font:1vw/1.55 "JetBrains Mono",Consolas,monospace;color:#334a63;border:0;background:transparent;box-shadow:none}
+  .code .hl{color:#0b7d83;font-weight:700}
+  /* 逻辑节点 */
+  .logic-node{padding:.9vh .7vw;border:1px solid #dbe4ec;border-radius:7px;background:#f8fafc;text-align:center;display:flex;flex-direction:column;justify-content:center;min-height:7vh}
+  .logic-node .id{font:800 .85vw Consolas,monospace;color:#8b9aaa}
+  .logic-node b{font-size:1vw;margin:.4vh 0 .2vh}
+  .logic-node small{font-size:.85vw;color:#6c7a89;line-height:1.35}
+  .logic-node.active{background:#eaf6f5;border-color:#b9dedb}
+  .logic-node.target{background:#edf7f1;border-color:#c7e4d1}
+  .logic-eq{padding:.8vh 1vw;background:#f4f8fb;border:1px solid #dce7ef;border-radius:7px;font:700 1.15vw Consolas,monospace;color:#276d77;text-align:center;margin-top:.8vh}
+  /* 证据梯子 */
+  .ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:.7vw}
+  .level{border:1px solid #cfe2f3;border-radius:8px;padding:1vh .9vw;background:#fff;min-height:14vh;position:relative}
+  .level:before{content:"";height:4px;position:absolute;top:0;left:0;right:0;border-radius:8px 8px 0 0;background:#a8b6c5}
+  .level:nth-child(2):before{background:#d5a05e}.level:nth-child(3):before{background:#6c9bc9}.level:nth-child(4):before{background:#3d9c9a}.level:nth-child(5):before{background:#8972b8}
+  .level .lv{font-size:.8vw;font-weight:800;color:#8b99a8;letter-spacing:.06em}
+  .level b{display:block;font-size:1.1vw;margin:.6vh 0 .4vh;color:#1a2a3a}
+  .level p{font-size:.9vw;line-height:1.45;color:#6c7a89;margin:0}
+  .level .file{font:.8vw Consolas,monospace;color:#66819b;margin-top:.5vh;overflow-wrap:anywhere}
+  /* 步骤栈 */
+  .step-stack{display:grid;gap:.6vh}
+  .step{display:grid;grid-template-columns:2.4vw 1fr;gap:.8vw;align-items:start}
+  .step .no{width:2.2vw;height:2.2vw;border-radius:6px;background:#eaf1f8;color:#3567a7;display:grid;place-items:center;font-size:1vw;font-weight:800}
+  .step b{display:block;font-size:1.1vw;margin-bottom:.2vh;color:#1a2a3a}
+  .step p{font-size:.95vw;line-height:1.45;color:#6c7a89;margin:0}
+  /* 变换卡片 */
+  .transform{padding:1.1vh 1vw;border-radius:8px;border:1px solid #cfe2f3;background:#fbfcfd;min-height:12vh;display:flex;flex-direction:column}
+  .transform .letter{font-size:.78vw;font-weight:900;letter-spacing:.08em;color:#16818a}
+  .transform h3{font-size:1.15vw;margin:.4vh 0}
+  .transform p{font-size:.92vw;line-height:1.45;color:#6c7a89;margin:0;flex:1}
+  .transform .example{margin-top:.5vh;padding:.5vh .6vw;border-radius:5px;background:#f0f4f7;font:.82vw/1.5 Consolas,monospace;color:#415a72}
+  /* callout */
+  .callout{border-left:4px solid #3282b8;background:#e3f2fd;padding:.9vh 1.2vw;margin:.5vh 0;font-size:1.05vw;border-radius:0 5px 5px 0;line-height:1.55;color:#2a4a5a}
+  .callout strong{color:#0f4c75}
+  .callout.orange{border-color:#b96e2d;background:#fbf5ee;color:#765a40}
+  .callout.orange strong{color:#b96e2d}
+  .callout.red{border-color:#b34e53;background:#fcf3f3;color:#795154}
+  .callout.green{border-color:#287b58;background:#edf7f1;color:#2a5a4a}
+  /* 标签行 */
+  .tag-row{display:flex;gap:.4vw;flex-wrap:wrap;margin-top:.5vh}
+  .tag{font-size:.78vw;padding:.25vh .55vw;border-radius:4px;background:#f0f3f6;color:#5c7085}
+  /* Excel 示意表 */
+  .sheet{display:grid;grid-template-columns:1.1fr 1.25fr .6fr 1.35fr 1.35fr 1.35fr 1fr;gap:2px;background:#d9e1e8;border:1px solid #d9e1e8;border-radius:7px;overflow:hidden}
+  .cell{background:#fff;padding:.7vh .6vw;min-height:4.5vh;font-size:.82vw;color:#53677c;overflow-wrap:anywhere}
+  .cell.head{background:#eaf0f5;font-weight:800;color:#344e68;min-height:2.8vh}
+  .cell.hl{background:#edf7f5;color:#176d71;font-weight:700}
+  /* 封面 */
+  .cover-inner{flex:1;display:grid;grid-template-columns:1.1fr .9fr;gap:0;min-height:0}
+  .cover-left{display:flex;flex-direction:column;justify-content:center;padding-right:2vw}
+  .cover-left .big{font-size:4.2vw;font-weight:800;color:#0f4c75;line-height:1.12;letter-spacing:-.01em}
+  .cover-left .big span{color:#16818a}
+  .cover-left .lead{font-size:1.3vw;max-width:38vw;margin-top:1.8vh;color:#4a5a6a}
+  .cover-meta{display:flex;gap:.6vw;flex-wrap:wrap;margin-top:1.8vh}
+  .cover-meta span{font-size:.85vw;color:#5d7186;background:#f1f4f7;border:1px solid #e2e8ee;padding:.5vh .8vw;border-radius:5px}
+  .cover-right{background:#f3f7fa;border-left:1px solid #e5ebf0;padding:3vh 2.5vw;display:flex;flex-direction:column;justify-content:center;gap:1.2vh}
+  .cover-stage{padding:1.3vh 1.4vw;border-radius:8px;background:#fff;border:1px solid #e0e7ed;box-shadow:0 4px 12px rgba(35,57,78,.05);position:relative}
+  .cover-stage .num{font:800 .78vw Consolas,monospace;color:#8a9bac}
+  .cover-stage b{display:block;font-size:1.2vw;margin:.3vh 0;color:#1a2a3a}
+  .cover-stage small{font-size:.95vw;color:#6c7a89}
+  .cover-stage:after{content:"↓";position:absolute;bottom:-1.6vh;left:50%;color:#91a4b5;font-size:1.3vw}
+  .cover-stage:last-child:after{display:none}
+  .cover-stage.s1{border-left:4px solid #3567a7}
+  .cover-stage.s2{border-left:4px solid #7358a8}
+  .cover-stage.s3{border-left:4px solid #287b58}
+  .center{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;flex:1}
+  /* 底部固定元素 */
+  .progress{position:fixed;top:0;left:0;height:3px;background:#3282b8;z-index:99;transition:width .25s ease}
+  .pageno{position:fixed;bottom:1.4vh;right:2vw;font-size:.82vw;color:#8a9baa;font-family:monospace;z-index:99}
+  .title-cover{position:fixed;bottom:1.4vh;left:2vw;font-size:.82vw;color:#8a9baa;z-index:99}
+  .navhint{position:fixed;bottom:1.4vh;left:50%;transform:translateX(-50%);font-size:.78vw;color:#aab6c0;z-index:99}
+  .kbd{display:inline-block;border:1px solid #aab6c0;border-radius:3px;padding:0 .45em;font-size:.78vw;color:#6c7a89;background:#fff}
+</style>
+</head>
+<body>
+<div class="progress" id="progressBar" style="width:7.7%"></div>
+<div class="title-cover">PLC 步序采集工作流 · 工程汇报</div>
+<div class="pageno" id="pageno">01 / 13</div>
+<div class="navhint"><span class="kbd">滚轮</span> <span class="kbd">←</span> <span class="kbd">→</span> 翻页 · <span class="kbd">F</span> 全屏 · <span class="kbd">N</span> 备注</div>
+<div class="notes" id="notesBox" style="display:none;position:fixed;left:50%;bottom:5vh;transform:translateX(-50%);width:80vw;max-width:1100px;background:#fff;border:1px solid #cfe2f3;border-radius:8px;padding:1.2vh 1.4vw;font-size:1vw;color:#4a5a6a;line-height:1.6;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100"></div>
+<div class="deck" id="deck">
+
+<!-- 01 封面 -->
+<section class="slide active" data-title="项目概览" data-note="开场强调：本项目不是让大模型直接阅读 XML 后自由生成 Excel，而是把源码解析、逻辑证据、工艺理解和交付组装拆成可追溯的环节。Python 负责确定性事实，大模型在证据约束下解释语义，最后由程序校验并生成交付物。">
+  <div class="cover-inner">
+    <div class="cover-left">
+      <div class="kicker" style="font-size:1vw;margin-bottom:1.5vh">PLC 步序采集工作流</div>
+      <div class="big">从原始 PLC 源码<br><span>到步序采集交付</span></div>
+      <p class="lead">一套面向多厂商 PLC 工程的步序发现、控制关系还原、工艺语义整理与交付表生成工作流。</p>
+      <div class="cover-meta">
+        <span>源码解析</span><span>逻辑证据</span><span>语义理解</span><span>Excel 交付</span>
+      </div>
+    </div>
+    <div class="cover-right">
+      <div class="cover-stage s1"><span class="num">阶段一 / 源码与解析</span><b>解析 PLC 源码，恢复可追溯事实</b><small>状态、连线、赋值、反馈、事件与迁移证据</small></div>
+      <div class="cover-stage s2"><span class="num">阶段二 / 语义理解</span><b>理解工艺过程与动作语义</b><small>按控制器和证据批次分析，不凭空补造边界</small></div>
+      <div class="cover-stage s3"><span class="num">阶段三 / 交付组装</span><b>校验、归档并生成采集表</b><small>候选池、复核队列、工位分组与 Excel</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 项目目标 -->
+<section class="slide" data-title="项目目标" data-note="用三个问题解释系统目标：程序里有哪些步序；步序如何跳转；这段状态代表什么动作。三类问题需要不同证据，不能用变量名或状态号直接推断全部答案。">
+  <div class="slide-head">
+    <div><div class="kicker">一 / 目标</div><h1>项目要解决的是三个层次的问题</h1></div>
+    <div class="chapter">项目目标</div>
+  </div>
+  <p class="lead">从 PLC 程序到采集表，中间必须经过"状态发现 → 逻辑解释 → 工艺表达"，不能压缩成一次文本生成。</p>
+  <div class="body">
+    <div class="grid3">
+      <div class="panel blue"><span class="label blue">问题一 · 状态发现</span><h3 style="margin-top:1vh">程序里有哪些步序？</h3><p>识别状态变量、状态值、比较表达式、赋值目标及其所属控制器与程序单元。</p></div>
+      <div class="panel teal"><span class="label teal">问题二 · 控制关系</span><h3 style="margin-top:1vh">步序如何跳转？</h3><p>还原比较条件、触点、逻辑连接、MOVE 使能、反馈门控和状态写入路径。</p></div>
+      <div class="panel violet"><span class="label violet">问题三 · 工艺语义</span><h3 style="margin-top:1vh">这段状态代表什么动作？</h3><p>结合源码注释、变量文档和上下文，解释工艺类型、统计对象与中文动作描述。</p></div>
+    </div>
+    <div class="panel">
+      <div class="phase">从技术事实到交付表达</div>
+      <div class="flowline">
+        <div class="flowbox src"><span class="n">源码事实</span><b>状态 / 条件 / 写入 / 注释</b></div><div class="arrow">→</div>
+        <div class="flowbox py"><span class="n">逻辑证据</span><b>候选 / 迁移 / 反馈 / 边界</b></div><div class="arrow">→</div>
+        <div class="flowbox agent"><span class="n">工艺语义</span><b>过程类型 / 起止含义 / 动作描述</b></div><div class="arrow">→</div>
+        <div class="flowbox out"><span class="n">交付视图</span><b>工位分组 / 采集标签 / 备注</b></div>
+      </div>
+    </div>
+    <div class="callout orange"><strong>核心原则：</strong>发现了状态，不代表已经证明迁移；证明了局部迁移，也不代表已经证明机械动作完成。系统必须保留证据层级和待核验状态。</div>
+  </div>
+</section>
+
+<!-- 03 总体流程 -->
+<section class="slide" data-title="总体流程" data-note="按命令入口解释实际流程：predict 只接受 PLC 源码、可选 pattern、manual、trace，不接收 GT。predict 完成解析、候选、迁移图、边界投影与批次准备；OpenCode 处理两类批次；finish 校验、合并、生成工艺视图和 Excel。">
+  <div class="slide-head">
+    <div><div class="kicker">二 / 端到端流程</div><h1>整体三段式：确定性解析 → 语义理解 → 确定性交付</h1></div>
+    <div class="chapter">总体流程</div>
+  </div>
+  <p class="lead">源码解析、语义理解、交付组装分成三个独立阶段：前一段的产物是后一段的输入，每段都留下可追溯的中间文件。</p>
+  <div class="body">
+    <div>
+      <div class="phase-row"><div class="phase">A · predict / 源码解析与批次准备</div><div class="phase-line"></div></div>
+      <div class="flowline">
+        <div class="flowbox src"><span class="n">01</span><b>原始 PLC 文件</b><small>PLCopen / SMC2 / Omron</small></div><div class="arrow">→</div>
+        <div class="flowbox py"><span class="n">02</span><b>格式适配</b><small>识别方言、解析网络</small></div><div class="arrow">→</div>
+        <div class="flowbox py"><span class="n">03</span><b>证据与候选</b><small>状态、事件、迁移图</small></div><div class="arrow">→</div>
+        <div class="flowbox py"><span class="n">04</span><b>边界处理</b><small>首出口、原子化、合并</small></div><div class="arrow">→</div>
+        <div class="flowbox agent"><span class="n">05</span><b>批次输入</b><small>按控制器组织证据</small></div>
+      </div>
+    </div>
+    <div>
+      <div class="phase-row"><div class="phase">B · OpenCode / 工艺与动作语义理解</div><div class="phase-line"></div></div>
+      <div class="grid2">
+        <div class="panel violet"><span class="label violet">工艺分析批次</span><h3 style="margin-top:.6vh">候选 + 事件 → 工艺语义</h3><p>过程类型、统计对象、起点含义、终点含义、工艺依据、边界依据；不能确定的事件进入未解决队列。</p></div>
+        <div class="panel blue"><span class="label blue">动作描述批次</span><h3 style="margin-top:.6vh">源码词条 + 上下文 → 中文描述</h3><p>优先用源码步注释；缺失部分才由大模型补充，每行聚焦一个主要动作。</p></div>
+      </div>
+    </div>
+    <div>
+      <div class="phase-row"><div class="phase">C · finish / 校验与交付</div><div class="phase-line"></div></div>
+      <div class="flowline">
+        <div class="flowbox py"><span class="n">06</span><b>批次校验</b><small>ID、标签、事件覆盖</small></div><div class="arrow">→</div>
+        <div class="flowbox py"><span class="n">07</span><b>工艺契约</b><small>推荐待复核 / 证据不足</small></div><div class="arrow">→</div>
+        <div class="flowbox out"><span class="n">08</span><b>交付文件</b><small>CSV / Excel / 审计队列</small></div>
+      </div>
+    </div>
+    <div class="callout"><strong>执行入口：</strong><span class="mono">python plc_cli.py predict</span> → OpenCode 逐批处理 → <span class="mono">python plc_cli.py finish --run ...</span></div>
+  </div>
+</section>
+
+<!-- 04 源码适配 -->
+<section class="slide" data-title="源码适配" data-note="讲通用性。不是先把 XML 全部转成纯文本再让模型猜，而是按方言恢复各自结构。PLCopen 追踪 localId/refLocalId；SMC2 从内嵌 JSON 网络恢复逻辑网格；Omron 按 Rung、端口连接和 BodyContent 解析。之后进入统一的证据模型。">
+  <div class="slide-head">
+    <div><div class="kicker">三 / 源码适配</div><h1>面对不同厂商，先恢复各自的程序结构</h1></div>
+    <div class="chapter">源码适配</div>
+  </div>
+  <p class="lead">支持三种主流 PLC 工程格式，按各自结构恢复程序逻辑，再统一进入同一套证据模型。</p>
+  <div class="body">
+    <div class="grid3 grow">
+      <div class="panel blue grow"><span class="label blue">PLCopen XML</span><h3 style="margin-top:.8vh">LD / FBD / ST</h3><div class="bignum" style="font-size:1.6vw;margin:.8vh 0;color:#3567a7">localId ↔ refLocalId</div><ul><li>恢复网络节点与连接关系</li><li>识别 EQ、触点、AND / OR / NOT</li><li>追踪 MOVE.EN 门控和 OUT 写入目标</li><li>解析 ST 中 IF / ELSIF / CASE 状态赋值</li><li>专项识别跨功能块触发—接收协议</li></ul><pre style="margin:.6vh 0;font-size:.78vw;padding:.5vh .6vw">&lt;block localId="3" typeName="<span style="color:#0b7d83;font-weight:700">EQ</span>"&gt;
+  &lt;connection <span style="color:#b96e2d;font-weight:700">refLocalId="1"</span>/&gt;&lt;/block&gt;
+&lt;block localId="6" typeName="<span style="color:#0b7d83;font-weight:700">MOVE</span>"&gt;
+  &lt;input formalParameter="<span style="color:#7358a8;font-weight:700">EN</span>"&gt;
+    &lt;connection refLocalId="4"/&gt;&lt;/input&gt;&lt;/block&gt;</pre><div class="tag-row"><span class="tag">recall.py</span><span class="tag">event_graph_v6.py</span><span class="tag">successor_graph.py</span></div></div>
+      <div class="panel orange grow"><span class="label orange">SMC2 XML</span><h3 style="margin-top:.8vh">XML 容器 + 内嵌 JSON 网络</h3><div class="bignum" style="font-size:1.6vw;margin:.8vh 0;color:#b96e2d">CLs / VLs</div><ul><li>读取 entry 中的 JSON 网络</li><li>按横向单元、纵向连接恢复逻辑路径</li><li>解析比较、MOVE、触点及嵌入式 ST</li><li>未识别单元、未知写入保留为阻断项</li></ul><pre style="margin:.6vh 0;font-size:.78vw;padding:.5vh .6vw">&lt;entry type="json"&gt;&lt;![CDATA[
+{"<span style="color:#0b7d83;font-weight:700">CLs</span>":[
+  {"__type":"F","Name":"<span style="color:#b96e2d;font-weight:700">=</span>",
+   "In":[{"Var":"Cell.Phase[7]"},{"Var":"17"}]},
+  {"__type":"F","Name":"<span style="color:#b96e2d;font-weight:700">MOVE</span>",
+   "Out":[{"Var":"Cell.Phase[7]"}]}]} ]]&gt;</pre><div class="tag-row"><span class="tag">smc2_adapter.py</span><span class="tag">smc2_controlflow.py</span></div></div>
+      <div class="panel teal grow"><span class="label teal">Omron 原生</span><h3 style="margin-top:.8vh">Sysmac IEC 61131-10 结构</h3><div class="bignum" style="font-size:1.6vw;margin:.8vh 0;color:#16818a">Rung / Port</div><ul><li>解析 connectionPointOutId 连接关系</li><li>识别原生 FBD 比较块、MOVE 与线圈</li><li>解析 BodyContent 中 ST / InlineST</li><li>未知 BodyContent 类型保留审计信息</li></ul><pre style="margin:.6vh 0;font-size:.78vw;padding:.5vh .6vw">&lt;<span style="color:#0b7d83;font-weight:700">BodyContent</span> xsi:type="smcext:LdSection"&gt;
+  &lt;<span style="color:#b96e2d;font-weight:700">Rung</span> evaluationOrder="1"&gt;
+    &lt;FbdObject xsi:type="Block" typeName="="/&gt;
+    &lt;Connection refConnectionPointOutId="2"/&gt;
+  &lt;/Rung&gt;&lt;/BodyContent&gt;</pre><div class="tag-row"><span class="tag">omron_native.py</span><span class="tag">successor_graph.py</span></div></div>
+    </div>
+    <div class="panel">
+      <div class="phase">统一输出层</div>
+      <div class="flowline">
+        <div class="flowbox src"><b>PLCopen 结构</b><small>节点与连接</small></div><div class="arrow">+</div>
+        <div class="flowbox src"><b>SMC2 结构</b><small>网络与逻辑网格</small></div><div class="arrow">+</div>
+        <div class="flowbox src"><b>Omron 结构</b><small>Rung 与端口</small></div><div class="arrow">→</div>
+        <div class="flowbox out"><b>统一迁移证据</b><small class="mono">source_transition_graph.json</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 解析示例 -->
+<section class="slide" data-title="解析示例" data-note="这页最值得停留讲解。XML 中 localId 不是步号，只是节点身份。沿 refLocalId 追踪连接：EQ 比较 Cell.Phase[4]==500，输出进入 Axis.Arrived 触点，再进入 MOVE.EN；MOVE.IN 为 530，OUT 写回 Cell.Phase[4]。所以局部迁移 500→530 来自控制连线与写入目标，而非数值大小。">
+  <div class="slide-head">
+    <div><div class="kicker">四 / 解析示例</div><h1>从 XML 得到步序跳转：核心是追踪"谁控制了写入"</h1></div>
+    <div class="chapter">解析示例</div>
+  </div>
+  <p class="lead">沿 refLocalId 连接追踪：谁触发了写入、写入什么值、写回哪里——三段 XML 对应三个逻辑环节，最后拼出一条状态迁移。</p>
+  <div class="body">
+    <div class="grid3 grow" style="gap:.6vw;align-items:stretch">
+      <!-- 环节1: EQ比较 → 起点 -->
+      <div class="panel grow" style="display:flex;flex-direction:column;border-top:3px solid #3567a7">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3vh">
+          <span class="label blue">环节一 · EQ 比较</span>
+          <span class="tiny">localId 1,2,3</span>
+        </div>
+        <pre style="margin:0;font-size:.78vw;padding:.5vh .6vw;line-height:1.5;flex:1">&lt;inVariable localId="1"&gt;
+  &lt;expression&gt;<span style="color:#0b7d83;font-weight:700">Cell.Phase[4]</span>&lt;/expression&gt;
+&lt;/inVariable&gt;
+&lt;inVariable localId="2"&gt;
+  &lt;expression&gt;<span style="color:#0b7d83;font-weight:700">500</span>&lt;/expression&gt;
+&lt;/inVariable&gt;
+&lt;block localId="3" typeName="<span style="color:#3567a7;font-weight:700">EQ</span>"&gt;
+  &lt;connection <span style="color:#b96e2d;font-weight:700">refLocalId="1"</span>/&gt;
+  &lt;connection <span style="color:#b96e2d;font-weight:700">refLocalId="2"</span>/&gt;
+&lt;/block&gt;</pre>
+        <div style="margin-top:.5vh;padding:.5vh .7vw;background:#eaf1f8;border-radius:5px;border-left:3px solid #3567a7">
+          <b style="font-size:.95vw;color:#3567a7">→ 锚到起点状态</b>
+          <div style="font:.85vw Consolas,monospace;color:#1a2a3a;margin-top:.2vh">Cell.Phase[4] = <b style="color:#3567a7">500</b></div>
+        </div>
+      </div>
+      <!-- 环节2: 触点 → 门控 -->
+      <div class="panel grow" style="display:flex;flex-direction:column;border-top:3px solid #16818a;position:relative">
+        <div style="position:absolute;left:-.5vw;top:50%;transform:translateY(-50%);color:#3567a7;font-size:1.6vw;font-weight:700;z-index:5;background:#fff;padding:0 .2vw">→</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3vh">
+          <span class="label teal">环节二 · 反馈触点</span>
+          <span class="tiny">localId 4</span>
+        </div>
+        <pre style="margin:0;font-size:.78vw;padding:.5vh .6vw;line-height:1.5;flex:1">&lt;contact localId="4"&gt;
+  &lt;connectionPointIn&gt;
+    &lt;connection <span style="color:#b96e2d;font-weight:700">refLocalId="3"</span>
+                 formalParameter="OUT"/&gt;
+  &lt;/connectionPointIn&gt;
+  &lt;variable&gt;<span style="color:#0b7d83;font-weight:700">Axis.Arrived</span>&lt;/variable&gt;
+&lt;/contact&gt;</pre>
+        <div style="margin-top:.5vh;padding:.5vh .7vw;background:#eaf6f5;border-radius:5px;border-left:3px solid #16818a">
+          <b style="font-size:.95vw;color:#16818a">→ 累加使能条件</b>
+          <div style="font:.85vw Consolas,monospace;color:#1a2a3a;margin-top:.2vh">guard = 500 <b style="color:#16818a">AND</b> Arrived</div>
+        </div>
+      </div>
+      <!-- 环节3: MOVE → 写入 -->
+      <div class="panel grow" style="display:flex;flex-direction:column;border-top:3px solid #287b58;position:relative">
+        <div style="position:absolute;left:-.5vw;top:50%;transform:translateY(-50%);color:#16818a;font-size:1.6vw;font-weight:700;z-index:5;background:#fff;padding:0 .2vw">→</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3vh">
+          <span class="label green">环节三 · MOVE 写入</span>
+          <span class="tiny">localId 6,7</span>
+        </div>
+        <pre style="margin:0;font-size:.78vw;padding:.5vh .6vw;line-height:1.5;flex:1">&lt;block localId="6" typeName="<span style="color:#287b58;font-weight:700">MOVE</span>"&gt;
+  &lt;input formalParameter="<span style="color:#7358a8;font-weight:700">EN</span>"&gt;
+    &lt;connection <span style="color:#b96e2d;font-weight:700">refLocalId="4"</span>/&gt;&lt;/input&gt;
+  &lt;input formalParameter="IN"&gt;<span style="color:#0b7d83;font-weight:700">530</span>&lt;/input&gt;
+&lt;/block&gt;
+&lt;outVariable localId="7"&gt;
+  &lt;connection refLocalId="6"/&gt;
+  &lt;expression&gt;<span style="color:#0b7d83;font-weight:700">Cell.Phase[4]</span>&lt;/expression&gt;
+&lt;/outVariable&gt;</pre>
+        <div style="margin-top:.5vh;padding:.5vh .7vw;background:#edf7f1;border-radius:5px;border-left:3px solid #287b58">
+          <b style="font-size:.95vw;color:#287b58">→ 写回同一变量</b>
+          <div style="font:.85vw Consolas,monospace;color:#1a2a3a;margin-top:.2vh">Cell.Phase[4] := <b style="color:#287b58">530</b></div>
+        </div>
+      </div>
+    </div>
+    <!-- 底部迁移结论 -->
+    <div class="panel green" style="padding:1vh 1.2vw">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:1.5vw">
+        <div>
+          <div class="phase" style="color:#287b58;margin-bottom:.3vh">三段拼出的局部迁移</div>
+          <div style="font:700 1.3vw Consolas,monospace;color:#1a2a3a">Cell.Phase[4]=500 <span style="color:#16818a">AND</span> Axis.Arrived <span style="color:#287b58">→</span> Cell.Phase[4]:=530</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:1vw;flex-shrink:0">
+          <div style="text-align:center"><div class="bignum" style="font-size:2.2vw">500</div><small class="muted" style="font-size:.8vw">起点</small></div>
+          <div style="font-size:1.8vw;color:#287b58;font-weight:700">→</div>
+          <div style="text-align:center"><div class="bignum" style="font-size:2.2vw;color:#287b58">530</div><small class="muted" style="font-size:.8vw">写入后</small></div>
+        </div>
+      </div>
+      <p class="tiny" style="margin:.5vh 0 0">迁移依据是 MOVE 的使能路径与 OUT 写入目标，<b>不是状态号相邻或数值递增</b>。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 06 证据模型 -->
+<section class="slide" data-title="证据模型" data-note="用三层逻辑讲清一条迁移在源码上怎么判定成立：①EN回溯到EQ找到起点 ②guard求值通过（使能条件全部满足）③无未知writer阻断（写入目标确定、无覆盖）。这三步对应证据分级里的第四级局部迁移证据。前三级（状态观察/同域事件/连线追踪）只是发现线索，不构成迁移证明。">
+  <div class="slide-head">
+    <div><div class="kicker">五 / 证据模型</div><h1>一条迁移怎么算"成立"：源码上的三步判定</h1></div>
+    <div class="chapter">证据模型</div>
+  </div>
+  <p class="lead">候选池高召回，但"成立"要过三关：找到起点 → 使能条件全满足 → 写入目标无覆盖。下面用 500→530 这条迁移演示。</p>
+  <div class="body">
+    <div class="grid3 grow" style="gap:1vw">
+      <!-- ① EN回溯到EQ -->
+      <div class="panel grow" style="display:flex;flex-direction:column">
+        <div class="phase" style="color:#3567a7">第一步 · EN 回溯</div>
+        <h3 style="color:#3567a7">找到"谁触发了写入"</h3>
+        <div class="grow" style="display:flex;flex-direction:column;justify-content:center;gap:.5vh">
+          <div style="text-align:center;color:#c62828;font-size:.85vw;font-weight:700">↑ 回溯 EN 引脚</div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:.4vw">
+            <div style="border:2px solid #3567a7;background:#edf4fc;border-radius:6px;padding:.7vh .8vw;text-align:center;min-width:5vw"><b style="font-size:1vw;color:#3567a7">EQ 比较块</b><div style="font:.85vw Consolas,monospace;color:#1a2a3a;margin-top:.2vh">Phase = 500</div></div>
+            <div style="color:#3567a7;font-size:1.4vw;font-weight:700">→EN→</div>
+            <div style="border:2px solid #b96e2d;background:#fbf2e9;border-radius:6px;padding:.7vh .8vw;text-align:center;min-width:5vw"><b style="font-size:1vw;color:#b96e2d">MOVE 块</b><div style="font:.85vw Consolas,monospace;color:#1a2a3a;margin-top:.2vh">IN = 530</div></div>
+            <div style="color:#3567a7;font-size:1.4vw;font-weight:700">→OUT→</div>
+            <div style="border:2px solid #3567a7;background:#fff;border-radius:6px;padding:.7vh .8vw;text-align:center;min-width:5vw"><b style="font-size:1vw;color:#3567a7">写回</b><div style="font:.85vw Consolas,monospace;color:#1a2a3a;margin-top:.2vh">Phase</div></div>
+          </div>
+          <div style="text-align:center;color:#888;font-size:.8vw">沿 refLocalId 连接从 MOVE.EN 往回找</div>
+        </div>
+        <p style="margin:.4vh 0 0;font-size:.95vw">从 MOVE 的 EN 引脚沿连接回溯，锚到 <b>EQ 比较块</b>。</p>
+        <div style="margin-top:.4vh;padding:.4vh .6vw;background:#eaf1f8;border-radius:4px;font:.8vw/1.4 Consolas,monospace;color:#3567a7">起点 = 500<br>（EQ 的比较值）</div>
+      </div>
+      <!-- ② guard求值通过 -->
+      <div class="panel grow" style="display:flex;flex-direction:column;border-color:#16818a;background:#eaf6f5">
+        <div class="phase" style="color:#16818a">第二步 · guard 求值</div>
+        <h3 style="color:#16818a">使能条件全部满足</h3>
+        <div class="grow" style="display:flex;flex-direction:column;justify-content:center;gap:.4vh">
+          <div style="display:flex;align-items:center;justify-content:center;gap:.4vw">
+            <div style="border:2px solid #16818a;background:#fff;border-radius:6px;padding:.6vh .7vw;text-align:center;min-width:5vw"><b style="font-size:.95vw;color:#16818a">EQ</b><div style="font:.8vw Consolas,monospace;color:#1a2a3a;margin-top:.2vh">Phase=500</div></div>
+            <div style="color:#16818a;font-size:1vw;font-weight:700">AND</div>
+            <div style="border:2px solid #16818a;background:#fff;border-radius:6px;padding:.6vh .7vw;text-align:center;min-width:5vw"><b style="font-size:.95vw;color:#16818a">触点</b><div style="font:.8vw Consolas,monospace;color:#1a2a3a;margin-top:.2vh">Axis.Arrived</div></div>
+          </div>
+          <div style="text-align:center;color:#16818a;font-size:1.2vw;font-weight:700">↓</div>
+          <div style="border:2px solid #16818a;background:#dff1ef;border-radius:6px;padding:.6vh .7vw;text-align:center;margin:0 auto;min-width:8vw"><b style="font-size:1vw;color:#16818a">guard 全部满足</b><div style="font:.8vw Consolas,monospace;color:#16818a;margin-top:.2vh">→ MOVE 执行</div></div>
+        </div>
+        <p style="margin:.4vh 0 0;font-size:.95vw">EN 上的使能条件<b>不只 EQ</b>，还有触点/AND/反馈；<b>全部为真</b>才执行。</p>
+        <div style="margin-top:.4vh;padding:.4vh .6vw;background:#dff1ef;border-radius:4px;font:.8vw/1.4 Consolas,monospace;color:#16818a">guard:<br>Phase=500 AND Arrived</div>
+      </div>
+      <!-- ③ 无未知writer阻断 -->
+      <div class="panel grow" style="display:flex;flex-direction:column;border-color:#287b58;background:#edf7f1">
+        <div class="phase" style="color:#287b58">第三步 · 无 writer 阻断</div>
+        <h3 style="color:#287b58">写入目标确定、无覆盖</h3>
+        <div class="grow" style="display:flex;flex-direction:column;justify-content:center;gap:.4vh">
+          <div style="display:flex;align-items:center;justify-content:center;gap:.4vw">
+            <div style="border:2px solid #287b58;background:#fff;border-radius:6px;padding:.6vh .7vw;text-align:center;min-width:5vw"><b style="font-size:.95vw;color:#287b58">MOVE</b><div style="font:.8vw Consolas,monospace;color:#1a2a3a;margin-top:.2vh">IN=530</div></div>
+            <div style="color:#287b58;font-size:1.4vw;font-weight:700">→OUT→</div>
+            <div style="border:2px solid #287b58;background:#dff0e5;border-radius:6px;padding:.6vh .7vw;text-align:center;min-width:5vw"><b style="font-size:.95vw;color:#287b58">写回</b><div style="font:.8vw Consolas,monospace;color:#1a2a3a;margin-top:.2vh">Phase:=530</div></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:.5vw;margin-top:.3vh">
+            <div style="border:1.5px dashed #b34e53;background:#fff;border-radius:6px;padding:.4vh .6vw;text-align:center;position:relative"><span style="font-size:.8vw;color:#b34e53">其他 writer?</span><span style="position:absolute;color:#b34e53;font-size:1.1vw;font-weight:700;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:0 .2vw">✗</span></div>
+            <div style="color:#287b58;font-size:.9vw;font-weight:700">→ 无覆盖 ✓</div>
+          </div>
+        </div>
+        <p style="margin:.4vh 0 0;font-size:.95vw">OUT 写回 Phase；确认<b>无未知写入</b>会覆盖它，作用域无歧义。</p>
+        <div style="margin-top:.4vh;padding:.5vh .6vw;background:#dff0e5;border:1px solid #287b58;border-radius:4px;font:.85vw/1.4 Consolas,monospace;color:#287b58;font-weight:700;text-align:center">迁移成立：500 → 530<br><span style="font-weight:400;color:#1a2a3a">evidence: plcopen_wired_guard</span></div>
+      </div>
+    </div>
+    <!-- 五级证据分级 -->
+    <div style="text-align:center;font-size:1vw;color:#4a5a6a;padding:.6vh 0">
+      证据五级：①状态观察 → ②同域事件 → ③连线追踪 → ④局部迁移（上面三步） → ⑤专项协议
+    </div>
+  </div>
+</section>
+
+<!-- 07 候选与边界 -->
+<section class="slide" data-title="候选与边界" data-note="候选池多来源高召回，标签形态各异：连线追踪给干净单等式，recall/state_exit给NOT退出复合式，反馈写法起点终点相同，信号收尾是两段连排。交付表要单状态等式，边界规范化按形态分类转换。四类变换各解决一种典型形态：A首出口解决NOT退出、B原子化解决OR集合、C反馈后继解决反馈写法、D信号合并解决两段连排。转不了的进review不硬转，AND条件不删，合并不是新增迁移边。">
+  <div class="slide-head">
+    <div><div class="kicker">六 / 候选与边界</div><h1>从形状各异的候选标签，到统一的单状态等式</h1></div>
+    <div class="chapter">候选与边界</div>
+  </div>
+  <div class="body">
+    <!-- 引子：候选池标签 vs 交付表要的 -->
+    <div class="panel" style="padding:.8vh 1vw">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:1vw;align-items:stretch">
+        <div>
+          <div class="phase" style="color:#b96e2d;margin-bottom:.3vh">候选池里的标签（来源不同，形态不同）</div>
+          <pre style="margin:0;font-size:.8vw;padding:.5vh .7vw;line-height:1.6;background:#fbf2e9;border-color:#f0dfce">S=500  → S=530                  <span style="color:#888">← 连线追踪（干净）</span>
+S=2910 → NOT(2910 OR 2960)       <span style="color:#888">← recall/ST条件（待翻译）</span>
+S=70 AND F → S=70 AND F          <span style="color:#888">← 反馈写法（待投影）</span>
+A→B, B→C                          <span style="color:#888">← 两段连排（待合并）</span></pre>
+        </div>
+        <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;min-width:7vw">
+          <div style="color:#287b58;font-size:1vw;font-weight:700;margin-bottom:.4vh;text-align:center;line-height:1.4">边界规范化<br>按形态分类转换</div>
+          <div style="color:#287b58;font-size:2.2vw;font-weight:700">→</div>
+        </div>
+        <div>
+          <div class="phase" style="color:#287b58;margin-bottom:.3vh">交付表要的单状态等式</div>
+          <pre style="margin:0;font-size:.8vw;padding:.5vh .7vw;line-height:1.6;background:#edf7f1;border-color:#d8eadf">S=500  → S=530
+S=2910 → S=3100
+S=70   → S=4
+A→C</pre>
+          <p class="tiny" style="margin:.4vh 0 0;color:#4a5a6a">每行两端各为单状态等式或单BOOL变量</p>
+        </div>
+      </div>
+    </div>
+    <!-- 四类变换：按形态组织 -->
+    <div class="grid4 grow" style="gap:.7vw">
+      <div class="transform" style="display:flex;flex-direction:column">
+        <div class="letter" style="color:#3567a7">A · NOT 退出怎么转</div>
+        <h3 style="margin:.4vh 0">状态集合首出口</h3>
+        <div style="background:#eaf1f8;border-left:3px solid #3567a7;padding:.4vh .6vw;border-radius:0 4px 4px 0;margin:.3vh 0">
+          <div style="font:.78vw Consolas,monospace;color:#1a2a3a">S=2910 → NOT(2910 OR 2960)</div>
+        </div>
+        <p style="margin:.3vh 0;font-size:.88vw;color:#4a5a6a;flex:1">"离开集合"没说去哪。沿源码迁移图从2910走BFS，找第一个不在集合里的状态。</p>
+        <div class="example" style="line-height:1.55;font-size:.78vw">2910→2960→<span style="color:#287b58;font-weight:700">3100</span>→3200<br>2910/2960 在集合 · <span style="color:#287b58;font-weight:700">3100 首出口</span><br><span style="color:#0f4c75;font-weight:700">→ 2910 → 3100</span></div>
+      </div>
+      <div class="transform" style="display:flex;flex-direction:column">
+        <div class="letter" style="color:#7358a8">B · OR 集合怎么转</div>
+        <h3 style="margin:.4vh 0">复合边界原子化</h3>
+        <div style="background:#f2eff9;border-left:3px solid #7358a8;padding:.4vh .6vw;border-radius:0 4px 4px 0;margin:.3vh 0">
+          <div style="font:.78vw Consolas,monospace;color:#1a2a3a">(S=100 OR S=200) → NOT(集合)</div>
+        </div>
+        <p style="margin:.3vh 0;font-size:.88vw;color:#4a5a6a;flex:1">OR起点一行装不下。拆成独立分支各行走首出口；AND门控<b>不能删</b>（删了会把等待时间算错）。</p>
+        <div class="example" style="line-height:1.55;font-size:.78vw">100 → 135（走首出口）<br>200 → 245（走首出口）<br><span style="color:#888">不出现 100→245 交叉</span></div>
+      </div>
+      <div class="transform" style="display:flex;flex-direction:column">
+        <div class="letter" style="color:#16818a">C · 反馈写法怎么转</div>
+        <h3 style="margin:.4vh 0">反馈条件后继</h3>
+        <div style="background:#eaf6f5;border-left:3px solid #16818a;padding:.4vh .6vw;border-radius:0 4px 4px 0;margin:.3vh 0">
+          <div style="font:.78vw Consolas,monospace;color:#1a2a3a">S=70 AND F → S=70 AND F</div>
+        </div>
+        <p style="margin:.3vh 0;font-size:.88vw;color:#4a5a6a;flex:1">起点终点看起来一样。反馈F是迁移必要条件，满足时实际MOVE到下一状态j，投影成直接后继。</p>
+        <div class="example" style="line-height:1.55;font-size:.78vw">源码: S=70 AND F → MOVE S:=4<br><span style="color:#0f4c75;font-weight:700">投影: 70 → 4</span><br><span style="color:#888">条件采集替代，非布尔等价</span></div>
+      </div>
+      <div class="transform" style="display:flex;flex-direction:column">
+        <div class="letter" style="color:#287b58">D · 两段连排怎么转</div>
+        <h3 style="margin:.4vh 0">动作与信号收尾合并</h3>
+        <div style="background:#edf7f1;border-left:3px solid #287b58;padding:.4vh .6vw;border-radius:0 4px 4px 0;margin:.3vh 0">
+          <div style="font:.78vw Consolas,monospace;color:#1a2a3a">A→B（动作）+ B→C（信号收尾）</div>
+        </div>
+        <p style="margin:.3vh 0;font-size:.88vw;color:#4a5a6a;flex:1">B段只是A的信号/数据收尾，无新动作，单独采没意义。合并成采集区间，B的延时计入A→C。</p>
+        <div class="example" style="line-height:1.55;font-size:.78vw">采集: <span style="color:#0f4c75;font-weight:700">A→C</span><br>原始 A→B、B→C 留档<br><span style="color:#888">非新增迁移边</span></div>
+      </div>
+    </div>
+    <div class="callout orange"><strong>原则：</strong>转不了的进 review 不硬转；AND 条件不删（避免计时错误）；信号合并不是新增迁移边（原始段留档）。</div>
+  </div>
+</section>
+
+<!-- 08 动作描述 -->
+<section class="slide" data-title="动作描述" data-note="动作描述是交付表工程人员最直接阅读的列。用A/B两档得到：A档=从源码ST注释确定性提取（如//Z轴下降→Z轴下降），覆盖90%+；B档=对A档空白行用大模型补充，但必须过白名单校验（只许用源码出现过的机构词/动作词，禁编造），失败回退A档。一个真实例子贯穿：源码注释缺失的行，B档从动作变量Cy_Up1+变量文档顶升气缸推出伺服下降，但若用了未在源码出现的CCD就判编造回退。">
+  <div class="slide-head">
+    <div><div class="kicker">七 / 动作描述</div><h1>交付表"动作描述"列怎么来：A/B 两档</h1></div>
+    <div class="chapter">动作描述</div>
+  </div>
+  <p class="lead">工程人员拿到表最先看的就是"动作描述"。它分两档生成：A 档从源码注释确定性提取，B 档只补空白行且必须过白名单校验，失败回退 A 档——不让大模型自由发挥。</p>
+  <div class="body">
+    <div class="grid2 grow" style="gap:1.2vw">
+      <!-- A档 -->
+      <div class="panel green grow" style="display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:.6vw"><span class="label green">A 档</span><b style="font-size:1.15vw;color:#287b58">源码步注释 · 确定性提取</b></div>
+        <h3 style="margin:.8vh 0 .4vh;color:#287b58">从 PLC 源码的 ST 注释直接取</h3>
+        <div class="code" style="margin:.4vh 0">
+          <div class="code-head"><span>源码 ST 片段</span><span>step_comments.json</span></div>
+          <pre style="font-size:.82vw;line-height:1.6">Cell.Phase[4]:=500;
+<span style="color:#287b58;font-weight:700">// Z轴下降至取料位</span>
+Cell.Phase[4]:=530;
+<span style="color:#287b58;font-weight:700">// 夹爪闭合</span></pre>
+        </div>
+        <p style="margin:.4vh 0;font-size:.95vw">解析器提取 <span class="mono">//中文</span> 注释 → 按状态号匹配到候选行 → 清洗（去前缀、过滤模板文本）→ <b>直接用作动作描述</b>。</p>
+        <div style="margin-top:auto;padding:.5vh .7vw;background:#dff0e5;border-radius:5px;font:.85vw/1.4 Consolas,monospace;color:#287b58"><b>结果：</b>Z轴下降至取料位 / 夹爪闭合<br><span style="color:#1a2a3a;font-weight:400">转接片工程覆盖率 97.5%</span></div>
+      </div>
+      <!-- B档 -->
+      <div class="panel orange grow" style="display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:.6vw"><span class="label orange">B 档</span><b style="font-size:1.15vw;color:#b96e2d">大模型补充空白行 · 白名单校验</b></div>
+        <h3 style="margin:.8vh 0 .4vh;color:#b96e2d">A 档为空的行才交给大模型，且必须过三关</h3>
+        <div style="margin:.4vh 0">
+          <div style="font:.78vw Consolas,monospace;color:#888;margin-bottom:.3vh">输入：动作变量 Cy_Up1 + 变量文档"顶升气缸" + 前后行步注释</div>
+          <div style="display:flex;align-items:center;gap:.4vw;font-size:.9vw">
+            <div style="border:1px solid #b96e2d;background:#fff;border-radius:4px;padding:.3vh .5vw">LLM 生成</div>
+            <div style="color:#b96e2d;font-weight:700">→</div>
+            <div style="border:1px solid #b96e2d;background:#fff8e1;border-radius:4px;padding:.3vh .5vw">"顶升气缸上升"</div>
+          </div>
+        </div>
+        <div style="margin:.5vh 0;padding:.5vh .7vw;background:#fbf2e9;border-radius:5px;border-left:3px solid #b96e2d">
+          <div style="font-size:.85vw;font-weight:700;color:#b96e2d;margin-bottom:.3vh">白名单三闸（防编造）</div>
+          <ul style="margin:0;padding-left:1.2vw;font-size:.88vw;line-height:1.5;color:#765a40">
+            <li>引用词必须在该行动作变量里出现过</li>
+            <li>禁编造英文标识符（CCD/Axis 等须源码有据）</li>
+            <li>中文词必须命中机构词/动作词白名单</li>
+          </ul>
+        </div>
+        <p style="margin:.4vh 0;font-size:.92vw">过三闸 → 采纳；<b>不过 → 回退 A 档</b>，绝不放任编造。</p>
+        <div style="margin-top:auto;padding:.5vh .7vw;background:#f8e9da;border-radius:5px;font:.85vw/1.4 Consolas,monospace;color:#b96e2d"><b>定位：</b>工艺语义是推断层<br><span style="color:#1a2a3a;font-weight:400">带源码引用、过校验，但不构成 GT 证明</span></div>
+      </div>
+    </div>
+    <div class="callout"><strong>为什么这样设计：</strong>A 档覆盖 90%+ 行且 100% 可追溯到源码注释；B 档只补空白、受白名单约束、失败回退。工程人员读到的每条描述，要么直接来自源码，要么是大模型在源码词汇范围内的保守推断——不是自由发挥。</div>
+  </div>
+</section>
+
+<!-- 09 结果可信度 -->
+<section class="slide" data-title="结果可信度" data-note="从产品角度讲两件事：①交付表每行都带证据编号，能查到来自源码哪条迁移，不是凭空生成 ②证据不足的行明确标待复核并说明原因，不藏起来也不删掉。交付表里只会出现源码支撑和推荐待复核两种状态；事件无法归属的根本不进表。">
+  <div class="slide-head">
+    <div><div class="kicker">八 / 结果可信度</div><h1>交付表每行带证据编号，存疑的标出来不藏</h1></div>
+    <div class="chapter">结果可信度</div>
+  </div>
+  <p class="lead">交付表里的每一行都不是凭空生成的，也都不是一律当"已完成"对待。</p>
+  <div class="body">
+    <div class="grid2 grow">
+      <div class="panel blue grow" style="display:flex;flex-direction:column">
+        <span class="label blue">证据可查</span>
+        <h3 style="margin-top:.8vh">每行带证据编号</h3>
+        <p>交付表每行都带候选 ID 和事件 ID，能查到它来自源码的哪个网络、哪个节点、哪条迁移——不是大模型凭空写的。</p>
+        <div style="margin-top:auto;padding:.6vh .7vw;background:#e1edf9;border-radius:5px;font:.82vw/1.6 Consolas,monospace;color:#3567a7">交付表一行:<br>开始标签: Cell.Phase[4]=500<br>结束标签: Cell.Phase[4]=530<br><b>候选ID: C0000003</b><br>← 来自 EQ(localId3) + MOVE(localId6)</div>
+      </div>
+      <div class="panel orange grow" style="display:flex;flex-direction:column">
+        <span class="label orange">存疑的标出来</span>
+        <h3 style="margin-top:.8vh">证据不足的标"待复核"</h3>
+        <p>证据不足、边界判不了、事件归不了属的行，明确标"推荐待复核"并写明原因，<b>不删掉也不藏起来</b>——让使用者知道哪些需要人工确认。</p>
+        <div style="margin-top:auto;padding:.6vh .7vw;background:#f8e9da;border-radius:5px;font:.82vw/1.6 Consolas,monospace;color:#b96e2d">核验状态: 推荐待复核<br>原因: 相邻状态，未验证控制流<br>说明: 这条不是已证明的迁移，<br>需人工确认后再用于采集</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="phase">交付表里只会出现这两种状态</div>
+      <div class="grid2">
+        <div style="border-left:4px solid #287b58;padding:.7vh .9vw;background:#edf7f1;border-radius:0 5px 5px 0">
+          <b style="color:#287b58;font-size:1.1vw">源码支撑</b>
+          <p style="margin:.3vh 0 0;font-size:.95vw;color:#4a5a6a">迁移有完整门控和写入证据，可直接用于采集。</p>
+        </div>
+        <div style="border-left:4px solid #b96e2d;padding:.7vh .9vw;background:#fbf2e9;border-radius:0 5px 5px 0">
+          <b style="color:#b96e2d;font-size:1.1vw">推荐待复核</b>
+          <p style="margin:.3vh 0 0;font-size:.95vw;color:#4a5a6a">证据部分缺失或为相邻假设，需人工确认后再用。</p>
+        </div>
+      </div>
+      <p class="tiny" style="margin:.5vh 0 0;color:#6c7a89">事件无法归属的，进未解决队列，<b>不会出现在交付表里</b>。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 10 交付文件 -->
+<section class="slide" data-title="交付文件" data-note="避免把所有 CSV 混为一个最终结果。prediction_candidate_pairs 是完整候选档案；prediction_atomic_pairs 是原子化视图；prediction_collection_pairs 是收尾合并后的采集视图。finish 后 final_sequence 是语义草表，final_process_steps 是工艺契约精选子集，而 final_prediction_pairs 才是 Excel 生成器实际读取的数据源。">
+  <div class="slide-head">
+    <div><div class="kicker">九 / 交付文件</div><h1>最终产物不是单一 CSV，而是一组分工明确的数据视图</h1></div>
+    <div class="chapter">交付文件</div>
+  </div>
+  <p class="lead">主采集表强调可读性；完整档案、条件文件、血缘和复核队列负责保留证据与转换过程。</p>
+  <div class="body">
+    <table>
+      <thead><tr><th style="width:26%">文件 / 视图</th><th style="width:22%">所处阶段</th><th>主要作用</th><th style="width:18%">理解重点</th></tr></thead>
+      <tbody>
+        <tr><td><code>prediction_candidate_pairs.csv</code></td><td>predict · 完整候选</td><td>保存源码解析得到的完整候选对及来源信息。</td><td>高召回候选档案</td></tr>
+        <tr><td><code>prediction_atomic_pairs.csv</code></td><td>predict · 原子视图</td><td>将可证明的复合边界投影为非复合原子对。</td><td>分支与血缘可追溯</td></tr>
+        <tr><td><code>prediction_collection_pairs.csv</code></td><td>predict · 采集视图</td><td>在原子视图上执行符合条件的动作/信号收尾合并。</td><td>面向采集跨度</td></tr>
+        <tr><td><code>final_sequence.csv</code></td><td>finish · 语义草表</td><td>合并 Agent 的工艺类型、统计对象、起止含义和证据说明。</td><td>工艺解释视图</td></tr>
+        <tr><td><code>final_process_steps.csv</code></td><td>finish · 工艺精选</td><td>通过工艺契约、标记为推荐待复核的子集。</td><td>不是 Excel 主数据源</td></tr>
+        <tr><td><code>final_prediction_pairs.csv</code></td><td>finish · 最终预测</td><td>完整预测候选与不重复的 Agent 提议对，经原子化/采集视图处理。</td><td><strong>Excel 生成器实际读取</strong></td></tr>
+        <tr><td>未解决事件 / 复核队列</td><td>finish · 审计复核</td><td>保留未解决事件与证据/字段不足的工艺记录。</td><td>问题不静默消失</td></tr>
+      </tbody>
+    </table>
+    <div class="grid2">
+      <div class="panel blue"><h3>完整归档</h3><p><span class="mono">final_prediction_pairs_full.csv</span>、<span class="mono">final_sequence_raw.csv</span>、<span class="mono">final_process_steps_raw.csv</span> 保存采集投影前的完整版本。</p></div>
+      <div class="panel orange"><h3>边界审计</h3><p><span class="mono">prediction_atomic_conditions.json</span>、<span class="mono">prediction_atomic_lineage.csv</span>、<span class="mono">prediction_atomic_review.csv</span> 记录原式、分支、证据与不能投影的原因。</p></div>
+    </div>
+    <div class="callout orange"><strong>最重要的区分：</strong><span class="mono">final_prediction_pairs.csv</span> 是 Excel 输入；<span class="mono">final_process_steps.csv</span> 是工艺契约筛选后的推荐待复核子集。两者用途不同。</div>
+  </div>
+</section>
+
+<!-- 11 Excel 交付 -->
+<section class="slide" data-title="Excel 交付" data-note="解释 Excel 的七列和各列来源。构成要素由 POU 路径、工位身份映射、变量文档确定；动作描述由源码步注释与大模型补充合并；时长只有提供 Trace 才能回填；动作变量是证据引用；起止标签来自 final_prediction_pairs；备注优先用网络注释或复核提示。工位分组是展示结构，排序不等于执行顺序。">
+  <div class="slide-head">
+    <div><div class="kicker">十 / Excel 交付</div><h1>把机器可追溯的候选整理为工程人员可读的采集表</h1></div>
+    <div class="chapter">Excel 交付</div>
+  </div>
+  <p class="lead">finish 调用 <span class="mono">gen_workstation_xlsx.py</span>，读取 <span class="mono">final_prediction_pairs.csv</span>，按工位组织并生成"工序名_步序采集表.xlsx"。</p>
+  <div class="body">
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6vh"><b style="font-size:1.2vw">步序采集表 · 字段结构示意</b><span class="label green">最终阅读视图</span></div>
+      <div class="sheet">
+        <div class="cell head">构成要素</div><div class="cell head">动作描述</div><div class="cell head">时长(ms)</div><div class="cell head">动作变量（引用）</div><div class="cell head">开始标签</div><div class="cell head">结束标签</div><div class="cell head">备注</div>
+        <div class="cell hl">EM01_示例工位</div><div class="cell">伺服轴移动至取料位</div><div class="cell">—</div><div class="cell">Axis_Z1 / MoveCmd</div><div class="cell mono">Cell.Phase[4]=500</div><div class="cell mono">Cell.Phase[4]=530</div><div class="cell">网络注释 / 待复核提示</div>
+      </div>
+      <p class="tiny" style="margin:.5vh 0 0">以上为字段布局示意，不是实际生产工序结果；无 Trace 时长留空。</p>
+    </div>
+    <div class="grid3 grow">
+      <div class="panel blue grow"><span class="label blue">构成要素</span><h3 style="margin-top:.6vh">工位身份</h3><p>结合 POU 路径、station_identity.json、变量文档与子工位信息确定分组；缺少身份文档会进入审计。</p></div>
+      <div class="panel teal grow"><span class="label teal">动作描述 / 变量</span><h3 style="margin-top:.6vh">动作语义与证据引用</h3><p>描述来自源码步注释与大模型补充合并；动作变量提供证据引用；备注优先采用对应网络的具体源码注释。</p></div>
+      <div class="panel green grow"><span class="label green">时长 / 排序</span><h3 style="margin-top:.6vh">可选运行时信息</h3><p>提供 Trace 后才匹配跳变并回填时长。工位、变量和状态值排序便于查找，不代表 PLC 执行顺序。</p></div>
+    </div>
+    <div class="callout"><strong>Excel 的定位：</strong>它是工程阅读与采集交付物；底层 CSV、证据图和血缘才是复核、追溯与评价的依据。</div>
+  </div>
+</section>
+
+<!-- 12 评价与边界 -->
+<section class="slide" data-title="评价与边界" data-note="把预测、人工覆盖评价和 Trace 运行时验证分开讲。predict 不接收 GT，防止人工答案参与候选生成；--manual 是 finish 后自动做覆盖评价的输入；evaluate 是单独的预测与人工表对比命令；--trace 是对已有预测进行运行时跳变匹配和时长回填。它们不能混成同一证据。">
+  <div class="slide-head">
+    <div><div class="kicker">十一 / 评价与边界</div><h1>采集、对账、测时长：三件独立的事</h1></div>
+    <div class="chapter">评价与边界</div>
+  </div>
+  <p class="lead">系统做三件独立的事：从源码生成采集表、把采集表和人工基准对账、用运行记录回填实测时长。三件事各有各的输入，不互相污染。</p>
+  <div class="body">
+    <div class="grid3">
+      <div class="panel blue"><span class="label blue">采集 / predict</span><h3 style="margin-top:.6vh">从源码生成采集表</h3><p>只读 PLC 源码，输出候选、迁移证据、起止边界和动作描述，生成可采集的步序表。</p></div>
+      <div class="panel orange"><span class="label orange">对账 / coverage</span><h3 style="margin-top:.6vh">拿采集表和人工基准比对</h3><p>独立比较预测表与人工采集表，输出命中、遗漏和未覆盖根因，方便核对差异。</p></div>
+      <div class="panel green"><span class="label green">测时长 / trace</span><h3 style="margin-top:.6vh">用运行记录回填实测时长</h3><p>匹配实际状态跳变和持续时间，把实测时长回填到 Excel 时长列，量化每个动作。</p></div>
+    </div>
+    <div class="phase-row"><div class="phase">能做什么 · 不能保证什么</div><div class="phase-line"></div></div>
+    <div class="grid2 grow">
+      <div class="panel green grow"><h3>系统能做</h3><ul><li>从源码还原状态迁移和起止边界</li><li>生成带证据引用的可采集步序表</li><li>用源码注释和大模型补充动作描述</li><li>拿运行记录回填实测时长</li></ul></div>
+      <div class="panel red grow"><h3>系统不能保证</h3><ul><li>静态源码无法证明机构物理上确实动了</li><li>不能穷尽全工程所有写入路径（有未知副作用）</li><li>动作描述是推断层，不等同人工最终确认</li><li>需要现场或人工证据的，标"待复核"</li></ul></div>
+    </div>
+    <div class="callout"><strong>一句话：</strong>系统能把"源码里写了什么"整理成可采集、可追溯的表；但"机器是不是真按这个动了"需要运行记录或人工确认。</div>
+  </div>
+</section>
+
+</div>
+<script>
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const progress=document.getElementById('progressBar');
+  const pageno=document.getElementById('pageno');
+  const notesBox=document.getElementById('notesBox');
+  let index=0, wheelLock=false, notesOpen=false;
+  function show(n){
+    index=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,i)=>{s.classList.toggle('active',i===index);});
+    progress.style.width=((index+1)/slides.length*100)+'%';
+    pageno.textContent=String(index+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+    notesBox.innerHTML='<strong>本页讲解提示：</strong> '+(slides[index].dataset.note||'');
+    if(notesOpen) notesBox.style.display='block'; else notesBox.style.display='none';
+  }
+  document.addEventListener('keydown',e=>{
+    if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();show(index+1);}
+    if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();show(index-1);}
+    if(e.key==='Home'){show(0);}
+    if(e.key==='End'){show(slides.length-1);}
+    if(e.key==='f'||e.key==='F'){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.();}
+    if(e.key.toLowerCase()==='n'&&!['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)){notesOpen=!notesOpen;notesBox.style.display=notesOpen?'block':'none';}
+  });
+  window.addEventListener('wheel',e=>{
+    if(wheelLock) return;
+    const sel=window.getSelection();
+    if(sel&&sel.toString().length>0) return;
+    if(Math.abs(e.deltaY)<15) return;
+    e.preventDefault();
+    wheelLock=true;
+    if(e.deltaY>0) show(index+1); else show(index-1);
+    setTimeout(()=>{wheelLock=false;},550);
+  },{passive:false});
+  show(0);
+})();
+</script>
+</body>
+</html>

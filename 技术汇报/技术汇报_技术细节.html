@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLC 步序自动采集 · 技术细节</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#0d1b2a;color:#e0e6ed;
+    font-family:"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .deck{position:relative;width:100vw;height:100vh}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;
+    padding:3vh 4.5vw 6vh;overflow:hidden}
+  .slide.active{display:flex;animation:fadeIn .35s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+  .slide h1{font-size:3vw;font-weight:700;color:#4cc9f0;letter-spacing:.5px;
+    margin-bottom:1.2vh;padding-bottom:1vh;border-bottom:2px solid #1b4965;line-height:1.2;
+    flex-shrink:0}
+  .slide h1 .sub{font-size:1.45vw;color:#7a8b99;font-weight:400;margin-left:1vw}
+  .slide h2{font-size:1.7vw;color:#f0a500;margin:1vh 0 .5vh;flex-shrink:0}
+  .body{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:1vh;min-height:0}
+  .body>*{flex-shrink:0}
+  .grow{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0}
+  .slide p,.slide li{font-size:1.25vw;line-height:1.55}
+  .slide ul,.slide ol{margin:.5vh 0 .5vh 1.5vw}
+  .slide li{margin:.3vh 0}
+  .slide .small{font-size:1.02vw;color:#9fb3c8}
+  code,pre,.mono{font-family:"JetBrains Mono","Consolas","Courier New",monospace}
+  code{background:#1b2a3a;padding:.12em .45em;border-radius:3px;color:#4cc9f0;font-size:.92em}
+  pre{background:#0a1520;border:1px solid #1b4965;border-radius:6px;padding:1.3vh 1.3vw;
+    overflow:auto;font-size:1.05vw;line-height:1.55;color:#cdd9e5;margin:.6vh 0;flex-shrink:0}
+  pre .k{color:#f0a500}pre .s{color:#7fc97f}pre .c{color:#5a6c7d;font-style:italic}
+  pre .h{color:#e07a5f}
+  table{border-collapse:collapse;width:100%;margin:.6vh 0;font-size:1.08vw;flex-shrink:0}
+  th,td{border:1px solid #1b4965;padding:.6vh .7vw;text-align:left;vertical-align:top}
+  th{background:#1b2a3a;color:#4cc9f0;font-weight:600}
+  tr:nth-child(even) td{background:#0f1f30}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.3vw;flex-shrink:0}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.1vw;flex-shrink:0}
+  .grid2.grow,.grid3.grow{flex:1;min-height:0}
+  .card{background:#152535;border:1px solid #1b4965;border-radius:6px;padding:1.3vh 1.3vw}
+  .card.grow{flex:1;display:flex;flex-direction:column}
+  .card h3{font-size:1.2vw;color:#f0a500;margin-bottom:.5vh}
+  .card p{font-size:1.05vw}
+  .callout{border-left:4px solid #f0a500;background:#1a2a3a;padding:1vh 1.3vw;
+    margin:.6vh 0;font-size:1.12vw;border-radius:0 4px 4px 0;flex-shrink:0}
+  .callout.red{border-color:#e63946}
+  .callout.green{border-color:#7fc97f}
+  .flow{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;
+    gap:.5vw;margin:1vh 0;flex-shrink:0}
+  .flow .box{background:#1b2a3a;border:1px solid #4cc9f0;border-radius:4px;
+    padding:.7vh 1vw;font-size:1.05vw;color:#cdd9e5;text-align:center}
+  .flow .box.hot{border-color:#f0a500;color:#f0a500}
+  .flow .arrow{color:#4cc9f0;font-size:1.5vw}
+  .tag{display:inline-block;background:#1b4965;color:#4cc9f0;padding:.12em .65em;
+    border-radius:3px;font-size:.95vw;margin:.12em}
+  .tag.red{background:#3d1518;color:#e63946}
+  .tag.green{background:#1e3a2a;color:#7fc97f}
+  .tag.amber{background:#3d2e15;color:#f0a500}
+  .center{display:flex;flex-direction:column;justify-content:center;align-items:center;
+    text-align:center;flex:1}
+  .big{font-size:4vw;font-weight:700;color:#4cc9f0;line-height:1.2}
+  .bignum{font-size:5vw;font-weight:800;color:#f0a500;line-height:1}
+  .progress{position:fixed;top:0;left:0;height:3px;background:#f0a500;z-index:99;
+    transition:width .25s ease}
+  .pageno{position:fixed;bottom:1.5vh;right:2vw;font-size:.85vw;color:#5a6c7d;
+    font-family:monospace;z-index:99}
+  .title-cover{position:fixed;bottom:1.5vh;left:2vw;font-size:.85vw;color:#5a6c7d;z-index:99}
+  .navhint{position:fixed;bottom:1.5vh;left:50%;transform:translateX(-50%);
+    font-size:.8vw;color:#3a4a5a;z-index:99}
+  .col-bullets{columns:2;column-gap:2.5vw;flex-shrink:0}
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:.6vh 0;
+    border:1px solid #1b4965;border-radius:6px;overflow:hidden;flex-shrink:0}
+  .compare>div{padding:1.2vh 1.3vw}
+  .compare>div:first-child{border-right:1px solid #1b4965;background:#0f1f30}
+  .compare h4{font-size:1.15vw;color:#f0a500;margin-bottom:.5vh}
+  .compare p,.compare li{font-size:1.02vw}
+  .kbd{display:inline-block;border:1px solid #3a4a5a;border-radius:3px;padding:0 .5em;
+    font-size:.8vw;color:#9fb3c8;background:#0a1520}
+  .stack{display:flex;flex-direction:column;gap:.6vh}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+<!-- 1. 封面 -->
+<section class="slide active">
+  <div class="center">
+    <div style="font-size:1.5vw;color:#7a8b99;margin-bottom:2.5vh;letter-spacing:2px">PLC 步序自动采集 · 技术汇报</div>
+    <div class="big" style="font-size:4.5vw">从源码到步序<br>技术细节深入</div>
+    <div style="margin-top:3vh;font-size:1.3vw;color:#9fb3c8;max-width:65vw;line-height:1.8">
+      三格式解析 · ST 双轨 · 边界规范化 · 原子投影<br>
+      合并/跨FB/反馈 · 评价匹配 · 动作描述 · trace 回填
+    </div>
+    <div style="margin-top:4vh;display:flex;gap:2vw;flex-wrap:wrap;justify-content:center">
+      <span class="tag">fail-closed</span>
+      <span class="tag amber">原池永不收缩</span>
+      <span class="tag green">预测/评价隔离</span>
+      <span class="tag red">局部≠全局</span>
+      <span class="tag">A档+B档</span>
+    </div>
+    <div style="margin-top:3.5vh;font-size:.95vw;color:#5a6c7d">
+      <span class="kbd">←</span> <span class="kbd">→</span> 翻页 · <span class="kbd">F</span> 全屏 · <span class="kbd">Home/End</span> 首尾
+    </div>
+  </div>
+</section>
+
+<!-- 2. 核心命题 -->
+<section class="slide">
+  <h1>核心命题 <span class="sub">贯穿全项目的一条红线</span></h1>
+  <div class="body">
+    <div class="grow">
+      <div class="big" style="font-size:3vw;color:#e0e6ed;text-align:center;margin-bottom:2vh">
+        源码证据 <span style="color:#e63946">≠</span> 运行时证明 <span style="color:#e63946">≠</span>
+        物理完成 <span style="color:#e63946">≠</span> 采集时间戳相等
+      </div>
+      <div class="grid3">
+        <div class="card"><h3>① 局部连线</h3><p>EN 引脚可回溯到 EQ 比较块，只能算 <code>候选</code></p><p class="small">如 <code>wired_move_guard_local</code> 仅证明 EN-EQ 局部连接</p></div>
+        <div class="card"><h3>② 局部门控</h3><p>MOVE 完整 guard 求值通过，仍是 <code>local_control_only</code></p><p class="small">guard_complete=True + evidence 在 PROVEN 集合</p></div>
+        <div class="card"><h3>③ 全写入检查</h3><p>无未知 writer 阻断，也 <span style="color:#e63946">不证明</span> 扫描时序/物理完成</p><p class="small">证据等级：源码集合首出口-全写入检查通过</p></div>
+      </div>
+    </div>
+    <div class="callout red">
+      <b>所有模块反复声明</b>：局部证据只算候选，<b>绝不冒充</b>扫描可见性、liveness、机械完成、CT 时间戳等价。<br>
+      两种证据层级绝对分开：局部迁移（可作候选） vs 全写入检查通过（仍非在线运行证明）。
+    </div>
+    <div class="grid2">
+      <div class="card"><h3>不做的</h3><p>不按数值最近猜后继 · 不跳到远端汇合点 · 不任选 OR 一支 · 不删 AND 条件 · 不把反馈名当证明</p></div>
+      <div class="card"><h3>不证明的</h3><p>采样时间戳相等 · 路径活性 · 机械完成 · 扫描时序 · 多周期一致 · 物理因果关系</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. 三格式识别 -->
+<section class="slide">
+  <h1>三格式识别 <span class="sub">fail-closed，绝不按工程名/变量名路由</span></h1>
+  <div class="body">
+    <table>
+      <tr><th>格式</th><th>根元素 localname</th><th>namespace</th><th>拓扑模型</th><th>ST 位置</th><th>ST strict</th></tr>
+      <tr><td><span class="tag">PLCopen</span></td><td>project（小写）</td><td>含 plcopen</td><td>localId/refLocalId 连线图</td><td>独立 &lt;ST&gt; body / 内嵌</td><td>True</td></tr>
+      <tr><td><span class="tag amber">SMC2</span></td><td>smc2</td><td>无</td><td>CLs 横 + VLs 纵网格</td><td>IST 节点内嵌</td><td>True</td></tr>
+      <tr><td><span class="tag green">omron IEC61131-10</span></td><td>Project（大写）</td><td>www.iec.ch/.../TC65SC65BWG7TF10</td><td>connectionPointOutId（按 Rung 作用域）</td><td>&lt;BodyContent&gt; 下直接 &lt;ST&gt;</td><td><b style="color:#f0a500">False</b></td></tr>
+    </table>
+    <div class="grid2">
+      <div class="callout red">
+        <b>fail-closed</b>：未知根元素直接 <code>raise ValueError</code>，不静默返回部分 ST 结果。<br>
+        v9.14 反思 "smcext:StSection 漏识别"（268/397 个 ST 块从未进入解析器）后的防御升级。
+      </div>
+      <div class="callout green">
+        <b>三格式统一汇入</b>：<code>source_transition_graph.json</code>（schema <code>plc.state_transitions.v1</code>），下游所有逻辑（边界规范化、原子化、合并、评价）<b>格式无关</b>。
+      </div>
+    </div>
+    <pre><span class="c"># source_format.py —— 流式只取第一个 start 事件，避免读全树</span>
+localname = etree.QName(root).localname
+ns = etree.QName(root).namespace or ""
+if localname == 'smc2':                                          <span class="k">return</span> 'smc2'
+if localname == 'Project' and ns == IEC10_NS:                   <span class="k">return</span> 'omron_iec61131_10'
+if localname.lower() == 'project' and 'plcopen' in ns:          <span class="k">return</span> 'plcopen'
+<span class="k">raise</span> ValueError('Unsupported XML dialect; Refusing to silently return a partial ST-only result.')</pre>
+  </div>
+</section>
+
+<!-- 4. 三种电源流回溯器 -->
+<section class="slide">
+  <h1>电源流回溯 <span class="sub">从 MOVE 的 EN 引脚沿连线求完整 guard</span></h1>
+  <div class="body">
+    <div class="grid3 grow">
+      <div class="card grow"><h3>WireBody（PLCopen）</h3>
+        <p>节点表 <code>nodes[localId]</code></p>
+        <p>LeftPowerRail → TRUE</p>
+        <p>contact → <code>AND(gate, var)</code></p>
+        <p>EQ/NE 块 → <code>AND(gate, pred)</code></p>
+        <p>connector/continuation 跨页</p>
+        <p>guard 节点数预算 <b>2048</b></p>
+        <p class="small">targets() 反查 outVariable</p></div>
+      <div class="card grow"><h3>Grid（SMC2）</h3>
+        <p>CLs 横向 (X,Y)→(X+1,Y)</p>
+        <p>VLs 纵向 并查集</p>
+        <p>多输入 → <code>OR</code> 组合</p>
+        <p>guard 表达式上限 24000 字符</p>
+        <p>IST 节点 → STParser strict=True</p>
+        <p class="small" style="color:#e07a5f">JSON parse_issues → 全状态变量阻断</p></div>
+      <div class="card grow"><h3>NativeRung（omron）</h3>
+        <p>端口按 Rung 作用域索引</p>
+        <p>symbolic_gate 降级取证（隔离副作用）</p>
+        <p>InlineST 外部 guard 作前提传入</p>
+        <p>TON.Q 保留时序输出，不替换成输入</p>
+        <p>边沿指令（@前缀）一律阻断</p>
+        <p class="small">memo + active 环检测</p></div>
+    </div>
+    <h2>共同阻断原则（全部进 blockers，绝不静默丢）</h2>
+    <div class="grid2">
+      <div class="card"><p><span class="tag red">computed_data_value</span> 数据输入非单一来源</p><p><span class="tag red">edge</span> 边沿指令（@ 前缀）</p><p><span class="tag red">upstream_state_write_requires_scan_order</span> 上游 MOVE 写了被依赖变量</p></div>
+      <div class="card"><p><span class="tag red">opaque_control_output</span> 未知 FB 输出</p><p><span class="tag red">duplicate_output_port</span> 端口 ID 重复</p><p><span class="tag red">guard_size_exceeded</span> guard 表达式超预算</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. STParser 双轨 strict（核心） -->
+<section class="slide">
+  <h1>STParser 双轨 strict <span class="sub">v9.14 关键设计 · 两类 ST 出现位置语义截然不同</span></h1>
+  <div class="body">
+    <div class="compare grow">
+      <div>
+        <h4>strict=True · InlineST 尾段</h4>
+        <p style="color:#9fb3c8;margin-bottom:.6vh">不可证语句 <b style="color:#e63946">整段阻断</b>（抛 WireError）</p>
+        <ul>
+          <li>函数调用 → WireError</li>
+          <li>无参语句 → WireError</li>
+          <li>字符串赋值 → WireError</li>
+          <li>表达式 RHS → WireError</li>
+          <li>RETURN → WireError</li>
+          <li>FOR/WHILE/REPEAT/JMP → WireError</li>
+        </ul>
+        <div class="callout green" style="margin-top:.8vh;font-size:.95vw;padding:.7vh 1vw">
+          <b>为什么</b>：守护 signal_tail_merge 的零副作用前提，由测试锁定<br>
+          （test_return_blocks_linear_recovery / test_opaque_rhs_blocks_recovery）
+        </div>
+      </div>
+      <div>
+        <h4>strict=False · omron 大状态机</h4>
+        <p style="color:#9fb3c8;margin-bottom:.6vh">不可证语句 <b style="color:#f0a500">降级为 skipped 记录</b>，body 其余可证写保留</p>
+        <ul>
+          <li><code>st_call_may_write_state</code>（函数调用）</li>
+          <li><code>st_opaque_statement_may_write_state</code>（无参语句）</li>
+          <li><code>st_string_assignment_unmodeled_effects</code>（strStepInfo 文本）</li>
+          <li><code>st_expression_assignment_unmodeled_effects</code>（bBusy := a OR b）</li>
+          <li>RETURN <b style="color:#e63946">仍阻断</b>（其后不可达，提取会伪造线性迁移）</li>
+          <li>skipped 计数进 audit，明细在 native_inline_slices.json</li>
+        </ul>
+        <div class="callout" style="margin-top:.8vh;font-size:.95vw;padding:.7vh 1vw">
+          <b>为什么</b>：大状态机里 strStepInfo 文本赋值、函数调用太多，全阻断会导致 <b>0 候选</b>
+        </div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="callout green">
+        <b>效果（配对机工程重跑）</b>：ST bodies 65→333 · transitions 2→<b style="color:#f0a500">1944</b> · 完整候选 0→<b style="color:#f0a500">1155</b> · 原子对 648
+      </div>
+      <div class="callout">
+        <b>PLCopen 路径保持 strict=True</b>：已交付的 94.1% 评价结果不受影响<br>
+        v9.14 还修了 st_tokens 字符类排除 <code>/</code>：<code>AND//注释</code> 不再吞成符号 token
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. boundary_logic 不透明原子 -->
+<section class="slide">
+  <h1>boundary_logic 不透明原子 <span class="sub">v9.14 · 小型 fail-closed 布尔语法（非完整 ST 编译器）</span></h1>
+  <div class="body">
+    <p>规范化空白/大小写/整数类型/同层 AND/OR 顺序，但<b style="color:#e63946">绝不静默修复</b>缺失操作符、算术、<code>S=1 OR 2</code> 简写。</p>
+    <div class="callout red"><b>新原子共同约束：保留原文 · 不锚定正状态 · satisfiability 记 possible（非证明）</b></div>
+    <table>
+      <tr><th>原子</th><th>含义</th><th>示例</th><th>negate 映射</th></tr>
+      <tr><td><code>veq / vne</code></td><td>变量-变量等式/不等式</td><td><code>x = TRUE</code> · <code>a &lt;&gt; b</code></td><td>veq↔vne</td></tr>
+      <tr><td><code>gt / lt / ge / le</code></td><td>顺序比较；整数在左自动交换翻转</td><td><code>10 &gt; x</code> → <code>x&lt;10</code></td><td>gt↔le · lt↔ge</td></tr>
+      <tr><td><code>xor</code></td><td>不布尔化（按位 ≠ 布尔），优先级 OR &gt; XOR &gt; AND</td><td><code>a XOR b</code></td><td>NOT 包裹</td></tr>
+      <tr><td><code>opaque_cmp</code></td><td>括号表达式与值比较，整体保留原文</td><td><code>(a XOR b) = 2#1111</code></td><td>NOT 包裹</td></tr>
+      <tr><td>进制字面量</td><td>2#/8#/16# 正确换基，可正常锚定</td><td><code>16#0980</code> → 2432</td><td>—</td></tr>
+    </table>
+    <h2>下游涟漪（保守正确）</h2>
+    <div class="grid2 grow">
+      <div class="card grow"><h3>仅收 eq/ne 的函数</h3><p><code>comparisons()</code> · <code>substitute()</code> · <code>positive_states()</code> · <code>exit_states()</code></p><p class="small">新原子自动排除，不会误锚定正状态</p></div>
+      <div class="card grow"><h3>记 possible 的函数</h3><p><code>compatible()</code> 未知类型 → True（possible，非证明），budget 4096 超限 → True</p><p><code>fb_transport.required_signals()</code> 未知 → 空集 · <code>feedback_successor._reduce_true()</code> 原样保留</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. 边界规范化：区域首出口 -->
+<section class="slide">
+  <h1>边界规范化 · 区域首出口 <span class="sub">boundary_normalizer.Normalizer · 处理 S=n → NOT(S in {集合})</span></h1>
+  <div class="body">
+    <div class="grid2 grow">
+      <div class="card grow">
+        <h3>算法：沿源码 proven 迁移 BFS</h3>
+        <pre style="margin:0;font-size:.98vw"><span class="c"># 输入: S=100 → NOT(S=100 OR S=120)</span>
+<span class="c"># 源图: 100 → 120 → 135 → 180</span>
+
+q = deque([100]); seen = {100}
+<span class="k">while</span> q:
+    s = q.popleft()
+    <span class="k">for</span> e <span class="k">in</span> by_state[s]:
+        t = int(e[<span class="s">'to'</span>])
+        <span class="k">if</span> t <span class="k">in</span> region_set:   <span class="c"># 120在集合内</span>
+            internal = True; q.append(t)
+        <span class="k">else</span>:               <span class="c"># 135首次离开</span>
+            frontier.add(t)
+<span class="c"># 输出: S=100 → S=135</span>
+<span class="c"># 不跨过出口找更远的 180</span></pre>
+      </div>
+      <div class="card grow">
+        <h3>关键不变量</h3>
+        <p>① 多分支同一行 OR 表达，含复位/异常出口也保留</p>
+        <p>② 作用域歧义（同名变量属不同 POU）→ 待核验，<b>不跨 POU 连边</b></p>
+        <p>③ Revalidate：从 immutable raw labels 重新验证，<b>不信 LLM 的 normalized 标记</b></p>
+        <p>④ 预测与评价两侧用<b>同一 Normalizer</b>（对称、只读、行数保持）</p>
+        <h3 style="margin-top:1vh">证据层级</h3>
+        <p><span class="tag green">已规范化-直接后继</span> 无 internal</p>
+        <p><span class="tag green">已规范化-区域首出口</span> 有 internal（集合内回环）</p>
+        <p><span class="tag red">待核验-*</span> 后继证据不完整/作用域歧义/起点不一致</p>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="callout red"><b>不做的</b>：不按数值最近、不跳到远端汇合点、不任选 OR 一支、不删 AND 条件</div>
+      <div class="callout red"><b>不证明</b>：采样时间戳 / 路径活性 / 机械完成 / 多周期一致</div>
+    </div>
+  </div>
+</section>
+
+<!-- 8. AtomicProjector 形状处理 -->
+<section class="slide">
+  <h1>原子投影 · AtomicProjector <span class="sub">主表端点必须单状态等式或单 BOOL，不含 AND/OR/NOT</span></h1>
+  <div class="body">
+    <table>
+      <tr><th>输入形状</th><th>处理</th><th>输出</th><th>strict_equivalence</th></tr>
+      <tr><td><code>S=100 → S=135</code> 已原子</td><td>保留，查图验证迁移存在</td><td>1 行</td><td><span class="tag green">True</span></td></tr>
+      <tr><td><code>S=100 → NOT(S in {120,135})</code></td><td>区域首出口 BFS</td><td>多分支多行（每分支独立）</td><td>全写入检查通过才 True</td></tr>
+      <tr><td><code>(S=100 OR S=200) → NOT(...)</code></td><td>OR 分支分行（不做笛卡尔积）</td><td>100→? · 200→? 各一行</td><td>所有分支齐全才 True</td></tr>
+      <tr><td><code>S=100 AND Ready → ...</code></td><td>无别名证据</td><td><span class="tag red">review</span> 不删 AND</td><td>—</td></tr>
+      <tr><td><code>S=100 AND Arrived → ...</code></td><td>委托 FeedbackResolver</td><td>反馈直接后继 · 条件替代</td><td><span class="tag red">False</span></td></tr>
+      <tr><td>BOOL → BOOL / BOOL → 状态</td><td>保留 BOOL 身份</td><td>查 transport_relations 关联</td><td><span class="tag green">True</span></td></tr>
+    </table>
+    <div class="grid2 grow">
+      <div class="callout red">
+        <b>OR 集合内部连续执行（特殊）</b>：若起点 <code>100 OR 120</code>，源码 <code>100→120→135</code>，拆成 100→135 和 120→135 会<b>内部切步重复计时</b>。<br>
+        进 <b>review</b>，需"首次从集合外进入"锁存——<b>不假称已完成非复合等价</b>。
+      </div>
+      <div class="callout">
+        <b>同起点的多个出口</b>：源码 100→135 和 100→145，不能为不含 OR 只留 135，也不跳到共同状态 180。<br>
+        原子表输出 100→135、100→145，条件 JSON 保存互斥出口及门控；采集器共享起点，按实际出口选一条结束。
+      </div>
+    </div>
+    <div class="callout green"><b>配套产物</b>：<code>prediction_atomic_lineage.csv</code>（每个输入候选必须有行）· <code>prediction_atomic_review.csv</code>（无法转换 + 局部转换仍有全局阻断）· <code>prediction_atomic_conditions.json</code>（逐跳门控、分支路径）</div>
+  </div>
+</section>
+
+<!-- 9. signal_tail_merge 否决条件 -->
+<section class="slide">
+  <h1>动作后信号收尾合并 <span class="sub">signal_tail_merge · v9.11 · 动作 A→B 紧接信号 B→C，输出 A→C</span></h1>
+  <div class="body">
+    <div class="grid2 grow">
+      <div class="card grow">
+        <h3>结构性条件（必须全满足）</h3>
+        <ul>
+          <li>单一无条件字面状态赋值（<code>tail_needs_one_unconditional_literal_state_assignment</code>）</li>
+          <li>单一前驱、单一出口</li>
+          <li><code>flow_complete</code> 为真</li>
+          <li>无 <code>external_issue</code></li>
+          <li>无 <code>multiple_inline_bodies_for_state</code></li>
+          <li>无 <code>branching_tail_exit</code> / <code>ambiguous_or_missing_predecessor</code></li>
+        </ul>
+      </div>
+      <div class="card grow">
+        <h3>语义性否决（任一命中进 review）</h3>
+        <ul>
+          <li>有正向信号/数据 effect（<code>no_positive_signal_or_data_effect</code>）</li>
+          <li>无新动作（<code>motion_command</code> 启发式 → <code>new_physical_action_in_tail</code>）</li>
+          <li>无跨控制器写（<code>writes_another_state_controller</code>）</li>
+          <li>无 unsafe 字段（Execute/Enable/Start/Run/Reset/Stop/JogCW/...）</li>
+          <li><span class="tag amber">v9.14</span> 无 <code>skipped_st_call_may_write_state</code></li>
+          <li>无独立等待语义（注释含"等待"）</li>
+          <li>无环路（<code>cycle_in_signal_tail</code> / <code>cycle_returns_to_action_or_tail</code>）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="callout">
+        <b>产物分层</b>：<code>prediction_atomic_pairs.csv</code> = 不合并原子存档<br>
+        <code>prediction_collection_pairs.csv</code> = <b>主表</b>，应用合并粒度<br>
+        原始分段始终保留在 atomic 文件
+      </div>
+      <div class="callout red">
+        <b>语义</b>：合并是<b>新的计时区间</b>，不是边界等价<br>
+        内部延时、消忙、计算时间<b>计入</b>新动作区间，不抹掉<br>
+        分叉/多前驱/环路/未知副作用/独立等待 → review，不盲合并
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10. cross_fb_transport -->
+<section class="slide">
+  <h1>跨功能块输送 <span class="sub">cross_fb_transport · v9.12 · 仅 PLCopen LD/FBD</span></h1>
+  <div class="body">
+    <p>识别"发车标志→目的位到达→接收状态入口"。协议从 <b>FB 定义</b>发现，不按名字/工位号猜：</p>
+    <div class="flow">
+      <div class="box">FB 定义</div><div class="arrow">→</div>
+      <div class="box hot">marker SET 需自身 False + peer command 共享 upstream</div>
+      <div class="arrow">→</div>
+      <div class="box hot">marker RESET 需 arrival True</div>
+    </div>
+    <div class="flow">
+      <div class="box">每个调用实例</div><div class="arrow">→</div>
+      <div class="box">实参绑定（named 参数，重复/歧义 fail-closed）</div>
+      <div class="arrow">→</div>
+      <div class="box hot">接收侧 MOVE 的 EN guard 必要包含 arrival</div>
+    </div>
+    <div class="grid2 grow">
+      <div class="card grow">
+        <h3>required_signals：必要而非共现</h3>
+        <pre style="margin:0;font-size:.95vw"><span class="c"># AND 并集 / OR 交集（不是同网络共现）</span>
+<span class="k">def</span> required_signals(x):
+    <span class="k">if</span> x.kind==<span class="s">'and'</span>:
+        <span class="k">return</span> set().union(*(required_signals(a)
+                              <span class="k">for</span> a <span class="k">in</span> x.args))
+    <span class="k">if</span> x.kind==<span class="s">'or'</span>:
+        <span class="k">return</span> set.intersection(*[required_signals(a)
+                                 <span class="k">for</span> a <span class="k">in</span> x.args])</pre>
+      </div>
+      <div class="card grow">
+        <h3>关键约束</h3>
+        <p>① arrival 必须在所有 OR 分支的必要条件中</p>
+        <p>② <code>later_arrival_gated_phase_not_first_receiver_entry</code>：后续接收阶段不当输送终点</p>
+        <p>③ <code>call_enable_unresolved</code>：调用 EN 无法求值 → review</p>
+        <p>④ <code>missing_or_ambiguous_instance_binding</code>：实参绑定歧义 → review</p>
+        <p>⑤ 单 BOOL 触发起点是合法非复合端点</p>
+      </div>
+    </div>
+    <div class="callout red"><b>不是运行轨迹或时间等价证明</b>，终点含接收侧其他互锁/数据条件；实际动子ID、采样沿、异常取消仍需核验。发车标志复位后计时仍需锁存。</div>
+  </div>
+</section>
+
+<!-- 11. 评价层 find_path 零桥接 -->
+<section class="slide">
+  <h1>评价层 · find_path 零桥接 <span class="sub">gen_coverage_workbook.py · 覆盖评价允许人工行对预测图多段拼接</span></h1>
+  <div class="body">
+    <div class="grid2 grow">
+      <div class="card grow">
+        <h3>BFS 多段拼接（禁经步骤 0 桥接）</h3>
+        <pre style="margin:0;font-size:.95vw">MAX_DEPTH = 8
+<span class="k">def</span> find_path(start_alts, end_alts,
+             seg_by_no, starts_by, allow_zero=False):
+    <span class="k">while</span> q:
+        sno, path = q.popleft()
+        e = norm(seg_by_no[sno][1])
+        <span class="k">if</span> e <span class="k">in</span> ends: <span class="k">return</span> path      <span class="c"># 到达</span>
+        <span class="k">if</span> len(path) >= MAX_DEPTH: <span class="k">continue</span>
+        <span class="k">for</span> nx <span class="k">in</span> starts_by.get(e, []):
+            <span class="k">if</span> nx <span class="k">in</span> seen <span class="k">or</span> (
+                is_zero(e) <span class="k">and not</span> allow_zero):
+                <span class="k">continue</span>                  <span class="c"># ★禁经0桥接</span>
+            q.append((nx, path + [nx]))</pre>
+      </div>
+      <div class="card grow">
+        <h3>match_one 判定优先级</h3>
+        <p>① <b>直接匹配</b>：候选边终点在 end_set 中</p>
+        <p>② <b>多段可合并</b>：find_path（先禁0，后允0）</p>
+        <p>③ <b>NOT 离开型</b>：J=NOT(A OR B)，离开起点即首次为真</p>
+        <p>④ <b>条件结束写法</b>：J=步值 AND 信号，guards 核验</p>
+        <p>⑤ <b>条件开始写法</b>：I 带附加条件，剥条件后重搜</p>
+        <p>⑥ <b>复合起点</b>：(A OR B) AND C，拆主片+异变量片</p>
+        <p>⑦ <b>闭环</b>：find_loop 找到 → 周期待确认</p>
+        <p>⑧ <b>链式合并</b>：人工拆子阶段，chain_granularity</p>
+      </div>
+    </div>
+    <h2>6 类覆盖口径</h2>
+    <div class="grid2">
+      <div class="card"><p><span class="tag green">直接匹配</span> <span class="tag green">多段可合并</span> <span class="tag green">已覆盖·写法不一致</span> <span class="tag green">已覆盖·拆分粒度不同</span> → <b>计入覆盖</b></p></div>
+      <div class="card"><p><span class="tag amber">周期待确认</span> <span class="tag red">未覆盖</span>（9 类根因分型）→ <b>不计覆盖</b></p></div>
+    </div>
+    <div class="callout red">绝不修改预测或人工表来提高覆盖率。覆盖率 ≠ 物理动作 100% 召回证明。</div>
+  </div>
+</section>
+
+<!-- 12. 评价隔离三路径 -->
+<section class="slide">
+  <h1>评价层三路径 <span class="sub">预测/评价物理隔离 · 三条独立路径</span></h1>
+  <div class="body">
+    <table>
+      <tr><th>路径</th><th>触发</th><th>匹配粒度</th><th>跨行拼接</th><th>guards</th><th>输出</th></tr>
+      <tr><td><code>atomic_evaluation</code></td><td>预测含"原子对ID"列</td><td>一GT对一原子对</td><td><span class="tag red">禁止</span></td><td>不涉及</td><td>gt_match.xlsx (4 sheet)</td></tr>
+      <tr><td><code>pair_evaluation</code></td><td>无原子对ID列</td><td>一GT对一完整对（两侧规范化）</td><td><span class="tag red">禁止</span></td><td>不涉及</td><td>gt_match.xlsx</td></tr>
+      <tr><td><code>gen_coverage_eval</code></td><td>有人工表 xls/xlsx</td><td>一人工行对预测图</td><td><span class="tag green">允许</span>（禁经0）</td><td>原始条件列核验</td><td>覆盖评价.xlsx (3 sheet)</td></tr>
+    </table>
+    <h2>隔离红线（6 条）</h2>
+    <div class="col-bullets">
+      <div><span class="tag red">不读 GT 补预测</span> predict 无 --gt 参数</div>
+      <div><span class="tag red">transition_graph 拒绝 GT</span> schema 校验 <code>plc.state_transitions.v1</code></div>
+      <div><span class="tag red">source_sha256 一致性</span> 拒绝混用工程</div>
+      <div><span class="tag red">等价候选对容量 1</span> 贪心分配 + pair_key 去重</div>
+      <div><span class="tag red">评价输出独立目录</span> 不覆盖预测/GT</div>
+      <div><span class="tag red">OR 分支齐全仅诊断</span> 不放宽为单对覆盖</div>
+      <div><span class="tag red">--xml 与 --transition-graph 互斥</span></div>
+      <div><span class="tag red">--xml 和 --relations 互斥</span> 防混用证据来源</div>
+    </div>
+    <div class="grid2">
+      <div class="callout"><b>覆盖评价 vs 严格单对评分</b>：覆盖评价更宽松（允许多段拼接、写法差异计覆盖），但<b>绝不修改</b>预测或人工表，未覆盖根因如实分类。</div>
+      <div class="callout green"><b>选择逻辑</b>：plc_cli.evaluate 根据 <code>"原子对ID" in sample[0]</code> 自动分流 atomic/pair；coverage 是独立命令（v9.19），finish 检测 --manual 自动触发。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 13. 动作描述 B 档白名单三闸 -->
+<section class="slide">
+  <h1>动作描述 · B 档白名单三闸 <span class="sub">action_describe.cmd_validate · 防编造，失败 A 档兜底</span></h1>
+  <div class="body">
+    <p>A 档优先源码步注释（<code>step_comments.json</code>），变量翻译<b style="color:#e63946">不进描述列</b>只进引用列。A 档为空的行交 B 档 LLM，过三闸才采用：</p>
+    <div class="grid3 grow">
+      <div class="card grow">
+        <h3>① refs⊆tokens</h3>
+        <p>描述里引用的变量必须在该行动作变量集合内</p>
+        <pre style="font-size:.9vw;margin:.5vh 0">bad = [x for x in refs
+       if x not in toks]</pre>
+        <p class="small" style="color:#e63946">失败："引用超出该行动作变量"</p>
+        <p class="small">desc="支架上料Z轴伺服定位"<br>refs=["Axis_Z1"]<br>toks=["Axis_Z1","Cy_Up1"]<br><b style="color:#7fc97f">✓ Axis_Z1 ∈ toks</b></p>
+      </div>
+      <div class="card grow">
+        <h3>② 无英文标识符</h3>
+        <p>≥2 字符 ASCII 标识符集合非空则拒</p>
+        <pre style="font-size:.9vw;margin:.5vh 0">ascii_id = re.compile(
+  r'[A-Za-z_]\w*')
+{x for x in ascii_id.findall(desc)
+ if len(x) >= 2}</pre>
+        <p class="small" style="color:#e63946">失败："描述含英文/变量名"</p>
+        <p class="small">desc="电夹爪放料" <b style="color:#7fc97f">✓ 纯中文</b><br>desc="AbsEx定位" <b style="color:#e63946">✗ 含 AbsEx</b></p>
+      </div>
+      <div class="card grow">
+        <h3>③ 中文词命中白名单</h3>
+        <p>每个 ≥2 字中文串须命中 allowed ∪ row_words</p>
+        <pre style="font-size:.9vw;margin:.5vh 0">allowed = verbs_whitelist
+  ∪ members/modules/roots值
+  ∪ _GENERIC_MECH  <span class="c"># Z轴/气缸/伺服</span></pre>
+        <p class="small" style="color:#e63946">失败："编造中文词"</p>
+        <p class="small">row_words = 该行 describe_token 翻译的 words/actions + A 档描述中文串</p>
+      </div>
+    </div>
+    <div class="callout"><b>附加硬闸</b>：<code>ok</code> 标记 · 非空 · 长度 ≤30（v9.25 从 80 下调）· 行号存在<br>
+    <b>v9.25 增强</b>：cmd_build 注入变量文档（Cy_Up1→"上料平移顶升气缸"）+ step_comment 上下文 + "一行一动作重点，伺服定位>气缸动作>信号" + max_len=25</div>
+    <div class="callout red">任一失败进 <code>action_desc_review.csv</code> 并 <b>A 档兜底</b>。B 档 LLM 描述是推断层，不构成 GT 语义证明。</div>
+  </div>
+</section>
+
+<!-- 14. trace 匹配三档 -->
+<section class="slide">
+  <h1>trace 跳变分析 · 匹配三档 <span class="sub">trace_jump_analyzer · v9.23 · 可选 trace 输入回填时长</span></h1>
+  <div class="body">
+    <div class="flow">
+      <div class="box" style="background:#2a1f15;border-color:#f0a500">.trace 文件<br><span class="small">TwinCAT Scope 导出 UTF-16</span></div>
+      <div class="arrow">→</div>
+      <div class="box">parse_trace<br><span class="small">提取 jumps/segments</span></div>
+      <div class="arrow">→</div>
+      <div class="box hot">match_one_pair<br><span class="small">三档匹配</span></div>
+      <div class="arrow">→</div>
+      <div class="box">trace_step_runtime.csv<br><span class="small">回填交付表时长列</span></div>
+    </div>
+    <table>
+      <tr><th>匹配类型</th><th>条件</th><th>优先级</th><th>标记</th></tr>
+      <tr><td><span class="tag green">exact</span></td><td>trace 中 val_start 段紧接 val_end 段（end.start_ts ≈ start.end_ts，容差 50ms）</td><td>1（最高）</td><td>dominant_type</td></tr>
+      <tr><td><span class="tag amber">via_zero</span></td><td>trace 中 val_start → 0 → val_end 序列，0 段时长 ≤1000ms</td><td>2</td><td>dominant_type</td></tr>
+      <tr><td>loose</td><td>trace 中存在 val_start → val_end 但中间有其他状态</td><td>3</td><td>dominant_type</td></tr>
+      <tr><td><span class="tag red">不匹配</span></td><td>review 标 <code>predicted_but_not_observed</code> / <code>cross_variable_pair</code> / <code>non_state_label</code></td><td>—</td><td>—</td></tr>
+    </table>
+    <div class="grid2 grow">
+      <div class="card grow">
+        <h3>时长定义与产物</h3>
+        <p><b>时长</b> = trace 中 B 状态段 start_ts − A 状态段 start_ts（即 A 状态持续时长）。多周期取平均。</p>
+        <p class="small">产物（trace_analysis/）：trace_variables.json · trace_jumps.csv · trace_segments.csv · trace_cycles.json · trace_prediction_mapping.csv · <b>trace_step_runtime.csv</b> ★ · trace_review.csv</p>
+        <p class="small">cycle 检测：基于长 idle（value=0 且 dur≥5000ms）分段</p>
+      </div>
+      <div class="card grow">
+        <h3>隔离规则</h3>
+        <p>① 不读人工表（GT）</p>
+        <p>② 不生成/修改预测（只验证已有预测）</p>
+        <p>③ 不修改源码</p>
+        <p>④ 评价隔离（trace 结果不回流 coverage）</p>
+        <p>⑤ <b>trace ≠ 源码逻辑证明</b>：trace 证明"这一跳确实发生了"，不证明"源码迁移逻辑正确"</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 15. 不变量与红线总结 -->
+<section class="slide">
+  <h1>不变量与红线 <span class="sub">贯穿全项目，由 7 skill + 测试共同守护</span></h1>
+  <div class="body">
+    <div class="grid2 grow">
+      <div class="card grow">
+        <h3>隔离类</h3>
+        <ul>
+          <li>predict 不读 GT（无 --gt 参数）</li>
+          <li>评价不修改预测（gt_used_only_for_evaluation=True）</li>
+          <li>transition_graph 拒绝 GT 作证据（schema 校验）</li>
+          <li>source_sha256 一致性校验（拒绝混用工程）</li>
+          <li>评价输出独立目录（不覆盖预测/GT）</li>
+        </ul>
+      </div>
+      <div class="card grow">
+        <h3>候选池类</h3>
+        <ul>
+          <li>原池永不收缩（candidate_pairs 只增不减）</li>
+          <li>lineage 每个输入候选必须有行</li>
+          <li>review 不隐藏无法处理的情况</li>
+          <li>等价候选对容量 1（贪心分配去重）</li>
+          <li>不同语义精选项不因标签相同被简单合并</li>
+        </ul>
+      </div>
+      <div class="card grow">
+        <h3>边界类</h3>
+        <ul>
+          <li>OR 分支不任选、AND 条件不删</li>
+          <li>NOT 退出取区域首出口（非数值最近）</li>
+          <li>原子端点单状态等式/单 BOOL</li>
+          <li>局部后继 ≠ 全局退出等价 ≠ CT 时间戳相等</li>
+          <li>反馈后继标"条件替代"，不证明布尔等价</li>
+        </ul>
+      </div>
+      <div class="card grow">
+        <h3>通用性类</h3>
+        <ul>
+          <li>station_identity 不逐工程加正则</li>
+          <li>skill/code 无项目白名单/字面量（测试锁定）</li>
+          <li>动作词典基于 IEC61131-3 + 行业惯例</li>
+          <li>零退化兼容（JSON 缺失回退旧路径）</li>
+          <li>不编造具体动作方向（Auto_R 标"气缸自动动作"）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="callout red"><b>已知限制（如实）</b>：omron ST 99 块仍失败（72 FOR 循环 + 7 空括号条件 + 零星），全在 audit 不静默 · cross_fb 仅 PLCopen LD/FBD · v9.16~v9.25 交付层特性单测尚未锁定</div>
+      <div class="callout green"><b>测试基线</b>：290/290 通过（test-results-v9.13.txt）。测试锁定 RETURN 阻断、opaque RHS 阻断、OR 不任选、AND 不删、容量 1、不读 GT 等核心不变量。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 16. 结尾 -->
+<section class="slide">
+  <div class="center">
+    <div style="font-size:1.5vw;color:#7a8b99;margin-bottom:2.5vh;letter-spacing:2px">技术细节汇报</div>
+    <div class="big" style="font-size:4.5vw">源码证据 ≠ 运行证明<br>≠ 时间戳相等</div>
+    <div style="margin-top:3.5vh;max-width:65vw;font-size:1.2vw;color:#9fb3c8;line-height:1.9">
+      三格式统一管线 · ST 双轨 strict · fail-closed 设计<br>
+      原池永不收缩 · 局部证据不冒充全局证明<br>
+      A 档优先源码事实 · B 档 LLM 过白名单三闸
+    </div>
+    <div style="margin-top:3.5vh;display:flex;gap:1.5vw;flex-wrap:wrap;justify-content:center">
+      <span class="tag">三格式</span>
+      <span class="tag amber">ST双轨</span>
+      <span class="tag green">原子投影</span>
+      <span class="tag red">评价隔离</span>
+      <span class="tag">A+B档</span>
+      <span class="tag amber">trace回填</span>
+    </div>
+    <div style="margin-top:3.5vh;font-size:1vw;color:#5a6c7d">
+      详见各 CHANGELOG_V9.*.md 与 .opencode/skills/*/SKILL.md
+    </div>
+  </div>
+</section>
+
+</div>
+<div class="progress" id="progress"></div>
+<div class="pageno" id="pageno"></div>
+<div class="title-cover" id="title-cover">PLC 步序自动采集 · 技术细节</div>
+<div class="navhint">滚轮 / ← → 翻页 · F 全屏</div>
+<script>
+  const slides=document.querySelectorAll('.slide');
+  let idx=0;
+  function show(i){
+    idx=Math.max(0,Math.min(slides.length-1,i));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===idx));
+    document.getElementById('progress').style.width=((idx+1)/slides.length*100)+'%';
+    document.getElementById('pageno').textContent=(idx+1)+' / '+slides.length;
+  }
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();show(idx+1)}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();show(idx-1)}
+    else if(e.key==='Home'){show(0)}
+    else if(e.key==='End'){show(slides.length-1)}
+    else if(e.key==='f'||e.key==='F'){
+      if(!document.fullscreenElement)document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+  });
+  // 滚轮翻页（节流，防一次滚动触发多次）
+  let wheelLock=false,wheelTimer=null;
+  document.addEventListener('wheel',e=>{
+    e.preventDefault();
+    if(wheelLock)return;
+    if(Math.abs(e.deltaY)<15)return;  // 太小的滚动忽略
+    wheelLock=true;
+    if(e.deltaY>0)show(idx+1);else show(idx-1);
+    clearTimeout(wheelTimer);
+    wheelTimer=setTimeout(()=>wheelLock=false,550);
+  },{passive:false});
+  show(0);
+</script>
+</body>
+</html>

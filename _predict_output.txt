@@ -1,0 +1,33 @@
+=== STDOUT ===
+{
+  "mode": "predict",
+  "source_format": "plcopen",
+  "output": "E:\\users\\yaoyuhui\\����ɼ�����\\�����Ż�\\plc-sequence-opencode-v9.13\\source\\ת��Ƭ\\output\\projects\\1.JMLEDQA10_CATL_����ʱ��_ת��Ƭ_20260813",
+  "complete_candidate_pairs": 0,
+  "main_prediction": "E:\\users\\yaoyuhui\\����ɼ�����\\�����Ż�\\plc-sequence-opencode-v9.13\\source\\ת��Ƭ\\output\\projects\\1.JMLEDQA10_CATL_����ʱ��_ת��Ƭ_20260813\\prediction_collection_pairs.csv",
+  "full_recall_archive": "E:\\users\\yaoyuhui\\����ɼ�����\\�����Ż�\\plc-sequence-opencode-v9.13\\source\\ת��Ƭ\\output\\projects\\1.JMLEDQA10_CATL_����ʱ��_ת��Ƭ_20260813\\prediction_candidate_pairs.csv",
+  "atomic_projection": {
+    "version": "9.13",
+    "input_complete_pairs": 0,
+    "unique_atomic_pairs": 0,
+    "rows_with_atomic_output": 0,
+    "rows_without_atomic_output": 0,
+    "feedback_successor_audit_rows": 0,
+    "review_rows_including_conditional": 0,
+    "categories": {},
+    "every_input_accounted": true,
+    "all_exported_endpoints_atomic": true,
+    "source_sha256": "01f32be2d722b85e7d978a0fdb8fe0d394d7d7d0ec77a387e70fed3ed8e5a359",
+    "no_gt_access": true,
+    "main_output": "prediction_atomic_pairs.csv",
+    "raw_pool_not_mutated": true,
+    "note": "ԭ�ӱ�����Դ��׷����ͼ����ͬ��֧����̬/��λ��δ����д���֤�ݲ��ܱ���ʽת���ڸǡ�"
+  },
+  "batch_count": 14,
+  "next": "OpenCode����дresult.json������ python plc_cli.py finish --run \"Ŀ¼\""
+}
+
+=== STDERR ===
+��������A��/B����������ʧ�ܣ���Ӱ��Ԥ�⣩��No module named 'pandas'
+
+=== Return code: 0 ===

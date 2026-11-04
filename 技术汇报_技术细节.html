@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLC 步序自动采集 · 技术细节</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#0d1b2a;color:#e0e6ed;
+    font-family:"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  .deck{position:relative;width:100vw;height:100vh}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:3vh 4.5vw 6vh;overflow:hidden}
+  .slide.active{display:flex;animation:fadeIn .35s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+  .slide h1{font-size:3vw;font-weight:700;color:#4cc9f0;letter-spacing:.5px;margin-bottom:1.2vh;padding-bottom:1vh;border-bottom:2px solid #1b4965;line-height:1.2;flex-shrink:0}
+  .slide h1 .sub{font-size:1.45vw;color:#7a8b99;font-weight:400;margin-left:1vw}
+  .slide h2{font-size:1.7vw;color:#f0a500;margin:1vh 0 .5vh;flex-shrink:0}
+  .body{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:1vh;min-height:0}
+  .body>*{flex-shrink:0}
+  .grow{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0}
+  .slide p,.slide li{font-size:1.25vw;line-height:1.55}
+  .slide ul,.slide ol{margin:.5vh 0 .5vh 1.5vw}
+  .slide li{margin:.3vh 0}
+  .slide .small{font-size:1.02vw;color:#9fb3c8}
+  code,pre,.mono{font-family:"JetBrains Mono","Consolas","Courier New",monospace}
+  code{background:#1b2a3a;padding:.12em .45em;border-radius:3px;color:#4cc9f0;font-size:.92em}
+  pre{background:#0a1520;border:1px solid #1b4965;border-radius:6px;padding:1.3vh 1.3vw;overflow:auto;font-size:1.05vw;line-height:1.55;color:#cdd9e5;margin:.6vh 0;flex-shrink:0}
+  pre .k{color:#f0a500}pre .s{color:#7fc97f}pre .c{color:#5a6c7d;font-style:italic}pre .h{color:#e07a5f}pre .lbl{color:#bb86fc;font-weight:600}
+  table{border-collapse:collapse;width:100%;margin:.6vh 0;font-size:1.08vw;flex-shrink:0}
+  th,td{border:1px solid #1b4965;padding:.6vh .7vw;text-align:left;vertical-align:top}
+  th{background:#1b2a3a;color:#4cc9f0;font-weight:600}
+  tr:nth-child(even) td{background:#0f1f30}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.3vw;flex-shrink:0}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.1vw;flex-shrink:0}
+  .grid2.grow,.grid3.grow{flex:1;min-height:0}
+  .card{background:#152535;border:1px solid #1b4965;border-radius:6px;padding:1.3vh 1.3vw}
+  .card.grow{flex:1;display:flex;flex-direction:column}
+  .card h3{font-size:1.2vw;color:#f0a500;margin-bottom:.5vh}
+  .card p{font-size:1.05vw}
+  .callout{border-left:4px solid #f0a500;background:#1a2a3a;padding:1vh 1.3vw;margin:.6vh 0;font-size:1.12vw;border-radius:0 4px 4px 0;flex-shrink:0}
+  .callout.red{border-color:#e63946}.callout.green{border-color:#7fc97f}
+  .flow{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.5vw;margin:1vh 0;flex-shrink:0}
+  .flow .box{background:#1b2a3a;border:1px solid #4cc9f0;border-radius:4px;padding:.7vh 1vw;font-size:1.05vw;color:#cdd9e5;text-align:center}
+  .flow .box.hot{border-color:#f0a500;color:#f0a500}
+  .flow .box.end{border-color:#7fc97f;color:#7fc97f}
+  .flow .arrow{color:#4cc9f0;font-size:1.5vw}
+  .tag{display:inline-block;background:#1b4965;color:#4cc9f0;padding:.12em .65em;border-radius:3px;font-size:.95vw;margin:.12em}
+  .tag.red{background:#3d1518;color:#e63946}.tag.green{background:#1e3a2a;color:#7fc97f}.tag.amber{background:#3d2e15;color:#f0a500}
+  .center{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;flex:1}
+  .big{font-size:4vw;font-weight:700;color:#4cc9f0;line-height:1.2}
+  .progress{position:fixed;top:0;left:0;height:3px;background:#f0a500;z-index:99;transition:width .25s ease}
+  .pageno{position:fixed;bottom:1.5vh;right:2vw;font-size:.85vw;color:#5a6c7d;font-family:monospace;z-index:99}
+  .title-cover{position:fixed;bottom:1.5vh;left:2vw;font-size:.85vw;color:#5a6c7d;z-index:99}
+  .navhint{position:fixed;bottom:1.5vh;left:50%;transform:translateX(-50%);font-size:.8vw;color:#3a4a5a;z-index:99}
+  .kbd{display:inline-block;border:1px solid #3a4a5a;border-radius:3px;padding:0 .5em;font-size:.8vw;color:#9fb3c8;background:#0a1520}
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:.6vh 0;border:1px solid #1b4965;border-radius:6px;overflow:hidden;flex-shrink:0}
+  .compare>div{padding:1.2vh 1.3vw}
+  .compare>div:first-child{border-right:1px solid #1b4965;background:#0f1f30}
+  .compare h4{font-size:1.15vw;color:#f0a500;margin-bottom:.5vh}
+  .compare p,.compare li{font-size:1.02vw}
+  .schema{display:flex;align-items:stretch;gap:0;margin:1vh 0;flex-shrink:0}
+  .schema .col{flex:1;background:#152535;border:1px solid #1b4965;border-radius:6px;padding:1vh .8vw;margin:0 .3vw;display:flex;flex-direction:column}
+  .schema .col h4{font-size:1vw;color:#f0a500;margin-bottom:.4vh;text-align:center}
+  .schema .col .row{font-size:.88vw;background:#0a1520;border-radius:3px;padding:.3vh .5vw;margin:.2vh 0;font-family:monospace;color:#cdd9e5}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+<!-- 1. 封面 -->
+<section class="slide active">
+  <div class="center">
+    <div style="font-size:1.5vw;color:#7a8b99;margin-bottom:2.5vh;letter-spacing:2px">PLC 步序自动采集 · 技术汇报</div>
+    <div class="big" style="font-size:4.5vw">从 XML 到交付表<br>技术细节</div>
+    <div style="margin-top:3vh;font-size:1.3vw;color:#9fb3c8;max-width:65vw;line-height:1.8">
+      源码解析 · 状态迁移提取 · 边界规范化<br>
+      动作描述生成 · 交付表组装
+    </div>
+    <div style="margin-top:3.5vh;font-size:.95vw;color:#5a6c7d">
+      <span class="kbd">滚轮</span> <span class="kbd">←</span> <span class="kbd">→</span> 翻页 · <span class="kbd">F</span> 全屏
+    </div>
+  </div>
+</section>
+
+<!-- 2. 全流程一张图 -->
+<section class="slide">
+  <h1>全流程一张图 <span class="sub">XML 怎么变成交付表</span></h1>
+  <div class="body">
+    <div class="grow">
+      <div class="flow" style="flex-direction:column;gap:1vh">
+        <div style="display:flex;align-items:center;gap:.5vw;flex-wrap:wrap;justify-content:center">
+          <div class="box" style="background:#2a1f15;border-color:#f0a500">PLC 源码 XML<br><span class="small">PLCopen / SMC2 / omron</span></div>
+          <div class="arrow">→</div>
+          <div class="box hot">① 解析：电源流回溯 + ST 解析<br><span class="small">提取 MOVE 的 EN 门控</span></div>
+          <div class="arrow">→</div>
+          <div class="box">source_transition_graph.json<br><span class="small">状态迁移图</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.5vw;flex-wrap:wrap;justify-content:center">
+          <div class="box">② 攒候选池：三种格式同原理<br><span class="small">EN回溯 · ST CASE · Rung</span></div>
+          <div class="arrow">→</div>
+          <div class="box">sequence_candidates.csv<br><span class="small">全量候选</span></div>
+          <div class="arrow">→</div>
+          <div class="box hot">③ 边界规范化 + 原子化<br><span class="small">复合标签→单状态等式</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.5vw;flex-wrap:wrap;justify-content:center">
+          <div class="box">prediction_collection_pairs.csv<br><span class="small">主表（非复合端点）</span></div>
+          <div class="arrow">→</div>
+          <div class="box hot">④ 交付表组装<br><span class="small">工位名+动作描述+时长</span></div>
+          <div class="arrow">→</div>
+          <div class="box end">&lt;工序名&gt;_步序采集表.xlsx<br><span class="small">7 列交付表</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid3">
+      <div class="card"><h3>① 解析</h3><p>从 XML 的 MOVE 块回溯 EN 引脚，求出完整门控条件，得到"在什么条件下状态从 A 变 B"</p></div>
+      <div class="card"><h3>② ③ 规范化</h3><p>把 OR/AND/NOT 复合标签投影成单状态等式；动作+信号收尾合并</p></div>
+      <div class="card"><h3>④ 交付</h3><p>工位名（变量文档）+ 动作描述（源码步注释+LLM）+ 时长（trace）</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. 三种 XML 长什么样 -->
+<section class="slide">
+  <h1>三种 XML 长什么样 <span class="sub">格式由根元素识别，解析路径不同</span></h1>
+  <div class="body">
+    <div class="grid3 grow">
+      <div class="card grow">
+        <h3>PLCopen</h3>
+        <pre style="font-size:.88vw;margin:0"><span class="lbl">&lt;project&gt;</span>
+  <span class="lbl">&lt;LD&gt;</span>
+   &lt;block localId="3" typeName=<span class="s">"MOVE"</span>&gt;
+    &lt;inputVariables&gt;
+     &lt;variable formalParameter=<span class="s">"EN"</span>&gt;
+      &lt;connectionPointIn&gt;
+       &lt;relConnect refLocalId=<span class="s">"2"</span>/&gt;
+   &lt;contact localId="1"&gt;
+    Cell.Phase[7]&lt;/contact&gt;</pre>
+        <p class="small" style="margin-top:.6vh">节点用 <code>localId</code>/<code>refLocalId</code> 连接</p>
+      </div>
+      <div class="card grow">
+        <h3>SMC2</h3>
+        <pre style="font-size:.88vw;margin:0"><span class="lbl">&lt;smc2&gt;</span>
+ <span class="lbl">&lt;entry type="json"&gt;</span>
+  {<span class="s">"CLs"</span>:[...横向...],
+   <span class="s">"VLs"</span>:[...纵向...],
+   <span class="s">"Nodes"</span>:[
+    {<span class="s">"Ix"</span>:5,<span class="s">"T"</span>:<span class="s">"F"</span>,
+     <span class="s">"Name"</span>:<span class="s">"MOVE"</span>},
+    {<span class="s">"Ix"</span>:3,<span class="s">"T"</span>:<span class="s">"LD"</span>,
+     <span class="s">"Var"</span>:<span class="s">"X=10"</span>}]}</pre>
+        <p class="small" style="margin-top:.6vh">JSON 网格，CLs 横 + VLs 纵</p>
+      </div>
+      <div class="card grow">
+        <h3>omron IEC61131-10</h3>
+        <pre style="font-size:.88vw;margin:0"><span class="lbl">&lt;Project&gt;</span>
+ <span class="lbl">&lt;Rung&gt;</span>
+  &lt;BodyContent xsi:type=<span class="s">"smcext:StSection"</span>&gt;
+   <span class="lbl">&lt;ST&gt;</span>
+    CASE abEM08.iCmdStep OF
+    100: ST01.AutoStep[2]:=210;
+        <span class="c">//Z轴下降</span>
+    210: ST01.AutoStep[2]:=220;</pre>
+        <p class="small" style="margin-top:.6vh">Rung + BodyContent，ST 文本</p>
+      </div>
+    </div>
+    <div class="callout">三格式最终都产 <code>source_transition_graph.json</code>，下游处理统一。omron 的 ST 代码用 <b>strict=False</b> 解析（不可证语句降级为 skipped 记录而非整段阻断），PLCopen/SMC2 用 strict=True。</div>
+  </div>
+</section>
+
+<!-- 4. 怎么提取迁移：MOVE + EN 回溯 -->
+<section class="slide">
+  <h1>怎么提取状态迁移 <span class="sub">MOVE 块的 EN 引脚回溯</span></h1>
+  <div class="body">
+    <div class="grid2 grow">
+      <div class="card grow">
+        <h3>MOVE 块结构</h3>
+        <pre style="margin:0;font-size:.95vw">         ┌─────────┐
+  EN ────►│  MOVE   │
+          │         │
+   110 ──►│IN   OUT│──► ST01.AutoStep[2]
+          └─────────┘
+
+<span class="c"># EN=TRUE 时，把 IN(110) 赋给 OUT</span>
+<span class="c"># 要提取的迁移：在什么条件下</span>
+<span class="c"># 状态从当前值变成 110</span></pre>
+        <p>EN 的值藏在前面连的逻辑里，要沿连线<b>回溯求值</b></p>
+      </div>
+      <div class="card grow">
+        <h3>EN 回溯求值</h3>
+        <pre style="margin:0;font-size:.95vw"> S=100 ──EQ──┐    ┌──┐
+               └──┤AND├──EN──┐
+ Clamping ───────┘   └──┘   │
+                          ┌──┴────┐
+                    EN ───┤ MOVE  │
+                    110 ─►│IN  OUT│──► S
+                          └───────┘
+
+<span class="c"># 回溯得到完整 guard：</span>
+<span class="c"># (S=100) AND Clamping</span></pre>
+        <p>于是输出迁移：<code>from=100, to=110, guard=(S=100) AND Clamping</code></p>
+      </div>
+    </div>
+    <h2>回溯过程（三种格式各自的电源流求值器）</h2>
+    <table>
+      <tr><th>格式</th><th>求值器</th><th>连线模型</th><th>遇到什么</th></tr>
+      <tr><td>PLCopen</td><td>WireBody</td><td>localId/refLocalId</td><td>LeftPowerRail→TRUE · contact→AND(var) · EQ块→AND(pred) · AND/OR/NOT→组合</td></tr>
+      <tr><td>SMC2</td><td>Grid</td><td>CLs横+VLs纵 并查集</td><td>多输入→OR组合 · IST节点→STParser</td></tr>
+      <tr><td>omron</td><td>NativeRung</td><td>connectionPointOutId 按Rung作用域</td><td>symbolic_gate降级 · InlineST外部guard作前提 · TON.Q保留时序</td></tr>
+    </table>
+    <div class="callout red">遇到这些就<b>阻断</b>（进 blockers 不丢）：未知FB输出 · 边沿指令 · 数据输入非单一来源 · 上游MOVE写了被依赖变量 · guard超预算</div>
+  </div>
+</section>
+
+<!-- 5. ST 代码怎么解析 -->
+<section class="slide">
+  <h1>ST 代码怎么解析 <span class="sub">双轨 strict · 两类 ST 出现位置语义不同</span></h1>
+  <div class="body">
+    <div class="compare grow">
+      <div>
+        <h4>strict=True · InlineST 尾段</h4>
+        <pre style="margin:0;font-size:.9vw"><span class="c"># Rung 内嵌的 ST 尾段</span>
+IF S=100 AND Clamping THEN
+  S := 110;        <span class="c"># ← 可证</span>
+  strInfo := <span class="s">'取料'</span>;  <span class="c"># ← 字符串，阻断</span>
+  CallFB();        <span class="c"># ← 调用，阻断</span>
+END_IF;</pre>
+        <p>不可证语句<b style="color:#e63946">整段阻断</b>（抛 WireError）</p>
+        <p class="small">守护"动作+信号收尾合并"的零副作用前提</p>
+      </div>
+      <div>
+        <h4>strict=False · omron 大状态机</h4>
+        <pre style="margin:0;font-size:.9vw"><span class="c"># BodyContent 下的 ST body</span>
+CASE iCmdStep OF
+100: AutoStep[2]:=210;  <span class="c"># ← 可证</span>
+     strStepInfo:=<span class="s">'Z轴下降'</span>; <span class="c"># skipped</span>
+210: AutoStep[2]:=220;  <span class="c"># ← 可证</span>
+END_CASE;</pre>
+        <p>不可证语句<b style="color:#f0a500">降级为 skipped 记录</b>，body 其余可证写保留</p>
+        <p class="small">大状态机里 strStepInfo/调用太多，全阻断会导致 0 候选</p>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="callout green"><b>效果（配对机工程）</b>：ST bodies 65→333 · transitions 2→<b style="color:#f0a500">1944</b> · 完整候选 0→<b style="color:#f0a500">1155</b></div>
+      <div class="callout">RETURN 仍阻断（其后不可达）；skipped 计数进 <code>native_parse_audit</code>，明细在 <code>native_inline_slices.json</code></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. 迁移图长什么样 -->
+<section class="slide">
+  <h1>迁移图长什么样 <span class="sub">source_transition_graph.json</span></h1>
+  <div class="body">
+    <pre>{
+  <span class="lbl">"schema"</span>: <span class="s">"plc.state_transitions.v1"</span>,
+  <span class="lbl">"adapter"</span>: <span class="s">"omron_iec61131_10"</span>,
+  <span class="lbl">"transitions"</span>: [                              <span class="c">// ★完整门控的迁移</span>
+    {<span class="lbl">"id"</span>:<span class="s">"T0000001"</span>, <span class="lbl">"variable"</span>:<span class="s">"ST01.AutoStep[2]"</span>,
+     <span class="lbl">"from"</span>:110, <span class="lbl">"to"</span>:120,
+     <span class="lbl">"guard"</span>:<span class="s">"(ST01.AutoStep[2]=110) AND RMOut01.Clamping_Signal"</span>,
+     <span class="lbl">"guard_complete"</span>:true,
+     <span class="lbl">"evidence"</span>:<span class="s">"omron_native_st_guard"</span>}],
+  <span class="lbl">"blockers"</span>: [{<span class="lbl">"variable"</span>:<span class="s">"X"</span>, <span class="lbl">"reason"</span>:<span class="s">"writer_without_positive_source_state"</span>}],
+  <span class="lbl">"state_observations"</span>: [{<span class="lbl">"variable"</span>:<span class="s">"X"</span>,<span class="lbl">"value"</span>:10,<span class="lbl">"kind"</span>:<span class="s">"comparison"</span>}],
+  <span class="lbl">"stage_records"</span>: [{<span class="lbl">"开始标签"</span>:<span class="s">"X=10"</span>,<span class="lbl">"结束标签"</span>:<span class="s">"X=20"</span>}],
+  <span class="lbl">"native_inline_slices"</span>: [{<span class="lbl">"skipped_statements"</span>:[{<span class="lbl">"reason"</span>:<span class="s">"st_call_may_write_state"</span>}]}],
+  <span class="lbl">"native_parse_audit"</span>: {
+    <span class="lbl">"counts"</span>: {<span class="lbl">"rungs"</span>:397, <span class="lbl">"transitions"</span>:1944, <span class="lbl">"skipped_st_statements"</span>:29000},
+    <span class="lbl">"bodycontent_audit"</span>: {<span class="lbl">"parsed_st"</span>:{...}, <span class="lbl">"rung_path"</span>:{...}, <span class="lbl">"skipped_unknown"</span>:{}}}}</pre>
+    <div class="grid2">
+      <div class="callout"><b>transitions</b>：guard_complete=true + evidence 在 proven 集合 → 可用于下游边界规范化</div>
+      <div class="callout red"><b>blockers</b>：未知块/边沿/扫描顺序歧义，含 reason，不丢弃</div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. 候选池怎么攒起来 -->
+<section class="slide">
+  <h1>候选池怎么攒起来 <span class="sub">三种格式，同一个原理：找到"谁触发了状态赋值"</span></h1>
+  <div class="body">
+    <div class="grid2 grow">
+      <!-- 左：梯形图图例 -->
+      <div class="card grow">
+        <h3>PLCopen 梯形图：MOVE 块的 EN 引脚回溯</h3>
+        <svg viewBox="0 0 400 210" style="width:100%;max-width:38vw;display:block;margin:auto">
+          <defs>
+            <marker id="arrowR" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 z" fill="#ef5350"/>
+            </marker>
+          </defs>
+          <!-- 左右母线 -->
+          <line x1="20" y1="20" x2="20" y2="190" stroke="#4fc3f7" stroke-width="3"/>
+          <line x1="380" y1="20" x2="380" y2="190" stroke="#4fc3f7" stroke-width="3"/>
+          <text x="20" y="14" text-anchor="middle" font-size="9" fill="#78909c">母线</text>
+          <text x="380" y="14" text-anchor="middle" font-size="9" fill="#78909c">母线</text>
+          <!-- rung 横线 -->
+          <line x1="20" y1="105" x2="100" y2="105" stroke="#b0bec5" stroke-width="2"/>
+          <line x1="180" y1="105" x2="240" y2="105" stroke="#b0bec5" stroke-width="2"/>
+          <line x1="320" y1="105" x2="380" y2="105" stroke="#b0bec5" stroke-width="2"/>
+          <!-- EQ 比较块 -->
+          <rect x="100" y="82" width="80" height="46" fill="rgba(79,195,247,0.12)" stroke="#4fc3f7" stroke-width="2" rx="4"/>
+          <text x="140" y="100" text-anchor="middle" font-size="13" fill="#4fc3f7" font-weight="bold">EQ</text>
+          <text x="140" y="118" text-anchor="middle" font-size="10.5" fill="#eceff1">nStep = 110</text>
+          <!-- MOVE 块 -->
+          <rect x="240" y="82" width="80" height="46" fill="rgba(255,183,77,0.12)" stroke="#ffb74d" stroke-width="2" rx="4"/>
+          <text x="280" y="100" text-anchor="middle" font-size="13" fill="#ffb74d" font-weight="bold">MOVE</text>
+          <text x="280" y="118" text-anchor="middle" font-size="10.5" fill="#eceff1">nStep := 120</text>
+          <!-- EN 引脚标注 -->
+          <text x="210" y="99" text-anchor="middle" font-size="9.5" fill="#90a4ae">EN</text>
+          <!-- 回溯箭头（红色虚线，从MOVE的EN往左指向EQ） -->
+          <path d="M 240 76 Q 190 48 146 80" fill="none" stroke="#ef5350" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowR)"/>
+          <text x="195" y="40" text-anchor="middle" font-size="10.5" fill="#ef5350" font-weight="bold">回溯 EN 引脚</text>
+          <!-- 底部标注 -->
+          <text x="140" y="148" text-anchor="middle" font-size="10.5" fill="#4fc3f7">↑ 触发条件（当前状态）</text>
+          <text x="280" y="148" text-anchor="middle" font-size="10.5" fill="#ffb74d">↑ 状态赋值（目标状态）</text>
+          <!-- 得到的迁移 -->
+          <rect x="100" y="165" width="200" height="28" fill="rgba(129,199,132,0.12)" stroke="#81c784" stroke-width="1.5" rx="5"/>
+          <text x="200" y="184" text-anchor="middle" font-size="13" fill="#81c784" font-weight="bold">候选迁移：S=110 → S=120</text>
+        </svg>
+        <p class="small" style="text-align:center;margin:.6vh 0 0;color:#b0bec5">EN 有信号时 MOVE 才执行；回溯 EN 找到 EQ 比较块 = 当前状态</p>
+      </div>
+      <!-- 右：三种格式 -->
+      <div class="grow" style="display:flex;flex-direction:column;gap:1vh">
+        <div class="card" style="border-left:4px solid #4fc3f7">
+          <h3 style="color:#4fc3f7;margin:0 0 .3vh">① PLCopen MOVE 块</h3>
+          <p class="small" style="margin:0">梯形图 MOVE 块的 EN 引脚回溯到 EQ 比较块<br>→ <code>S=110</code> 触发 + <code>S=120</code> 赋值</p>
+        </div>
+        <div class="card" style="border-left:4px solid #ce93d8">
+          <h3 style="color:#ce93d8;margin:0 0 .3vh">② omron ST CASE 分支</h3>
+          <p class="small" style="margin:0"><code>CASE nStep OF 110: ... nStep:=120;</code><br>→ 分支号 = 当前状态，赋值 = 目标状态</p>
+        </div>
+        <div class="card" style="border-left:4px solid #80cbc4">
+          <h3 style="color:#80cbc4;margin:0 0 .3vh">③ SMC2 Rung 路径</h3>
+          <p class="small" style="margin:0">类似 PLCopen，按 Rung 作用域回溯路径<br>→ 找到使能条件 + 赋值目标</p>
+        </div>
+        <div class="callout" style="margin-top:auto">
+          <b>核心原理</b>：三种格式回答同一个问题 —— <b>"谁触发了状态赋值"</b><br>
+          触发条件（开始）+ 赋值目标（结束）= 一条候选迁移<br>
+          <span class="small">跨 FB 触发、信号收尾合并等是后续补充来源，不删原始行</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8. 复合标签怎么变单状态等式 -->
+<section class="slide">
+  <h1>复合标签怎么变单状态等式 <span class="sub">边界规范化 + 原子投影</span></h1>
+  <div class="body">
+    <div class="grid2 grow">
+      <div class="card grow">
+        <h3>规范化前（候选池里）</h3>
+        <pre style="margin:0;font-size:.92vw">开始: <span class="h">S=100</span>
+结束: <span class="h">NOT(S=100 OR S=120)</span>
+
+开始: <span class="h">(S=100 OR S=200)</span>
+结束: <span class="h">NOT(S=100 OR S=200)</span>
+
+开始: <span class="h">S=100 AND Ready</span>
+结束: <span class="h">S=110</span>
+
+开始: <span class="h">S=100 AND Arrived</span>
+结束: <span class="h">S=110</span></pre>
+        <p class="small">含 OR/AND/NOT 复合式，进不了交付表</p>
+      </div>
+      <div class="card grow">
+        <h3>规范化后（主表）</h3>
+        <pre style="margin:0;font-size:.92vw">开始: <span class="s">S=100</span>
+结束: <span class="s">S=135</span>     <span class="c"># 区域首出口BFS</span>
+
+开始: <span class="s">S=100</span>      <span class="c"># OR分行</span>
+结束: <span class="s">S=135</span>
+开始: <span class="s">S=200</span>
+结束: <span class="s">S=245</span>
+
+<span class="c"># AND 不删 → 待核验</span>
+开始: S=100 AND Ready
+结束: S=110
+
+<span class="c"># 反馈 → 直接后继</span>
+开始: <span class="s">S=100</span>
+结束: <span class="s">S=110</span>     <span class="c"># 条件替代</span></pre>
+        <p class="small">单状态等式或单 BOOL</p>
+      </div>
+    </div>
+    <h2>区域首出口 BFS（核心算法）</h2>
+    <div class="grid2">
+      <div class="card"><pre style="margin:0;font-size:.9vw"><span class="c"># 输入: S=100 → NOT(S=100 OR S=120)</span>
+<span class="c"># 源图: 100 → 120 → 135 → 180</span>
+从 100 出发沿源码迁移 BFS：
+  120 在集合内 → 继续
+  135 首次离开集合 → 取 135
+<span class="c"># 不跨过出口找 180</span></pre></div>
+      <div class="card"><p><b>规则</b>：OR 分支分行（不做笛卡尔积）· AND 条件不删 · 不按数值最近猜 · 不跳远端汇合点 · 反馈后继沿源码必需直接迁移投影</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 9. 动作+信号收尾怎么合并 -->
+<section class="slide">
+  <h1>动作+信号收尾怎么合并 <span class="sub">signal_tail_merge · 输出新的计时区间</span></h1>
+  <div class="body">
+    <div class="flow">
+      <div class="box">动作 A→B<br><span class="small">有 motion_command</span></div>
+      <div class="arrow">紧接</div>
+      <div class="box">信号/数据处理 B→C<br><span class="small">无新动作</span></div>
+      <div class="arrow">合并</div>
+      <div class="box hot">采集区间 A→C<br><span class="small">内部延时计入</span></div>
+    </div>
+    <div class="grid2 grow">
+      <div class="card grow">
+        <h3>尾段需满足的条件（全满足才合并）</h3>
+        <ul>
+          <li>单一无条件字面状态赋值</li>
+          <li>单一前驱、单一出口</li>
+          <li>有正向信号/数据 effect</li>
+          <li>无新动作（motion_command 启发式）</li>
+          <li>无跨控制器写</li>
+          <li>无 unsafe 字段（Execute/Enable/Start/...）</li>
+          <li>无 skipped_st_call_may_write_state</li>
+          <li>无环路、无独立等待</li>
+        </ul>
+      </div>
+      <div class="card grow">
+        <h3>产物分层</h3>
+        <pre style="margin:0;font-size:.95vw"><span class="c"># 不合并的原子存档</span>
+prediction_atomic_pairs.csv
+  EM01.Step=10 → EM01.Step=20
+  EM01.Step=20 → EM01.Step=30
+  EM01.Step=30 → EM01.Step=50
+
+<span class="c"># 主表（应用合并粒度）★</span>
+prediction_collection_pairs.csv
+  EM01.Step=10 → EM01.Step=50
+  合并路径: 10→20→30→50
+  合并ID: M3f2a...</pre>
+        <p class="small">原始分段始终保留在 atomic 文件</p>
+      </div>
+    </div>
+    <div class="callout">合并是<b>新的计时区间</b>，不是边界等价。任一条件不满足进 review，不盲合并。</div>
+  </div>
+</section>
+
+<!-- 10. 工位名怎么来 -->
+<section class="slide">
+  <h1>工位名怎么来 <span class="sub">station_identity · predict 阶段从源码变量文档提取</span></h1>
+  <div class="body">
+    <div class="grid2 grow">
+      <div class="card grow">
+        <h3>源码里的变量文档</h3>
+        <pre style="margin:0;font-size:.9vw"><span class="lbl">&lt;variable name="udt_EM04"&gt;</span>
+  &lt;type&gt;&lt;derived name="udt_EM"/&gt;&lt;/type&gt;
+  &lt;documentation&gt;
+    &lt;GrpComment_zh-cn&gt;
+      长边清洗工位
+    &lt;/GrpComment_zh-cn&gt;
+  &lt;/documentation&gt;
+&lt;/variable&gt;</pre>
+        <p>extract_variable_docs 提取为：</p>
+        <pre style="margin:0;font-size:.9vw">{
+  <span class="lbl">"udt_EM04"</span>: <span class="s">"长边清洗工位"</span>,
+  <span class="lbl">"udt_EM19"</span>: <span class="s">"下料机器人工位"</span>
+}</pre>
+      </div>
+      <div class="card grow">
+        <h3>station_identity.json</h3>
+        <pre style="margin:0;font-size:.9vw">{
+  <span class="lbl">"udt_EM04"</span>: {
+    <span class="lbl">"display"</span>: <span class="s">"EM04_长边清洗工位"</span>,
+    <span class="lbl">"code"</span>: <span class="s">"EM04"</span>,        <span class="c"># 剥 udt_ 前缀</span>
+    <span class="lbl">"sort_key"</span>: [<span class="k">4</span>,<span class="k">0</span>]
+  },
+  <span class="lbl">"m_nNextAutoStep[2]"</span>: {      <span class="c"># 数组型展开</span>
+    <span class="lbl">"display"</span>: <span class="s">"EM02_电芯上料_滚轮线"</span>,
+    <span class="lbl">"source"</span>: <span class="s">"pou_evidence"</span>}
+}</pre>
+        <h3 style="margin-top:.6vh">交付表工位命名优先级</h3>
+        <p class="small">0. POU 路径直提 → 1. station_identity → 2. SC04 中文后缀 → 3. var_docs → 4. 裸 code</p>
+      </div>
+    </div>
+    <div class="callout"><b>数组型状态机</b>（如 m_nNextAutoStep[N]）每个下标独立身份，取该下标最高频 POU 区域名。包mylar 从 1 个工位组 → 20 个（EM01_物流线 … EM20_治具回流）。</div>
+  </div>
+</section>
+
+<!-- 11. 动作描述怎么生成 -->
+<section class="slide">
+  <h1>动作描述怎么生成 <span class="sub">A 档源码步注释 + B 档 LLM 补充</span></h1>
+  <div class="body">
+    <div class="grid2 grow">
+      <div class="card grow">
+        <h3>源码 ST 里的步注释</h3>
+        <pre style="margin:0;font-size:.95vw">abEM08ActionStart[3] := ST01.AutoStep[2]=<span class="h">210</span>;
+                                <span class="c">//Z轴下降到取料位</span>
+abEM08ActionStart[4] := ST01.AutoStep[2]=<span class="h">220</span>;
+                                <span class="c">//电夹爪放料</span></pre>
+        <p>extract_step_comments 提取为 step_comments.json：</p>
+        <pre style="margin:0;font-size:.95vw">{
+  <span class="lbl">"ST01.AutoStep[2]=210"</span>: <span class="s">"Z轴下降到取料位"</span>,
+  <span class="lbl">"ST01.AutoStep[2]=220"</span>: <span class="s">"电夹爪放料"</span>
+}</pre>
+        <p class="small">人工表 97.7% 描述逐字来自这些注释</p>
+      </div>
+      <div class="card grow">
+        <h3>A 档优先级（cmd_a）</h3>
+        <ol>
+          <li><b>step_comments.json</b>[start_label] → 纯中文步注释</li>
+          <li><b>CSV 动作描述列</b>（codesys 步注释，过滤模板）</li>
+          <li><b>留空</b> → 交 B 档</li>
+        </ol>
+        <div class="callout red" style="margin-top:.6vh;font-size:.95vw;padding:.7vh 1vw">
+          变量翻译<b>不进描述列</b>（含英文），只进"动作变量引用"列
+        </div>
+        <h3 style="margin-top:.6vh">B 档 LLM 补充</h3>
+        <p class="small">A 档为空的行 → cmd_build 生成批次 → agent 写 result → cmd_validate 合并 B+A</p>
+        <p class="small">v9.25：注入变量文档 + step_comment 上下文 + "一行一动作重点"</p>
+      </div>
+    </div>
+    <div class="grid3">
+      <div class="card"><h3>B 档白名单①</h3><p>refs⊆tokens：引用变量必须在该行动作变量内</p></div>
+      <div class="card"><h3>白名单②</h3><p>无英文标识符：≥2字符 ASCII 标识符则拒</p></div>
+      <div class="card"><h3>白名单③</h3><p>中文词命中白名单：verbs+members+通用机构词</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 12. 时长怎么填 -->
+<section class="slide">
+  <h1>时长怎么填 <span class="sub">trace 跳变分析 · 可选</span></h1>
+  <div class="body">
+    <div class="flow">
+      <div class="box" style="background:#2a1f15;border-color:#f0a500">.trace 文件<br><span class="small">TwinCAT Scope 导出</span></div>
+      <div class="arrow">→</div>
+      <div class="box">parse_trace<br><span class="small">提取 jumps/segments</span></div>
+      <div class="arrow">→</div>
+      <div class="box hot">match_one_pair<br><span class="small">匹配预测对</span></div>
+      <div class="arrow">→</div>
+      <div class="box end">trace_step_runtime.csv<br><span class="small">回填交付表时长列</span></div>
+    </div>
+    <table>
+      <tr><th>开始标签</th><th>结束标签</th><th>平均时长ms</th><th>发生次数</th><th>匹配类型</th></tr>
+      <tr><td><code>S=110</code></td><td><code>S=120</code></td><td><b>845</b></td><td>12</td><td><span class="tag green">exact</span> 段紧接</td></tr>
+      <tr><td><code>S=120</code></td><td><code>S=130</code></td><td><b>2103</b></td><td>12</td><td><span class="tag amber">via_zero</span> 经0中转</td></tr>
+      <tr><td><code>S=200</code></td><td><code>S=210</code></td><td>—</td><td>0</td><td><span class="tag red">未观察到</span></td></tr>
+    </table>
+    <div class="grid2">
+      <div class="callout"><b>时长定义</b>：B 状态段 start_ts − A 状态段 start_ts（A 状态持续时长）。多周期取平均。</div>
+      <div class="callout"><b>三档匹配</b>：exact（段紧接，容差50ms）→ via_zero（经0，≤1000ms）→ loose（中间有其他状态）</div>
+    </div>
+  </div>
+</section>
+
+<!-- 13. 交付表长什么样 -->
+<section class="slide">
+  <h1>交付表长什么样 <span class="sub">&lt;工序名&gt;_步序采集表.xlsx · 7 列</span></h1>
+  <div class="body">
+    <table style="font-size:1vw">
+      <tr><th>构成要素</th><th>动作描述</th><th>时长(ms)</th><th>动作变量（引用）</th><th>开始标签</th><th>结束标签</th><th>备注</th></tr>
+      <tr><td rowspan="3" style="background:#1b2a3a;vertical-align:middle;text-align:center"><b>EM04_<br>长边清洗工位</b></td><td>长边清洗1伺服上位</td><td>845</td><td>Axis_Z1; Cy_Up1</td><td><code>EM04.Step=110</code></td><td><code>EM04.Step=120</code></td><td>短边清洗1吹气</td></tr>
+      <tr><td>清洗1吹气保持</td><td>1200</td><td>Valve_Air</td><td><code>EM04.Step=120</code></td><td><code>EM04.Step=130</code></td><td></td></tr>
+      <tr><td style="color:#e63946">—</td><td></td><td></td><td><code>EM04.Step=200</code></td><td><code>EM04.Step=210</code></td><td style="color:#e63946"><b>【待复核】</b></td></tr>
+      <tr><td colspan="7" style="background:#0f1f30;text-align:right;font-weight:600">总时长：2045 ms</td></tr>
+    </table>
+    <div class="grid2 grow">
+      <div class="card grow">
+        <h3>每列怎么来的</h3>
+        <ul>
+          <li>构成要素 ← station_identity + SC04 后缀</li>
+          <li>动作描述 ← A 档步注释 + B 档 LLM（过白名单三闸）</li>
+          <li>时长 ← trace_step_runtime.csv（无 trace 则空）</li>
+          <li>动作变量 ← plcopen_action_trace 等</li>
+          <li>标签 ← final_prediction_pairs.csv</li>
+          <li>备注 ← network_comments.json + 待复核标记</li>
+        </ul>
+      </div>
+      <div class="card grow">
+        <h3>样式</h3>
+        <ul>
+          <li>工位列纵向合并，块尾"总时长"行</li>
+          <li>统一 Arial 9，行高 18</li>
+          <li>待复核：备注列红色加粗【待复核】</li>
+          <li>排序：EM/ST 数值序（EM01&lt;...&lt;EM10）</li>
+          <li>排序仅为展示，不代表执行顺序</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 14. 结尾 -->
+<section class="slide">
+  <div class="center">
+    <div style="font-size:1.5vw;color:#7a8b99;margin-bottom:2.5vh;letter-spacing:2px">技术细节汇报</div>
+    <div class="big" style="font-size:4vw">XML → 迁移图 → 候选池<br>主表 → 交付表</div>
+    <div style="margin-top:3.5vh;max-width:65vw;font-size:1.2vw;color:#9fb3c8;line-height:1.9">
+      ① 解析：MOVE 的 EN 回溯 + ST 双轨<br>
+      ② 攒池：三种格式，同一个原理<br>
+      ③ 规范化：复合标签 → 单状态等式<br>
+      ④ 交付：工位名 + 动作描述 + 时长
+    </div>
+    <div style="margin-top:3.5vh;font-size:1vw;color:#5a6c7d">
+      详见各 CHANGELOG_V9.*.md
+    </div>
+  </div>
+</section>
+
+</div>
+<div class="progress" id="progress"></div>
+<div class="pageno" id="pageno"></div>
+<div class="title-cover" id="title-cover">PLC 步序自动采集 · 技术细节</div>
+<div class="navhint">滚轮 / ← → 翻页 · F 全屏</div>
+<script>
+  const slides=document.querySelectorAll('.slide');
+  let idx=0;
+  function show(i){
+    idx=Math.max(0,Math.min(slides.length-1,i));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===idx));
+    document.getElementById('progress').style.width=((idx+1)/slides.length*100)+'%';
+    document.getElementById('pageno').textContent=(idx+1)+' / '+slides.length;
+  }
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();show(idx+1)}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();show(idx-1)}
+    else if(e.key==='Home'){show(0)}
+    else if(e.key==='End'){show(slides.length-1)}
+    else if(e.key==='f'||e.key==='F'){
+      if(!document.fullscreenElement)document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+  });
+  let wheelLock=false,wheelTimer=null;
+  document.addEventListener('wheel',e=>{
+    e.preventDefault();
+    if(wheelLock)return;
+    if(Math.abs(e.deltaY)<15)return;
+    wheelLock=true;
+    if(e.deltaY>0)show(idx+1);else show(idx-1);
+    clearTimeout(wheelTimer);
+    wheelTimer=setTimeout(()=>wheelLock=false,550);
+  },{passive:false});
+  show(0);
+</script>
+</body>
+</html>

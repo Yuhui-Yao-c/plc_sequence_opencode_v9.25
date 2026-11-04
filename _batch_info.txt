@@ -1,0 +1,25 @@
+Run dir: E:\users\yaoyuhui\步序采集汇总\工程优化\plc-sequence-opencode-v9.13\source\转接片\output\projects\1.JMLEDQA10_CATL_厦门时代_转接片_20260813
+
+Batches: 14
+  B00001: 0 candidates, 120 events
+  B00002: 0 candidates, 120 events
+  B00003: 0 candidates, 120 events
+  B00004: 0 candidates, 120 events
+  B00005: 0 candidates, 120 events
+  B00006: 0 candidates, 120 events
+  B00007: 0 candidates, 120 events
+  B00008: 0 candidates, 120 events
+  B00009: 0 candidates, 120 events
+  B00010: 0 candidates, 120 events
+  B00011: 0 candidates, 120 events
+  B00012: 0 candidates, 120 events
+  B00013: 0 candidates, 120 events
+  B00014: 0 candidates, 31 events
+
+Batches_desc dir exists: False
+Batches_desc files: []
+
+Manifest status: PREPARED
+Candidate count: 0
+Candidate pairs count: 0
+Event count: 1591

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "plc-sequence",
+  "permission": {
+    "webfetch": "deny",
+    "websearch": "deny",
+    "external_directory": "ask",
+    "skill": {
+      "plc-boundary-normalization": "allow",
+      "plc-coverage-evaluation": "allow"
+    }
+  }
+}

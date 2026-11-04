@@ -1,209 +1,176 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PLC 步序采集工作流</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLC 步序采集工作台</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="logo">PLC</span>
+      <span class="title">步序采集</span>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">历史 Run</div>
+      <ul id="runList" class="run-list">
+        <li class="run-empty">加载中...</li>
+      </ul>
+    </div>
+    <div class="sidebar-footer">
+      <button id="btnNewTask" class="btn btn-primary btn-block">+ 发起新任务</button>
+    </div>
+  </aside>
 
-    <!-- ============ Sidebar ============ -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-icon">PLC</div>
-            <div class="logo-text">
-                <div class="logo-title">步序采集</div>
-                <div class="logo-version">v9.25</div>
-            </div>
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <span id="currentRunName" class="topbar-run">未选择 Run</span>
+        <span id="currentRunStatus" class="badge badge-muted">—</span>
+      </div>
+      <div class="topbar-right">
+        <div class="calib-toggle" id="calibToggle">
+          <span class="calib-label">校准模式</span>
+          <label class="switch">
+            <input type="checkbox" id="calibCheck">
+            <span class="slider"></span>
+          </label>
+          <span class="calib-state" id="calibState">关闭</span>
         </div>
+        <span class="ver">v9.25</span>
+      </div>
+    </header>
 
-        <div class="sidebar-section">
-            <div class="sidebar-label">历史记录</div>
-            <div id="history-list" class="history-list">
-                <div class="history-empty">加载中...</div>
-            </div>
+    <div class="content">
+      <!-- 发起新任务 -->
+      <section id="sectionNew" class="section">
+        <div class="section-header">
+          <h2>发起新任务</h2>
+          <button id="btnCloseNew" class="btn-icon" title="收起">×</button>
         </div>
-
-        <div class="sidebar-footer">
-            <button class="btn btn-ghost btn-sm" onclick="newRun()">+ 新建运行</button>
+        <div class="form-grid">
+          <div class="form-row">
+            <label class="form-label">源码 XML <span class="req">*</span></label>
+            <div class="form-input">
+              <input type="text" id="inpSource" class="input" placeholder="选择 PLC 源码文件">
+              <button class="btn btn-ghost" onclick="browseFile('inpSource','file','选择源码XML')">选择</button>
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">匹配格式 <span class="req">*</span></label>
+            <div class="form-input">
+              <input type="text" id="inpPattern" class="input" placeholder="如 ST*.AutoStep[*] 或 EM*.Process_steps[*]">
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">输出文件夹</label>
+            <div class="form-input">
+              <input type="text" id="inpOutputRoot" class="input" placeholder="默认 = XML 同级 output 文件夹">
+              <button class="btn btn-ghost" onclick="browseFile('inpOutputRoot','dir','选择输出文件夹')">选择</button>
+            </div>
+          </div>
+          <div class="form-row form-row-calib" id="rowManual" style="display:none;">
+            <label class="form-label">人工表 <span class="req">*</span></label>
+            <div class="form-input">
+              <input type="text" id="inpManual" class="input" placeholder="校准模式必填">
+              <button class="btn btn-ghost" onclick="browseFile('inpManual','file','选择人工采集表')">选择</button>
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Trace <span class="opt">可选</span></label>
+            <div class="form-input">
+              <input type="text" id="inpTrace" class="input" placeholder="运行时 trace 文件">
+              <button class="btn btn-ghost" onclick="browseFile('inpTrace','file','选择trace文件')">选择</button>
+            </div>
+          </div>
         </div>
-    </aside>
+        <div class="form-actions">
+          <button id="btnPredict" class="btn btn-primary btn-large">开始执行</button>
+          <span class="hint-text">点击后 OpenCode 将在后台自主完成全流程，实时进度请看后台窗口</span>
+        </div>
+      </section>
 
-    <!-- ============ Main ============ -->
-    <main class="main">
+      <!-- 执行进度（简化版：只有状态卡片） -->
+      <section id="sectionProgress" class="section" style="display:none;">
+        <div class="section-header">
+          <h2>执行进度</h2>
+          <div class="header-right">
+            <span id="progressStats" class="progress-stats"></span>
+            <span id="jobStatusBadge" class="badge badge-warn">运行中</span>
+          </div>
+        </div>
+        <div class="phase-hero" id="phaseHero">
+          <div class="phase-hero-icon" id="phaseHeroIcon">⏳</div>
+          <div class="phase-hero-body">
+            <div class="phase-hero-label">当前阶段</div>
+            <div class="phase-hero-name" id="phaseHeroName">运行中</div>
+            <div class="phase-hero-desc" id="phaseHeroDesc">OpenCode 正在后台执行，请查看后台窗口了解实时进度。</div>
+          </div>
+        </div>
+      </section>
 
-        <!-- Step 1: Input -->
-        <section class="card" id="card-input">
-            <div class="card-header">
-                <div class="step-badge">1</div>
-                <h2 class="card-title">输入参数</h2>
-                <div class="card-spacer"></div>
-                <span class="card-tag" id="input-tag"></span>
-                <button class="collapse-btn" id="input-collapse" onclick="toggleInputCard()" title="折叠/展开">&minus;</button>
-            </div>
-            <div class="card-body">
-                <div class="form-grid">
-                    <div class="form-row full">
-                        <label>源码 XML <span class="req">*</span></label>
-                        <div class="input-group">
-                            <input type="text" id="source" class="form-input" placeholder="选择或输入 XML 文件路径" oninput="updateCommandPreview()">
-                            <button class="btn btn-outline" onclick="browseFile('source','file','xml','选择源码 XML')">浏览</button>
-                        </div>
-                    </div>
+      <!-- 任务结果 -->
+      <section id="sectionResultSummary" class="section" style="display:none;">
+        <div class="section-header"><h2>执行结果</h2></div>
+        <div class="cards" id="cardsContainer"></div>
+        <div class="result-summary" id="resultSummary"></div>
+      </section>
 
-                    <div class="form-row">
-                        <label>匹配格式 <span class="req">*</span></label>
-                        <input type="text" id="pattern" class="form-input" value="*" placeholder="glob 或 re:正则" oninput="updateCommandPreview()">
-                        <div class="form-hint">通配符 <code>ST*</code> 或正则 <code>re:EM\d+\.Process</code></div>
-                    </div>
+      <!-- 覆盖率框（校准模式） -->
+      <section id="sectionCoverage" class="section section-coverage" style="display:none;">
+        <div class="section-header"><h2>覆盖率指标（校准模式）</h2></div>
+        <div class="coverage-box" id="coverageBox">
+          <div class="coverage-empty">尚未生成覆盖率评价</div>
+        </div>
+      </section>
 
-                    <div class="form-row">
-                        <label>输出目录 <span class="req">*</span></label>
-                        <input type="text" id="out" class="form-input" placeholder="如 outputs/转接片" oninput="updateCommandPreview()">
-                        <div class="form-hint">预测结果输出路径</div>
-                    </div>
+      <!-- 结果预览 -->
+      <section id="sectionResult" class="section" style="display:none;">
+        <div class="section-header">
+          <h2>结果预览</h2>
+          <button id="btnCollapseTable" class="btn btn-ghost btn-small">收起</button>
+        </div>
+        <div id="tableArea">
+          <div class="table-toolbar">
+            <input type="text" id="searchBox" class="input input-search" placeholder="搜索...">
+            <span id="resultCount" class="hint-text">0 行</span>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th class="col-station">工位</th>
+                  <th class="col-desc">动作描述</th>
+                  <th class="col-var">动作变量</th>
+                  <th class="col-start">开始标签</th>
+                  <th class="col-end">结束标签</th>
+                  <th class="col-remark">备注</th>
+                </tr>
+              </thead>
+              <tbody id="resultBody">
+                <tr><td colspan="6" class="empty-cell">无数据</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination" id="pagination"></div>
+        </div>
+      </section>
 
-                    <div class="form-row">
-                        <label>Trace 文件 <span class="opt">可选</span></label>
-                        <div class="input-group">
-                            <input type="text" id="trace" class="form-input" placeholder=".trace 文件路径" oninput="updateCommandPreview()">
-                            <button class="btn btn-outline" onclick="browseFile('trace','file','trace','选择 Trace 文件')">浏览</button>
-                        </div>
-                    </div>
+      <!-- 交付文件下载 -->
+      <section id="sectionDownload" class="section" style="display:none;">
+        <div class="section-header"><h2>交付文件</h2></div>
+        <div class="download-list" id="downloadList"></div>
+      </section>
 
-                    <div class="form-row">
-                        <label>人工采集表 <span class="opt">可选</span></label>
-                        <div class="input-group">
-                            <input type="text" id="manual" class="form-input" placeholder=".xls/.xlsx 人工表" oninput="updateCommandPreview()">
-                            <button class="btn btn-outline" onclick="browseFile('manual','file','excel','选择人工采集表')">浏览</button>
-                        </div>
-                    </div>
-
-                    <div class="form-row full">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="force" onchange="updateCommandPreview()">
-                            <span>覆盖已有输出目录 (<code>--force</code>)</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="command-preview">
-                    <span class="command-label">命令预览</span>
-                    <pre id="command-preview" class="command-code"></pre>
-                </div>
-
-                <div class="form-actions">
-                    <button id="btn-predict" class="btn btn-primary" onclick="startPredict()">
-                        <span class="btn-icon">&#9654;</span> 开始预测
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Step 2: Execution Log -->
-        <section class="card hidden" id="card-log">
-            <div class="card-header">
-                <div class="step-badge">2</div>
-                <h2 class="card-title">执行日志</h2>
-                <div class="card-spacer"></div>
-                <span id="log-status" class="badge">运行中</span>
-                <span id="log-time" class="text-muted ml-12"></span>
-            </div>
-            <div class="card-body">
-                <div id="log-output" class="log-terminal">
-                    <div class="log-line log-info">等待输出...</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Step 3: Results Dashboard -->
-        <section class="card hidden" id="card-results">
-            <div class="card-header">
-                <div class="step-badge">3</div>
-                <h2 class="card-title">结果概览</h2>
-                <div class="card-spacer"></div>
-                <span id="results-tag" class="card-tag"></span>
-            </div>
-            <div class="card-body">
-                <div class="stats-grid" id="stats-grid"></div>
-
-                <div id="coverage-section" class="hidden mt-16">
-                    <h3 class="subsection-title">覆盖评价</h3>
-                    <div id="coverage-info" class="coverage-box"></div>
-                </div>
-
-                <div id="trace-section" class="hidden mt-16">
-                    <h3 class="subsection-title">Trace 分析</h3>
-                    <div id="trace-info" class="trace-box"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Step 4: B-tier Processing -->
-        <section class="card hidden" id="card-btier">
-            <div class="card-header">
-                <div class="step-badge">4</div>
-                <h2 class="card-title">批次处理状态</h2>
-                <div class="card-spacer"></div>
-                <span id="btier-tag" class="badge"></span>
-            </div>
-            <div class="card-body">
-                <div id="batch-status" class="batch-status-grid"></div>
-
-                <div class="info-banner mt-16">
-                    <div class="info-icon">&#9432;</div>
-                    <div class="info-text">
-                        <strong>工艺批次</strong> 和 <strong>B档动作描述批次</strong> 需在 OpenCode 会话中由 Agent 处理。
-                        处理完成后点击「刷新状态」，全部就绪后可执行 Finish。
-                    </div>
-                </div>
-
-                <div class="form-actions mt-16">
-                    <button class="btn btn-outline" onclick="refreshBatches()">刷新状态</button>
-                    <button id="btn-finish" class="btn btn-primary" onclick="startFinish()" disabled>
-                        <span class="btn-icon">&#9654;</span> 执行 Finish
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Step 5: Pairs Table -->
-        <section class="card hidden" id="card-pairs">
-            <div class="card-header">
-                <div class="step-badge">5</div>
-                <h2 class="card-title">预测对列表</h2>
-                <div class="card-spacer"></div>
-                <span id="pairs-source-tag" class="card-tag"></span>
-            </div>
-            <div class="card-body">
-                <div class="table-toolbar">
-                    <input type="text" id="pairs-search" class="form-input" placeholder="搜索开始/结束标签、动作描述..." oninput="debounceSearch()">
-                    <span id="pairs-count" class="text-muted"></span>
-                </div>
-                <div class="table-container">
-                    <table class="data-table" id="pairs-table">
-                        <thead id="pairs-thead"></thead>
-                        <tbody id="pairs-tbody"></tbody>
-                    </table>
-                </div>
-                <div class="pagination" id="pairs-pagination"></div>
-            </div>
-        </section>
-
-        <!-- Step 6: Downloads -->
-        <section class="card hidden" id="card-downloads">
-            <div class="card-header">
-                <div class="step-badge">6</div>
-                <h2 class="card-title">交付文件</h2>
-            </div>
-            <div class="card-body">
-                <div id="downloads-list" class="downloads-grid"></div>
-            </div>
-        </section>
-
-    </main>
+      <div id="emptyState" class="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>从左侧选择历史 Run，或点击「+ 发起新任务」</p>
+      </div>
+    </div>
+  </main>
 </div>
 
 <script src="app.js"></script>
