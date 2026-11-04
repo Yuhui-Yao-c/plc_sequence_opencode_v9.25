@@ -1,3 +1,13 @@
+# PLC 工作台：前端使用链路修复（2026-11-04）
+
+Windows 双击 `run_web.bat` 或 `启动前端.bat`；也可运行 `node server.js` 后访问 `http://127.0.0.1:5173`。旧 `python web_app.py` 入口会转到同一 Node 后端，无需 Flask。
+
+需要 Node.js 18+、Python 3.10+、`python -m pip install -r requirements.txt`，以及已配置模型的 OpenCode。页面先检查环境，任务按“解析→模型逐批分析→校验交付”执行，日志直接在页面显示。详细根因、配置、验证与排障见 [WEB_REPAIR_20261104.md](WEB_REPAIR_20261104.md)。
+
+可选环境变量：`PLC_WEB_PORT`、`PLC_PYTHON`（Python可执行文件完整路径）、`PLC_OPENCODE`（OpenCode可执行文件完整路径）。默认端口5173，无需启动额外的 opencode serve 服务。关闭服务窗口会停止当前任务；未完成批次可在重启后继续。
+
+---
+
 # v9.13 到位反馈→逻辑后继（2026-10-26）
 
 本版重点补充：现有预测是状态对，人工或工艺草表是“状态 AND 到位”时，如何找到源码支持的直接后继。

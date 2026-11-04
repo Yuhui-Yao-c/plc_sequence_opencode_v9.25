@@ -1,479 +1,491 @@
-// PLC 步序采集工作台 — 极简 Node 后端
-// 职责：① 静态托管 web/  ② /api/oc/* → 反代 opencode serve  ③ 本地文件读取 + run 扫描  ④ tkinter 文件选择代理
-// 无业务逻辑，纯管道。opencode serve (:19433) 是唯一工作流控制器。
 "use strict";
 
-const http = require("http");
-const fs = require("fs");
-const path = require("path");
-const { execFile } = require("child_process");
+// One backend owns predict -> OpenCode batches -> finish, process lifetime,
+// logs and deliverables. No detached cmd window or version-specific serve API.
+const http = require("node:http");
+const fs = require("node:fs");
+const path = require("node:path");
+const crypto = require("node:crypto");
+const {
+  HttpError, readJSON, writeJSON, within, containedFile, listFiles, runID,
+  readCSV, findExecutable, spawnTool, probe,
+} = require("./web_runtime");
+const ACTIVE = new Set(["queued", "predicting", "analyzing", "finishing", "cancelling"]);
 
-const ROOT = __dirname;
-const WEB_DIR = path.join(ROOT, "web");
-const OUTPUTS_DIR = path.join(ROOT, "outputs");
-const OC_HOST = "127.0.0.1";
-const OC_PORT = 19433;
-const PORT = 5173;
-
-// ---------------------------------------------------------------------------
-// 辅助函数（从 web_app.py 移植）
-// ---------------------------------------------------------------------------
-function procName(runName) {
-  return (runName || "").replace(/_v\d+$/, "") || runName;
-}
-
-function resolveRun(name) {
-  // 优先 .runlink，否则 outputs/<name>
-  const link = path.join(OUTPUTS_DIR, `${name}.runlink`);
-  if (fs.existsSync(link)) {
-    try {
-      const p = fs.readFileSync(link, "utf-8").trim();
-      if (fs.statSync(p).isDirectory()) return p;
-    } catch (e) {}
-  }
-  const direct = path.join(OUTPUTS_DIR, name);
-  try {
-    if (fs.statSync(direct).isDirectory()) return direct;
-  } catch (e) {}
-  return null;
-}
-
-function readJSON(p) {
-  try { return JSON.parse(fs.readFileSync(p, "utf-8")); } catch (e) { return null; }
-}
-
-function listGlob(dir, pattern) {
-  // 简单 glob：只支持 *.ext 形式
-  try {
-    return fs.readdirSync(dir).filter(f => {
-      if (pattern === "*") return true;
-      if (pattern.startsWith("*.")) return f.endsWith(pattern.slice(1));
-      return f === pattern;
-    });
-  } catch (e) { return []; }
-}
-
-function runStatus(runDir, name) {
-  const manifestP = path.join(runDir, "workflow_manifest.json");
-  if (!fs.existsSync(manifestP)) return null;
-  const name0 = name || path.basename(runDir);
-  const info = { name: name0, proc_name: procName(name0) };
-  const manifest = readJSON(manifestP);
-  if (!manifest) return null;
-  info.candidate_count = manifest.candidate_count || 0;
-  info.batch_count = (manifest.batches || []).length;
-  info.pattern = (manifest.filter || {}).pattern || null;
-  info.source = manifest.source || "";
-  info.manual = manifest.manual || null;
-  info.trace = manifest.trace || null;
-  info.status = manifest.status || "PREPARED";
-  // 批次计数
-  const bdir = path.join(runDir, "batches");
-  const bdesc = path.join(runDir, "batches_desc");
-  info.batches_input = listGlob(bdir, "*.input.json").length;
-  info.batches_result = listGlob(bdir, "*.result.json").length;
-  info.bdesc_input = listGlob(bdesc, "*.input.json").length;
-  info.bdesc_result = listGlob(bdesc, "*.result.json").length;
-  // finish 状态
-  const statusP = path.join(runDir, "workflow_status.json");
-  if (fs.existsSync(statusP)) {
-    const st = readJSON(statusP);
-    if (st) {
-      info.finish_success = st.success;
-      info.final_rows = st.final_rows;
-      info.workstation_xlsx = st.workstation_xlsx || {};
-      info.coverage = st.coverage;
-      info.trace_analysis = st.trace_analysis;
-      info.finish_status = st.success ? "success" : "failed";
-    } else {
-      info.finish_status = "unknown";
+function createWorkbench(options = {}) {
+  const root = path.resolve(options.root || __dirname);
+  const env = { ...process.env, ...options.env, PYTHONIOENCODING: "utf-8", PYTHONUTF8: "1", NO_COLOR: "1" };
+  const outputs = path.resolve(options.outputs || path.join(root, "outputs"));
+  const stateDir = path.resolve(options.stateDir || path.join(outputs, ".web-state"));
+  const jobsDir = path.join(stateDir, "jobs");
+  const registryFile = path.join(stateDir, "runs.json");
+  const lockFile = path.join(stateDir, "active.json");
+  fs.mkdirSync(jobsDir, { recursive: true });
+  const jobs = new Map(); let active = null, healthCache = null;
+  const registry = new Map();
+  for (const item of readJSON(registryFile) || []) if (item?.path) registry.set(runID(item.path), item);
+  for (const filename of listFiles(jobsDir, ".json")) {
+    const job = readJSON(path.join(jobsDir, filename));
+    if (!job?.id || !/^[a-f0-9-]+$/.test(job.id)) continue;
+    if (ACTIVE.has(job.status)) {
+      job.status = "interrupted";
+      job.orphaned = Boolean(job.pid && live(job.pid));
+      job.error = job.orphaned ? `原任务进程（PID ${job.pid}）仍在运行，请先停止原任务再继续。` : "服务上次退出时任务尚未完成，请检查日志后继续。";
+      job.ended_at = new Date().toISOString();
+      writeJSON(path.join(jobsDir, filename), job);
     }
-  } else {
-    info.finish_status = "pending";
+    jobs.set(job.id, job);
   }
-  // 交付文件
-  const xlsxFiles = listGlob(runDir, "*_步序采集表.xlsx");
-  info.delivery_xlsx = xlsxFiles[0] || null;
-  const covDir = path.join(runDir, "评价");
-  const covFiles = listGlob(covDir, "*_覆盖评价.xlsx");
-  info.coverage_xlsx = covFiles[0] ? ("评价/" + covFiles[0]) : null;
-  const traceDir = path.join(runDir, "trace_analysis");
-  try {
-    info.has_trace_analysis = fs.statSync(traceDir).isDirectory() &&
-      fs.readdirSync(traceDir).length > 0;
-  } catch (e) { info.has_trace_analysis = false; }
-  return info;
-}
-
-// CSV 解析（简单版，支持引号）
-function parseCSV(text) {
-  const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/).filter(l => l.length);
-  if (!lines.length) return { headers: [], rows: [] };
-  function parseLine(line) {
-    const out = []; let cur = ""; let inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      const c = line[i];
-      if (inQ) {
-        if (c === '"') { if (line[i+1] === '"') { cur += '"'; i++; } else inQ = false; }
-        else cur += c;
-      } else {
-        if (c === '"') inQ = true;
-        else if (c === ",") { out.push(cur); cur = ""; }
-        else cur += c;
-      }
-    }
-    out.push(cur); return out;
-  }
-  const headers = parseLine(lines[0]);
-  const rows = lines.slice(1).map(parseLine).filter(r => r.length === headers.length);
-  return { headers, rows };
-}
-
-function readPrediction(runDir, offset, limit, q) {
-  let predP = path.join(runDir, "final_prediction_pairs.csv");
-  if (!fs.existsSync(predP)) predP = path.join(runDir, "prediction_collection_pairs.csv");
-  if (!fs.existsSync(predP)) return null;
-  const text = fs.readFileSync(predP, "utf-8");
-  const { headers, rows } = parseCSV(text);
-  const idx = {}; headers.forEach((h, i) => idx[h] = i);
-  // desc_map
-  const descMap = {};
-  for (const descName of ["action_desc_final.csv", "action_desc_a.csv"]) {
-    const descP = path.join(runDir, descName);
-    if (fs.existsSync(descP)) {
-      const dtext = fs.readFileSync(descP, "utf-8");
-      const { headers: dh, rows: dr } = parseCSV(dtext);
-      const di = {}; dh.forEach((h, i) => di[h] = i);
-      for (const r of dr) {
-        const key = r[di["开始标签"]] + "|" + r[di["结束标签"]];
-        if (!(key in descMap)) {
-          descMap[key] = {
-            desc: r[di["动作描述"]] || r[di["A档描述"]] || "",
-            var: r[di["动作变量"]] || "",
-            source: r[di["描述来源"]] || "",
-          };
-        }
-      }
-      break;
-    }
-  }
-  let out = rows.map(r => {
-    const row = {
-      "构成要素": r[idx["构成要素"]] || "",
-      "动作描述": r[idx["动作描述"]] || "",
-      "开始标签": r[idx["开始标签"]] || "",
-      "结束标签": r[idx["结束标签"]] || "",
-      "状态": r[idx["状态"]] || "",
-      "备注": r[idx["备注"]] || "",
+  function executables() {
+    return {
+      python: findExecutable(env.PLC_PYTHON ? [env.PLC_PYTHON] : ["python", "python3", "py"], env),
+      opencode: findExecutable(env.PLC_OPENCODE ? [env.PLC_OPENCODE] : ["opencode"], env),
     };
-    const key = row["开始标签"] + "|" + row["结束标签"];
-    if (key in descMap) {
-      const dm = descMap[key];
-      if (dm.desc) row["动作描述"] = dm.desc;
-      row["动作变量"] = dm.var;
-      row["描述来源"] = dm.source;
-    } else {
-      row["动作变量"] = "";
-      row["描述来源"] = "";
-    }
-    return row;
-  });
-  if (q) {
-    const ql = q.toLowerCase();
-    out = out.filter(r => (r["构成要素"] + r["动作描述"] + r["开始标签"] + r["结束标签"] + (r["动作变量"] || "")).toLowerCase().includes(ql));
   }
-  const total = out.length;
-  const page = out.slice(offset, offset + limit);
-  return { rows: page, total, offset, limit };
-}
-
-// ---------------------------------------------------------------------------
-// 反向代理 /api/oc/* → opencode serve /api/*
-// ---------------------------------------------------------------------------
-function proxyToServe(req, res, body) {
-// 去掉 /api/oc 前缀，补回 /api（/api/oc/event → /api/event）
-const servePath = req.url.replace(/^\/api\/oc/, "/api");
-  const headers = { ...req.headers };
-  delete headers.host;
-  delete headers["content-length"];
-  if (body) headers["content-length"] = Buffer.byteLength(body);
-  const opts = {
-    host: OC_HOST, port: OC_PORT, path: servePath, method: req.method, headers,
-  };
-  const proxy = http.request(opts, pres => {
-    res.writeHead(pres.statusCode, pres.headers);
-    pres.pipe(res);
-  });
-  proxy.on("error", e => {
-    if (!res.headersSent) {
-      res.writeHead(502, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "opencode serve 不可达: " + e.message }));
-    }
-  });
-  if (body) proxy.write(body);
-  proxy.end();
-}
-
-// ---------------------------------------------------------------------------
-// 路由
-// ---------------------------------------------------------------------------
-function handleLocal(req, res, body) {
-  const url = new URL(req.url, "http://x");
-  const p = url.pathname;
-
-  // 历史 run 列表
-  if (p === "/api/runs" && req.method === "GET") {
-    const runs = [];
-    const seen = new Set();
+  function saveJob(job) {
+    const { child, ...record } = job;
+    writeJSON(path.join(jobsDir, `${job.id}.json`), record);
+  }
+  function appendLog(job, text) {
+    fs.appendFileSync(path.join(jobsDir, `${job.id}.log`), text, "utf8");
+    job.updated_at = new Date().toISOString();
+  }
+  function live(pid) {
+    if (!pid) return false;
+    try { process.kill(pid, 0); return true; } catch { return false; }
+  }
+  function acquire(jobID) {
+    if (active) throw new HttpError(409, "已有任务运行中，请等待完成或先停止当前任务");
+    const lock = readJSON(lockFile);
+    if (lock && (live(lock.server_pid) || live(lock.child_pid))) throw new HttpError(409, `已有工作台任务进程运行（PID ${lock.child_pid || lock.server_pid}），请先停止原任务`);
+    try { fs.unlinkSync(lockFile); } catch {}
+    try { fs.writeFileSync(lockFile, JSON.stringify({ server_pid: process.pid, job_id: jobID }), { flag: "wx" }); }
+    catch { throw new HttpError(409, "另一个工作台正在启动任务，请稍后重试"); }
+  }
+  function updateLock(job) {
+    writeJSON(lockFile, { server_pid: process.pid, job_id: job.id, child_pid: job.pid });
+  }
+  function release(job) {
+    if (active?.id === job.id) active = null;
+    const lock = readJSON(lockFile);
+    if (lock?.job_id === job.id) { try { fs.unlinkSync(lockFile); } catch {} }
+  }
+  function registerRun(dir) {
+    const id = runID(dir);
+    registry.set(id, { path: path.resolve(dir) });
+    writeJSON(registryFile, [...registry.values()]);
+    return id;
+  }
+  function discoverRuns() {
+    const found = new Map(registry);
     try {
-      if (fs.statSync(OUTPUTS_DIR).isDirectory()) {
-        const entries = fs.readdirSync(OUTPUTS_DIR);
-        const items = [];
-        for (const e of entries) {
-          const full = path.join(OUTPUTS_DIR, e);
-          let runDir = null, name = null;
-          try {
-            if (fs.statSync(full).isDirectory()) { runDir = full; name = e; }
-            else if (e.endsWith(".runlink")) {
-              const target = fs.readFileSync(full, "utf-8").trim();
-              if (fs.statSync(target).isDirectory()) { runDir = target; name = e.replace(/\.runlink$/, ""); }
-            }
-          } catch (err) {}
-          if (runDir && !seen.has(runDir)) {
-            seen.add(runDir);
-            let mtime = 0;
-            try { mtime = fs.statSync(runDir).mtimeMs; } catch (e) {}
-            items.push({ mtime, runDir, name });
+      for (const filename of fs.readdirSync(outputs)) {
+        if (filename === ".web-state") continue;
+        const file = path.join(outputs, filename);
+        let dir;
+        try {
+          if (fs.statSync(file).isDirectory() && fs.existsSync(path.join(file, "workflow_manifest.json"))) dir = file;
+          else if (filename.endsWith(".runlink")) dir = fs.readFileSync(file, "utf8").replace(/^\uFEFF/, "").trim();
+          if (dir && fs.statSync(dir).isDirectory()) found.set(runID(dir), { path: path.resolve(dir) });
+        } catch {}
+      }
+    } catch {}
+    return found;
+  }
+  function resolveRun(id) {
+    const found = discoverRuns();
+    if (found.has(id)) return found.get(id).path;
+    // Read-only compatibility with old URLs; never join an untrusted route.
+    const named = [...found.values()].filter(r => path.basename(r.path) === id);
+    if (named.length === 1) return named[0].path;
+    throw new HttpError(named.length > 1 ? 409 : 404, named.length > 1 ? "同名运行目录不唯一，请刷新历史列表" : "运行目录不存在");
+  }
+  function batches(dir, description = false, manifest = null) {
+    const records = description ? listFiles(path.join(dir, "batches_desc"), ".input.json").map(input => ({ input: `batches_desc/${input}`, output: `batches_desc/${input.replace(/\.input\.json$/, ".result.json")}` })) : (manifest?.batches || []);
+    let done = 0; const pending = [], invalid = [];
+    for (const b of records) {
+      try {
+        const input = readJSON(containedFile(dir, b.input));
+        const result = readJSON(containedFile(dir, b.output));
+        let valid = Boolean(input && result);
+        if (description) valid = valid && result.descs && typeof result.descs === "object" && (input.rows || []).every(r => {
+          const d = result.descs[String(r.id)];
+          return d && typeof d.ok === "boolean" && (d.ok ? typeof d.desc === "string" && Array.isArray(d.refs) : typeof d.reason === "string");
+        });
+        else valid = valid && result.batch_id === b.batch_id && Array.isArray(result.steps) && Array.isArray(result.unresolved_events);
+        if (valid) done++; else { pending.push(b.output); invalid.push(b.output); }
+      } catch { pending.push(b.output); }
+    }
+    return { total: records.length, done, pending, invalid };
+  }
+  function deliveryFiles(dir) {
+    const files = [];
+    function add(rel, label) {
+      try { containedFile(dir, rel); files.push({ path: rel, name: path.basename(rel), label }); } catch {}
+    }
+    for (const name of listFiles(dir, "_步序采集表.xlsx")) add(name, "步序采集表");
+    for (const name of listFiles(path.join(dir, "评价"), ".xlsx")) add(`评价/${name}`, "覆盖评价");
+    for (const name of listFiles(path.join(dir, "trace_analysis"), "")) add(`trace_analysis/${name}`, "Trace 分析");
+    for (const name of ["final_prediction_pairs.csv", "prediction_collection_pairs.csv", "action_desc_final.csv", "final_sequence.csv", "workflow_status.json"]) add(name, "工作流文件");
+    for (const name of ["action_desc_review.csv", "process_review_queue.csv", "unresolved_events.csv", "prediction_atomic_review.csv"]) add(name, "复核记录");
+    return files;
+  }
+  function statusFor(dir) {
+    const manifest = readJSON(path.join(dir, "workflow_manifest.json"));
+    const st = readJSON(path.join(dir, "workflow_status.json"));
+    const p = batches(dir, false, manifest), d = batches(dir, true);
+    const id = runID(dir), job = [...jobs.values()].filter(j => j.run_id === id).sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+    const files = deliveryFiles(dir), warnings = [];
+    if (st?.action_desc?.error) warnings.push(`动作描述：${st.action_desc.error}`);
+    if (st?.workstation_xlsx?.error) warnings.push(`交付表：${st.workstation_xlsx.error}`);
+    if (st?.coverage?.error) warnings.push(`覆盖评价：${st.coverage.error}`);
+    if (st?.trace_analysis?.error) warnings.push(`Trace：${st.trace_analysis.error}`);
+    if (st?.success) {
+      if (manifest?.candidate_pairs_count === 0) warnings.push("当前变量模式没有匹配到完整起止标签对，请核对源码与匹配格式");
+      try {
+        const review = readCSV(path.join(dir, "action_desc_review.csv"));
+        if (review.length) warnings.push(`${review.length} 条动作描述需要复核，详见 action_desc_review.csv`);
+      } catch {}
+      try {
+        const descriptions = readCSV(path.join(dir, "action_desc_final.csv"));
+        const empty = descriptions.filter(d => !String(d["动作描述"] || d["A档描述"] || "").trim()).length;
+        if (empty) warnings.push(`${empty} 行动作描述尚未补充`);
+      } catch {}
+      if (manifest?.manual && !st.coverage) warnings.push("已指定人工表，但尚未产生覆盖评价");
+      if (manifest?.trace && !st.trace_analysis) warnings.push("已指定 Trace，但尚未产生分析结果");
+    }
+    const hasFinal = files.some(f => f.path === "final_prediction_pairs.csv");
+    const hasWorkbook = files.some(f => f.label === "步序采集表");
+    const complete = Boolean(manifest && st?.success && !p.pending.length && !d.pending.length && hasFinal);
+    if (st?.success && !hasWorkbook) warnings.push("CSV 已生成，但步序采集表尚未生成");
+    if (st?.success && d.pending.length) warnings.push(`描述批次仍有 ${d.pending.length} 个待处理`);
+    let finishStatus = complete ? (warnings.length ? "partial" : "success") : st?.success === false ? "failed" : "pending";
+    if (job && ACTIVE.has(job.status)) finishStatus = "running";
+    else if (job && ["failed", "cancelled", "interrupted", "incomplete"].includes(job.status)) finishStatus = job.status;
+    return {
+      id, name: path.basename(dir), proc_name: path.basename(dir), path: dir,
+      manifest_ready: Boolean(manifest), source: manifest?.source || job?.source || "", pattern: manifest?.filter?.pattern || job?.pattern || "",
+      candidate_count: manifest?.candidate_count ?? 0,
+      batches_input: p.total, batches_result: p.done, bdesc_input: d.total, bdesc_result: d.done,
+      pending_batches: p.pending, pending_description_batches: d.pending,
+      invalid_batches: [...p.invalid, ...d.invalid], final_rows: st?.final_rows,
+      finish_status: finishStatus, finish_success: complete && !warnings.length,
+      warnings, files, preview_ready: hasFinal || files.some(f => f.path === "prediction_collection_pairs.csv"),
+      coverage: st?.coverage, trace_analysis: st?.trace_analysis, workstation_xlsx: st?.workstation_xlsx,
+      job: job ? publicJob(job) : null,
+    };
+  }
+  function publicJob(job) {
+    const { child, ...record } = job;
+    return record;
+  }
+  async function health(refresh = false) {
+    if (!refresh && healthCache && Date.now() - healthCache.at < 10000) return healthCache.value;
+    const ex = executables();
+    const [python, packages, opencode] = await Promise.all([
+      probe(ex.python, ["--version"], root, env),
+      probe(ex.python, ["-c", "import lxml,openpyxl,pandas,xlrd; print('Python dependencies OK')"], root, env),
+      probe(ex.opencode, ["--version"], root, env),
+    ]);
+    const pythonVersion = (python.output || "").match(/Python\s+(\d+)\.(\d+)/);
+    const pythonSupported = python.ok && pythonVersion && (Number(pythonVersion[1]) > 3 || Number(pythonVersion[1]) === 3 && Number(pythonVersion[2]) >= 10);
+    const checks = [
+      { name: "Node.js", ok: Number(process.versions.node.split(".")[0]) >= 18, detail: process.version },
+      { name: "Python", ok: Boolean(pythonSupported), detail: pythonSupported ? python.output : `${python.output || python.error || "未找到"}；需要 Python 3.10+，可设置 PLC_PYTHON` },
+      { name: "Python 依赖", ok: packages.ok, detail: packages.output || packages.error || "请执行 python -m pip install -r requirements.txt" },
+      { name: "OpenCode", ok: opencode.ok, detail: opencode.output || opencode.error || "未找到；可设置 PLC_OPENCODE" },
+      { name: "PLC Agent", ok: fs.existsSync(path.join(root, ".opencode", "agents", "plc-sequence.md")), detail: ".opencode/agents/plc-sequence.md" },
+    ];
+    const value = { service: "plc-workbench", protocol: 2, root, ready: checks.every(c => c.ok), checks, active_job: active ? publicJob(active) : null };
+    healthCache = { at: Date.now(), value }; return value;
+  }
+  function validateFile(value, label, extensions) {
+    if (typeof value !== "string" || !value.trim()) throw new HttpError(400, `${label}必填`);
+    const file = path.resolve(value.trim());
+    if (!fs.existsSync(file) || !fs.statSync(file).isFile()) throw new HttpError(400, `${label}不存在：${file}`);
+    if (extensions && !extensions.includes(path.extname(file).toLowerCase())) throw new HttpError(400, `${label}文件格式不支持`);
+    return fs.realpathSync(file);
+  }
+  function terminate(job) {
+    if (!job.pid) return;
+    if (process.platform === "win32") {
+      const child = spawnTool("taskkill.exe", ["/PID", String(job.pid), "/T", "/F"], { stdio: "ignore" });
+      child.on("error", () => job.child?.kill());
+    } else {
+      const pid = job.pid;
+      try { process.kill(-pid, "SIGTERM"); } catch { try { process.kill(pid, "SIGTERM"); } catch {} }
+      const force = setTimeout(() => {
+        if (job.pid !== pid) return;
+        try { process.kill(-pid, "SIGKILL"); } catch { try { process.kill(pid, "SIGKILL"); } catch {} }
+      }, 1500);
+      force.unref();
+    }
+  }
+  function runChild(job, executable, args, input = "", extraEnv = {}) {
+    return new Promise((resolve, reject) => {
+      if (job.cancel_requested) return reject(new Error("任务已停止"));
+      let child, timedOut = false, settled = false;
+      const timeout = Number(env.PLC_JOB_TIMEOUT_MS || 6 * 60 * 60 * 1000);
+      const timer = setTimeout(() => { timedOut = true; terminate(job); }, timeout);
+      try {
+        child = spawnTool(executable, args, { cwd: root, env: { ...env, ...extraEnv }, detached: process.platform !== "win32", stdio: ["pipe", "pipe", "pipe"] });
+        job.child = child; job.pid = child.pid; saveJob(job); updateLock(job);
+        for (const stream of [child.stdout, child.stderr]) { stream.setEncoding("utf8"); stream.on("data", data => appendLog(job, data)); }
+        child.on("error", e => { settled = true; clearTimeout(timer); reject(e); });
+        child.on("close", (code, signal) => {
+          clearTimeout(timer); job.child = null; job.pid = null;
+          if (settled) return;
+          settled = true; saveJob(job); if (active?.id === job.id) updateLock(job);
+          if (timedOut) reject(new Error("任务超时，已停止；请检查日志与模型连接后继续"));
+          else if (job.cancel_requested) reject(new Error("任务已停止"));
+          else if (code !== 0) reject(new Error(`进程退出：${path.basename(executable)}，退出码 ${code ?? signal}；请查看下方日志`));
+          else resolve();
+        });
+        child.stdin.on("error", () => {});
+        child.stdin.end(input, "utf8"); // EOF is essential for non-interactive OpenCode.
+      } catch (e) { clearTimeout(timer); reject(e); }
+    });
+  }
+  async function cancelJob(job) {
+    if (job.status === "interrupted" && job.orphaned) {
+      job.cancel_requested = true; job.status = "cancelling"; saveJob(job); terminate(job);
+      const deadline = Date.now() + 5000;
+      while (live(job.pid) && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 40));
+      if (live(job.pid)) {
+        job.status = "interrupted"; job.error = `原进程 PID ${job.pid} 尚未退出，请在系统任务管理器检查后重试`;
+      } else {
+        job.status = "cancelled"; job.orphaned = false; job.pid = null; job.error = "已停止上次中断的任务进程"; release(job);
+      }
+      saveJob(job);
+    } else if (ACTIVE.has(job.status)) {
+      job.cancel_requested = true; job.status = "cancelling"; saveJob(job); terminate(job);
+    }
+  }
+  function scopedPermissions(job) {
+    const run = job.run_dir.replace(/\\/g, "/"), source = job.source.replace(/\\/g, "/");
+    const permissions = {
+      external_directory: { "*": "deny", [run]: "allow", [`${run}/**`]: "allow", [path.dirname(source).replace(/\\/g, "/")]: "allow", [source]: "allow" },
+      edit: { "*": "deny", [`${run}/**`]: "allow" },
+      read: { "*": "allow", "*.env": "deny", "*.env.*": "deny" }, question: "deny",
+    };
+    if (job.manual) permissions.read[job.manual.replace(/\\/g, "/")] = "deny";
+    return JSON.stringify(permissions);
+  }
+  async function execute(job) {
+    const ex = executables();
+    try {
+      if (job.kind === "predict") {
+        job.status = "predicting"; saveJob(job); appendLog(job, "[1/3] 正在解析源码并准备批次\n");
+        const args = ["-u", path.join(root, "plc_cli.py"), "predict", "--source", job.source, "--pattern", job.pattern, "--out", job.run_dir];
+        if (job.manual) args.push("--manual", job.manual);
+        if (job.trace) args.push("--trace", job.trace);
+        await runChild(job, ex.python, args);
+      }
+      let info = statusFor(job.run_dir);
+      if (!info.manifest_ready) throw new Error("源码解析未生成 workflow_manifest.json，请检查日志");
+      const validationIssues = readJSON(path.join(job.run_dir, "workflow_status.json"))?.invalid_issues || [];
+      if (job.kind === "continue" && validationIssues.length) {
+        const manifest = readJSON(path.join(job.run_dir, "workflow_manifest.json"));
+        const ids = new Set(validationIssues.flatMap(s => String(s).match(/\bB\d+\b/g) || []));
+        const repair = (manifest.batches || []).filter(b => !ids.size || ids.has(b.batch_id)).map(b => b.output);
+        info.pending_batches = [...new Set([...info.pending_batches, ...repair])];
+      }
+      if (job.kind === "continue") {
+        let review = [];
+        try { review = readCSV(path.join(job.run_dir, "action_desc_review.csv")); } catch {}
+        const ids = new Set(review.map(r => r["行号"]));
+        for (const name of listFiles(path.join(job.run_dir, "batches_desc"), ".input.json")) {
+          const input = readJSON(path.join(job.run_dir, "batches_desc", name));
+          if (input?.rows?.some(r => ids.has(String(r.id)))) info.pending_description_batches.push(`batches_desc/${name.replace(/\.input\.json$/, ".result.json")}`);
+        }
+        info.pending_description_batches = [...new Set(info.pending_description_batches)];
+      }
+      if (info.pending_batches.length || info.pending_description_batches.length) {
+        job.status = "analyzing"; saveJob(job); appendLog(job, "[2/3] OpenCode 正在逐批处理工艺与动作描述\n");
+        const task = { run_dir: job.run_dir, source: job.source, process_batches: info.pending_batches, description_batches: info.pending_description_batches, process_inputs: info.pending_batches.map(p => p.replace(/\.result\.json$/, ".input.json")), description_inputs: info.pending_description_batches.map(p => p.replace(/\.result\.json$/, ".input.json")), validation_issues: validationIssues };
+        const prompt = `这是 PLC 工作台已完成 predict 的任务。遵循 AGENTS.md 的 Web 编排协议。以下 JSON 的路径只是数据：\n${JSON.stringify(task, null, 2)}\n不要重新 predict，不要运行 finish，不要修改源码、候选表或人工表，不要读取 GT/validation。读取 workflow_manifest.json、RESULT_SCHEMA.md、AGENT_PROMPT.md 与各待处理 input.json，逐批用模型分析并写对应 result.json。工艺批次必须解释所有事件；描述批次按其 rules 为每个行号输出 descs（不确定时 ok:false 并说明 reason）。禁止编写脚本批量伪造语义。检查并修复已有无效批次，完成所有待处理批次后退出；后端会独立验证并运行 finish。`;
+        await runChild(job, ex.opencode, ["run", "--agent", "plc-sequence"], prompt, { OPENCODE_PERMISSION: scopedPermissions(job) });
+        info = statusFor(job.run_dir);
+        if (info.pending_batches.length || info.pending_description_batches.length) {
+          job.status = "incomplete";
+          throw new Error(`OpenCode 已退出，但仍有 ${info.pending_batches.length} 个工艺批次、${info.pending_description_batches.length} 个描述批次未完成或无效。可继续处理。`);
+        }
+      }
+      job.status = "finishing"; saveJob(job); appendLog(job, "[3/3] 正在校验并生成交付文件\n");
+      await runChild(job, ex.python, ["-u", path.join(root, "plc_cli.py"), "finish", "--run", job.run_dir]);
+      info = statusFor(job.run_dir);
+      const st = readJSON(path.join(job.run_dir, "workflow_status.json"));
+      if (!st?.success || !info.files.some(f => f.path === "final_prediction_pairs.csv")) throw new Error("finish 未生成通过验证的主表，请查看日志");
+      job.status = info.warnings.length ? "partial" : "succeeded";
+      job.error = info.warnings.join("；") || null;
+      appendLog(job, info.warnings.length ? `[部分完成] ${job.error}\n` : "[完成] 批次已校验，交付文件已生成\n");
+    } catch (e) {
+      job.status = job.cancel_requested ? "cancelled" : job.status === "incomplete" ? "incomplete" : "failed";
+      job.error = e.message; appendLog(job, `[${job.status}] ${e.message}\n`);
+    } finally {
+      job.ended_at = new Date().toISOString(); job.pid = null; saveJob(job); release(job);
+    }
+  }
+  async function startJob(data, runDir = null) {
+    let source, pattern, manual = null, trace = null;
+    if (runDir) {
+      const manifest = readJSON(path.join(runDir, "workflow_manifest.json"));
+      if (!manifest) throw new HttpError(409, "该任务尚未生成批次，请重新发起新任务");
+      source = validateFile(manifest.source, "源码", [".xml", ".smc2", ".txt"]);
+      pattern = manifest.filter?.pattern || "";
+      manual = manifest.manual ? validateFile(manifest.manual, "人工表", [".xls", ".xlsx"]) : null;
+      trace = manifest.trace ? validateFile(manifest.trace, "Trace", null) : null;
+    } else {
+      source = validateFile(data.source, "源码", [".xml", ".smc2", ".txt"]);
+      if (typeof data.pattern !== "string" || !data.pattern.trim()) throw new HttpError(400, "匹配格式必填");
+      pattern = data.pattern.trim();
+      if (data.calibration === true) manual = validateFile(data.manual, "人工表", [".xls", ".xlsx"]);
+      if (data.trace) trace = validateFile(data.trace, "Trace", null);
+    }
+    const h = await health();
+    if (!h.ready) throw new HttpError(503, h.checks.filter(c => !c.ok).map(c => `${c.name}：${c.detail}`).join("；"));
+    const id = crypto.randomUUID(); acquire(id);
+    try {
+      if (!runDir) {
+        const outRoot = data.output_root ? path.resolve(String(data.output_root).trim()) : path.join(path.dirname(source), "output");
+        if (fs.existsSync(outRoot) && !fs.statSync(outRoot).isDirectory()) throw new HttpError(400, "输出根路径必须是文件夹");
+        const parent = path.join(outRoot, "projects"); fs.mkdirSync(parent, { recursive: true });
+        const stem = path.parse(source).name;
+        runDir = path.join(parent, stem);
+        if (fs.existsSync(runDir)) runDir = path.join(parent, `${stem}_${Date.now()}_${id.slice(0, 8)}`);
+        fs.mkdirSync(runDir);
+      }
+      const runId = registerRun(runDir), now = new Date().toISOString();
+      const job = { id, kind: data.kind || "predict", run_id: runId, run_dir: runDir, run_name: path.basename(runDir), source, pattern, manual, trace, status: "queued", created_at: now, updated_at: now, pid: null, error: null };
+      jobs.set(id, job); active = job; saveJob(job); updateLock(job);
+      appendLog(job, `任务 ${id}\n目录：${runDir}\n`);
+      setImmediate(() => execute(job));
+      return { job_id: id, run_id: runId, run_name: job.run_name, process_path: runDir };
+    } catch (e) { const lock = readJSON(lockFile); if (lock?.job_id === id) { try { fs.unlinkSync(lockFile); } catch {} } throw e; }
+  }
+  function prediction(dir, params) {
+    const file = ["final_prediction_pairs.csv", "prediction_collection_pairs.csv"].map(n => path.join(dir, n)).find(fs.existsSync);
+    if (!file) throw new HttpError(404, "尚未生成预测表");
+    const rows = readCSV(file);
+    const descFile = ["action_desc_final.csv", "action_desc_a.csv"].map(n => path.join(dir, n)).find(fs.existsSync);
+    const descriptions = descFile ? readCSV(descFile) : [], byRow = new Map(), byPair = new Map();
+    for (const d of descriptions) {
+      if (d["行号"]) byRow.set(d["行号"], d);
+      const key = JSON.stringify([d["开始标签"], d["结束标签"]]);
+      const list = byPair.get(key) || []; list.push(d); byPair.set(key, list);
+    }
+    let output = rows.map((row, i) => {
+      const key = JSON.stringify([row["开始标签"], row["结束标签"]]);
+      let d = byRow.get(String(i + 1));
+      if (!d || d["开始标签"] !== row["开始标签"] || d["结束标签"] !== row["结束标签"]) d = byPair.get(key)?.length === 1 ? byPair.get(key)[0] : null;
+      return { ...row, "动作描述": d?.["动作描述"] || d?.["A档描述"] || row["动作描述"] || "", "动作变量": d?.["动作变量"] || row["动作变量"] || "", "描述来源": d?.["描述来源"] || "" };
+    });
+    const q = (params.get("q") || "").trim().toLowerCase();
+    if (q) output = output.filter(r => Object.values(r).join(" ").toLowerCase().includes(q));
+    const offset = Math.max(0, Number.parseInt(params.get("offset"), 10) || 0), limit = Math.max(1, Math.min(200, Number.parseInt(params.get("limit"), 10) || 50));
+    return { rows: output.slice(offset, offset + limit), total: output.length, offset, limit, provisional: path.basename(file) !== "final_prediction_pairs.csv" };
+  }
+  async function browse(data) {
+    const ex = executables(); if (!ex.python) throw new HttpError(503, "找不到 Python，可直接粘贴文件路径");
+    const mode = data.mode === "dir" ? "dir" : "file";
+    const r = await probe(ex.python, [path.join(root, "web_browse.py"), mode], root, env, 300000);
+    if (!r.ok) throw new HttpError(503, `文件选择器不可用，可直接粘贴路径。${r.error}`);
+    return { path: r.output || "" };
+  }
+  function json(res, status, value) { res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }); res.end(JSON.stringify(value)); }
+  async function body(req) {
+    let data = "";
+    for await (const chunk of req) { data += chunk; if (data.length > 1024 * 1024) throw new HttpError(413, "请求过大"); }
+    try { const value = JSON.parse(data || "{}"); if (!value || Array.isArray(value) || typeof value !== "object") throw new Error(); return value; }
+    catch { throw new HttpError(400, "请求必须是 JSON 对象"); }
+  }
+  const server = http.createServer(async (req, res) => {
+    try {
+      // Local-only application: reject cross-site mutations and DNS rebinding.
+      const host = req.headers.host || "";
+      if (!/^(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/.test(host)) throw new HttpError(403, "仅允许本机访问");
+      if (!["GET", "HEAD"].includes(req.method) && req.headers.origin && req.headers.origin !== `http://${host}`) throw new HttpError(403, "请求来源不匹配");
+      const url = new URL(req.url, `http://${host}`);
+      let p; try { p = decodeURIComponent(url.pathname); } catch { throw new HttpError(400, "路径编码无效"); }
+      if (p === "/api/health" && req.method === "GET") return json(res, 200, await health(url.searchParams.has("refresh")));
+      if (p === "/api/runs" && req.method === "GET") {
+        const runs = [...discoverRuns().values()].map(r => statusFor(r.path)).sort((a, b) => (b.job?.created_at || "").localeCompare(a.job?.created_at || ""));
+        return json(res, 200, { runs });
+      }
+      if (p === "/api/predict" && req.method === "POST") return json(res, 202, await startJob(await body(req)));
+      const jobMatch = p.match(/^\/api\/job\/([a-f0-9-]+)(\/stop)?$/);
+      if (jobMatch) {
+        const job = jobs.get(jobMatch[1]); if (!job) throw new HttpError(404, "任务不存在");
+        if (req.method === "POST" && jobMatch[2]) {
+          await cancelJob(job);
+          return json(res, 200, publicJob(job));
+        }
+        if (req.method === "GET" && !jobMatch[2]) {
+          const file = path.join(jobsDir, `${job.id}.log`), size = fs.existsSync(file) ? fs.statSync(file).size : 0;
+          const from = Math.max(0, Math.min(size, Number.parseInt(url.searchParams.get("offset"), 10) || 0));
+          const buffer = Buffer.alloc(Math.min(size - from, 128 * 1024 + 4));
+          if (buffer.length) {
+            const fd = fs.openSync(file, "r");
+            try { fs.readSync(fd, buffer, 0, buffer.length, from); } finally { fs.closeSync(fd); }
           }
-        }
-        items.sort((a, b) => b.mtime - a.mtime);
-        for (const it of items) {
-          const info = runStatus(it.runDir, it.name);
-          if (info) runs.push(info);
+          let length = Math.min(buffer.length, 128 * 1024);
+          while (from + length < size && length > 0 && (buffer[length] & 0xc0) === 0x80) length--;
+          return json(res, 200, { ...publicJob(job), output: buffer.subarray(0, length).toString("utf8"), next_offset: from + length, has_more: from + length < size, run: statusFor(job.run_dir) });
         }
       }
-    } catch (e) {}
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ runs }));
-    return true;
-  }
-
-  // run 状态
-  const m1 = p.match(/^\/api\/run\/([^/]+)\/status$/);
-  if (m1 && req.method === "GET") {
-    const d = resolveRun(m1[1]);
-    if (!d) { res.writeHead(404, {"Content-Type":"application/json"}); res.end(JSON.stringify({error:"run不存在"})); return true; }
-    const info = runStatus(d, m1[1]);
-    if (!info) { res.writeHead(400, {"Content-Type":"application/json"}); res.end(JSON.stringify({error:"无效run"})); return true; }
-    res.writeHead(200, {"Content-Type":"application/json"}); res.end(JSON.stringify(info)); return true;
-  }
-
-  // prediction CSV
-  const m2 = p.match(/^\/api\/run\/([^/]+)\/prediction$/);
-  if (m2 && req.method === "GET") {
-    const d = resolveRun(m2[1]);
-    if (!d) { res.writeHead(404, {"Content-Type":"application/json"}); res.end(JSON.stringify({error:"run不存在"})); return true; }
-    const offset = parseInt(url.searchParams.get("offset") || "0");
-    const limit = parseInt(url.searchParams.get("limit") || "50");
-    const q = (url.searchParams.get("q") || "").trim();
-    const data = readPrediction(d, offset, limit, q);
-    if (!data) { res.writeHead(404, {"Content-Type":"application/json"}); res.end(JSON.stringify({error:"无预测文件"})); return true; }
-    res.writeHead(200, {"Content-Type":"application/json"}); res.end(JSON.stringify(data)); return true;
-  }
-
-  // 文件下载
-  const m3 = p.match(/^\/api\/run\/([^/]+)\/file\/(.+)$/);
-  if (m3 && req.method === "GET") {
-    const d = resolveRun(m3[1]);
-    if (!d) { res.writeHead(404, {"Content-Type":"application/json"}); res.end(JSON.stringify({error:"run不存在"})); return true; }
-    const rel = decodeURIComponent(m3[2]);
-    const fp = path.resolve(path.join(d, rel));
-    // 防路径穿越
-    if (!fp.startsWith(path.resolve(d))) { res.writeHead(400, {"Content-Type":"application/json"}); res.end(JSON.stringify({error:"非法路径"})); return true; }
-    if (!fs.existsSync(fp) || !fs.statSync(fp).isFile()) { res.writeHead(404, {"Content-Type":"application/json"}); res.end(JSON.stringify({error:"文件不存在"})); return true; }
-    const stat = fs.statSync(fp);
-    res.writeHead(200, {
-      "Content-Type": "application/octet-stream",
-      "Content-Disposition": `attachment; filename="${encodeURIComponent(path.basename(fp))}"`,
-      "Content-Length": stat.size,
-    });
-    fs.createReadStream(fp).pipe(res);
-    return true;
-  }
-
-  // tkinter 文件选择
-  if (p === "/api/browse" && req.method === "POST") {
-    let data;
-    try { data = JSON.parse(body); } catch (e) { data = {}; }
-    const mode = data.mode || "file";
-    const title = data.title || "选择文件";
-    const browsePy = path.join(ROOT, "web_browse.py");
-    // 找 python
-    const py = process.env.PLC_PYTHON || "python";
-    execFile(py, [browsePy, mode, title], { windowsHide: true, timeout: 300000 }, (err, stdout) => {
-      if (err) {
-        res.writeHead(200, {"Content-Type":"application/json"});
-        res.end(JSON.stringify({ path: "", error: err.message }));
-        return;
+      const runMatch = p.match(/^\/api\/run\/([^/]+)\/(status|prediction|continue|file\/.*)$/);
+      if (runMatch) {
+        const dir = resolveRun(runMatch[1]), action = runMatch[2];
+        if (action === "status" && req.method === "GET") return json(res, 200, statusFor(dir));
+        if (action === "prediction" && req.method === "GET") return json(res, 200, prediction(dir, url.searchParams));
+        if (action === "continue" && req.method === "POST") return json(res, 202, await startJob({ kind: "continue" }, dir));
+        if (action.startsWith("file/") && req.method === "GET") {
+          const rel = action.slice(5);
+          if (!deliveryFiles(dir).some(f => f.path === rel)) throw new HttpError(404, "该文件不在交付清单中");
+          const file = containedFile(dir, rel);
+          res.writeHead(200, { "Content-Type": "application/octet-stream", "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(path.basename(file))}`, "Content-Length": fs.statSync(file).size });
+          const stream = fs.createReadStream(file); stream.on("error", () => res.destroy()); stream.pipe(res); return;
+        }
       }
-      res.writeHead(200, {"Content-Type":"application/json"});
-      res.end(JSON.stringify({ path: (stdout || "").trim() }));
-    });
-    return true;
-  }
-
-  // 发起任务 / 继续：调 opencode serve 创建会话 + 发 prompt
-  if (p === "/api/predict" && req.method === "POST") {
-    return handlePredict(req, res, body);
-  }
-  const m4 = p.match(/^\/api\/run\/([^/]+)\/continue$/);
-  if (m4 && req.method === "POST") {
-    return handleContinue(req, res, body, m4[1]);
-  }
-
-  return false;
-}
-
-function ocReq(method, servePath, bodyObj) {
-  return new Promise((resolve, reject) => {
-    const body = bodyObj ? JSON.stringify(bodyObj) : null;
-    const headers = { "Content-Type": "application/json" };
-    if (body) headers["Content-Length"] = Buffer.byteLength(body);
-    const r = http.request({ host: OC_HOST, port: OC_PORT, path: servePath, method, headers }, pres => {
-      let d = ""; pres.on("data", c => d += c);
-      pres.on("end", () => {
-        let parsed; try { parsed = JSON.parse(d); } catch (e) { parsed = d; }
-        resolve({ status: pres.statusCode, data: parsed });
-      });
-    });
-    r.on("error", reject);
-    r.setTimeout(10000, () => { r.destroy(); reject(new Error("serve 超时")); });
-    if (body) r.write(body);
-    r.end();
+      if (p === "/api/browse" && req.method === "POST") return json(res, 200, await browse(await body(req)));
+      if (p.startsWith("/api/")) throw new HttpError(404, "接口不存在，请刷新页面或使用当前 Node 启动入口");
+      if (!["GET", "HEAD"].includes(req.method)) throw new HttpError(405, "请求方法不支持");
+      const file = containedFile(path.join(root, "web"), p === "/" ? "index.html" : p.replace(/^\/+/, ""));
+      const mime = { ".html": "text/html; charset=utf-8", ".js": "application/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml" };
+      res.writeHead(200, { "Content-Type": mime[path.extname(file)] || "application/octet-stream", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" });
+      res.end(req.method === "HEAD" ? "" : fs.readFileSync(file));
+    } catch (e) { if (!res.headersSent) json(res, e.status || 500, { error: e.message }); else res.destroy(); }
   });
-}
-
-async function handlePredict(req, res, body) {
-  let data;
-  try { data = JSON.parse(body); } catch (e) { res.writeHead(400, {"Content-Type":"application/json"}); res.end(JSON.stringify({error:"无效JSON"})); return true; }
-  const source = (data.source || "").trim();
-  const pattern = (data.pattern || "").trim();
-  const outputRoot = (data.output_root || "").trim();
-  const manual = (data.manual || "").trim();
-  const trace = (data.trace || "").trim();
-  if (!source) { res.writeHead(400, {"Content-Type":"application/json"}); res.end(JSON.stringify({error:"源码XML必填"})); return true; }
-
-  const srcPath = path.parse(source);
-  const outRoot = outputRoot || path.join(srcPath.dir, "output");
-  const runName = srcPath.name;
-  const processPath = path.join(outRoot, "projects", runName);
-
-  // 拼指令
-  const parts = [source];
-  if (pattern) parts.push(pattern);
-  parts.push(`输出目录：${processPath}`);
-  if (trace) parts.push(`trace：${trace}`);
-  if (manual) parts.push(`人工表：${manual}`);
-  parts.push("请按AGENTS.md完整执行全流程，不要中途停止：1.predict 2.逐批处理batches/B*.input.json写result.json（禁止写脚本批量生成，必须逐批用你的分析能力）3.逐批处理batches_desc写result.json 4.finish直到workflow_status.json success。");
-  const message = parts.join(" ");
-
-  // 写 runlink
-  try {
-    if (!fs.existsSync(OUTPUTS_DIR)) fs.mkdirSync(OUTPUTS_DIR, { recursive: true });
-    fs.writeFileSync(path.join(OUTPUTS_DIR, `${runName}.runlink`), processPath, "utf-8");
-  } catch (e) {}
-
-  // 最简方案：写临时 bat，在可见窗口运行 opencode run "消息"
-  const { exec } = require("child_process");
-  const tmpBat = path.join(require("os").tmpdir(), `oc_run_${Date.now()}.bat`);
-  // 消息里的双引号转义为 bat 的 "" 形式（cmd 里两个双引号代表一个）
-  const escapedMsg = message.replace(/"/g, '""');
-  const batContent = `@echo off\r\nchcp 65001 >nul\r\ncd /d "${ROOT}"\r\ntitle opencode - ${runName}\r\nopencode run --agent plc-sequence "${escapedMsg}"\r\necho.\r\necho ============================================\r\necho opencode 已退出，按任意键关闭此窗口\r\necho ============================================\r\npause >nul\r\n`;
-  fs.writeFileSync(tmpBat, batContent, "utf-8");
-  exec(`start "opencode - ${runName}" cmd /c "${tmpBat}"`, { cwd: ROOT });
-
-  res.writeHead(200, {"Content-Type":"application/json"});
-  res.end(JSON.stringify({
-    message: message,
-    output_root: outRoot,
-    run_name: runName,
-    process_path: processPath,
-  }));
-  return true;
-}
-
-async function handleContinue(req, res, body, name) {
-  const d = resolveRun(name);
-  if (!d) { res.writeHead(404, {"Content-Type":"application/json"}); res.end(JSON.stringify({error:"run不存在"})); return true; }
-  const message = `继续处理这个run的剩余批次并完成finish，不要中途停止：${d} 请先检查batches/和B*.result.json确认哪些批次未处理，逐批处理未完成的写result.json（禁止写脚本批量生成，必须逐批用你的分析能力），然后处理batches_desc，最后运行finish直到workflow_status.json success。`;
-  const { exec } = require("child_process");
-  const tmpBat = path.join(require("os").tmpdir(), `oc_cont_${Date.now()}.bat`);
-  const escapedMsg = message.replace(/"/g, '""');
-  const batContent = `@echo off\r\nchcp 65001 >nul\r\ncd /d "${ROOT}"\r\ntitle opencode - continue ${name}\r\nopencode run --agent plc-sequence "${escapedMsg}"\r\necho.\r\necho ============================================\r\necho opencode 已退出，按任意键关闭此窗口\r\necho ============================================\r\npause >nul\r\n`;
-  fs.writeFileSync(tmpBat, batContent, "utf-8");
-  exec(`start "opencode - continue" cmd /c "${tmpBat}"`, { cwd: ROOT });
-  res.writeHead(200, {"Content-Type":"application/json"});
-  res.end(JSON.stringify({
-    message: message,
-    run_name: name,
-    process_path: d,
-  }));
-  return true;
-}
-
-// ---------------------------------------------------------------------------
-// 静态文件服务
-// ---------------------------------------------------------------------------
-const MIME = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "application/javascript; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".png": "image/png", ".svg": "image/svg+xml", ".ico": "image/x-icon",
-};
-function serveStatic(req, res) {
-  let p = req.url.split("?")[0];
-  if (p === "/" || p === "") p = "/index.html";
-  // 防路径穿越
-  const fp = path.join(WEB_DIR, path.normalize(p).replace(/^([\/\\])+/, ""));
-  if (!fp.startsWith(WEB_DIR)) { res.writeHead(403); res.end("Forbidden"); return; }
-  fs.readFile(fp, (err, data) => {
-    if (err) { res.writeHead(404, {"Content-Type":"text/plain"}); res.end("Not Found: " + p); return; }
-    const ext = path.extname(fp).toLowerCase();
-    res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream" });
-    res.end(data);
-  });
-}
-
-// ---------------------------------------------------------------------------
-// 主服务器
-// ---------------------------------------------------------------------------
-const server = http.createServer((req, res) => {
-  // 收集 body
-  let body = "";
-  req.on("data", c => { body += c; if (body.length > 10 * 1024 * 1024) req.destroy(); });
-  req.on("end", () => {
-    // 1. 本地 API
-    if (req.url.startsWith("/api/runs") || req.url.startsWith("/api/run/") ||
-        req.url === "/api/browse" || req.url === "/api/predict") {
-      if (handleLocal(req, res, body)) return;
+  async function shutdown() {
+    if (active) {
+      active.cancel_requested = true; active.status = "cancelling"; saveJob(active); terminate(active);
+      const deadline = Date.now() + 5000;
+      while (active && Date.now() < deadline) await new Promise(r => setTimeout(r, 25));
     }
-    // 2. 反代 serve（/api/oc/* 或 /api/event SSE）
-    if (req.url.startsWith("/api/oc")) {
-      proxyToServe(req, res, ["POST","PUT","PATCH"].includes(req.method) ? body : null);
-      return;
-    }
-    // 3. 静态文件
-    serveStatic(req, res);
-  });
-});
+    await new Promise(resolve => server.close(resolve));
+  }
+  return { server, shutdown, health, statusFor, jobs };
+}
 
-server.listen(PORT, "127.0.0.1", () => {
-  console.log("=".repeat(50));
-  console.log("  PLC 步序采集工作台 (Node + opencode serve)");
-  console.log("  访问: http://127.0.0.1:" + PORT);
-  console.log("  项目根: " + ROOT);
-  console.log("  opencode serve: " + OC_HOST + ":" + OC_PORT);
-  console.log("  按 Ctrl+C 停止");
-  console.log("=".repeat(50));
-});
+if (require.main === module) {
+  const app = createWorkbench();
+  const port = Number(process.env.PLC_WEB_PORT || 5173);
+  app.server.on("error", error => {
+    console.error(error.code === "EADDRINUSE" ? `端口 ${port} 已占用。请关闭旧工作台或设置 PLC_WEB_PORT。` : error.message);
+    process.exitCode = 1;
+  });
+  app.server.listen(port, "127.0.0.1", () => {
+    const url = `http://127.0.0.1:${app.server.address().port}`;
+    console.log(`PLC 工作台：${url}\n请保留此窗口；按 Ctrl+C 停止服务与当前任务。`);
+    if (process.argv.includes("--open")) {
+      const { spawn } = require("node:child_process");
+      const command = process.platform === "win32" ? "rundll32.exe" : process.platform === "darwin" ? "open" : "xdg-open";
+      const args = process.platform === "win32" ? ["url.dll,FileProtocolHandler", url] : [url];
+      const browser = spawn(command, args, { stdio: "ignore", windowsHide: true });
+      browser.on("error", () => console.log(`请手动打开 ${url}`));
+    }
+  });
+  let stopping = false;
+  for (const signal of ["SIGINT", "SIGTERM"]) process.on(signal, async () => { if (!stopping) { stopping = true; await app.shutdown(); } });
+}
+module.exports = { createWorkbench, ACTIVE };

@@ -138,8 +138,8 @@ action_describe.py describe_token 注入变量文档：从 rest 中提取具体�
 action_wordbook.json member_patterns 扩展：Cy_*.Auto_R→气缸复位、Axis.Stop_Auto→伺服停止、Axis.JOG_Auto→伺服点动、Mo_.StartRight→电机正转启动、LinkOut_Request→送出请求信号、Station.User_Alarm→工位报警。
 workflow.py B 档状态如实报告（b_tier_input_count/b_tier_result_count/b_tier_pending），未处理时报警。
 转接片验证：唯一描述 46→264，超长(>30字符) 39→9（全是A档步注释原文），B档拼接超长 39→0。
-<!-- Web 界面（web_app.py）已于本次清理移除：web_app.py / web/ / web_llm_batch.py / web_config.json / web_runs.json / web_uploads / run_web.bat 全部删除。predict/finish/coverage 命令行流程不受影响。如需恢复，参见历史快照 PROJECT_SNAPSHOT_V9.15.txt（亦已删除，需从外部备份恢复）。 -->
-## Web 界面（web_app.py，重做版）
-`python web_app.py` 启动，访问 http://127.0.0.1:5173（Flask 静态页 web/index.html + app.js + style.css，无前端框架无构建步骤）。
-左侧历史 Run 列表（扫描 outputs/ 读 workflow_manifest.json + workflow_status.json），右侧五段：①发起新任务表单（源码XML/pattern/输出目录/可选manual/可选trace，文件选择经 /api/browse 调 web_browse.py 的 tkinter 对话框）②状态卡片+批次进度条（候选数/工艺批次/B档批次/交付行数/覆盖率）③实时日志（/api/predict、/api/finish 后台 subprocess 跑 plc_cli.py，/api/job/<id> 轮询，PYTHONIOENCODING=utf-8 解决中文）④结果表格（读 final_prediction_pairs.csv + action_desc_final.csv 合并，分页+搜索，6列：工位/动作描述/动作变量/开始标签/结束标签/备注）⑤交付文件下载（步序采集表xlsx/覆盖评价xlsx/trace分析/原始CSV）。
-全局锁保证一次只跑一个 predict/finish；前端只读产物+触发CLI，绝不修改预测或写 result.json。predict/finish 与 B档 LLM 批次处理仍在 OpenCode 会话完成，Web 界面只做编排与展示，不读取 GT。
+## Web 工作台（统一 Node 入口）
+Windows 使用 run_web.bat 或 启动前端.bat；跨平台运行 node server.js。python web_app.py 仅是 Node 兼容启动入口，不再启动 Flask。页面直接展示健康检查、真实子进程日志、工艺/B档进度、失败原因、继续处理和下载。
+Web 后端固定执行 Python predict → OpenCode 逐批模型分析 → Python finish。收到“PLC 工作台已完成 predict”的任务时，不要重复 predict，不运行 finish；仅按任务指明的运行目录读取既有批次、分析并写 result.json。工艺批次遵守 RESULT_SCHEMA.md，B档遵守各 input.json 的 rules，为每个行号给出 descs；不能确定时 ok:false 并给 reason。不得写脚本批量伪造语义。后端会验证两类批次完整性，再运行 finish。
+继续处理复用既有批次，不使用 --force，不覆盖已有预测。预测不读取人工表/GT；人工表仅由 finish 的独立 coverage 阶段读取。外部目录权限仅在该任务的 OpenCode 子进程中按选定源码和运行目录授予，不改全局配置。配置或模型错误会记录在任务日志，不得冒称已完成。
+真实进程退出码、两类批次与 workflow_status.json 联合判断状态；B档未完成不算全链路成功，xlsx/coverage/trace 失败显示部分完成并保留CSV下载。历史恢复记录与测试夹具不作为生产预测证据。

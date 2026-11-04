@@ -1,0 +1,47 @@
+{
+  "date": "2026-11-04",
+  "timezone": "Asia/Shanghai",
+  "base_commit": "18bf49d295437fa295c12fd214d38c7e73bc99e0",
+  "platform": "Linux",
+  "python_version": "3.12.14",
+  "node_version": "24.22.1",
+  "chromium_version": "153.0.8010.0",
+  "python_tests": {
+    "passed": 290,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "node_http_process_tests": {
+    "passed": 23,
+    "failures": 0,
+    "skipped": 0
+  },
+  "browser_acceptance": {
+    "passed": 14,
+    "page_errors": 0
+  },
+  "real_xml_python_pipeline": {
+    "successful": true,
+    "source_example": "examples/omron_native_minimal.xml",
+    "status": "succeeded",
+    "source_unchanged": true,
+    "candidate_count": 3,
+    "final_pair_rows": 1,
+    "workbook_verified_by_openpyxl": true,
+    "provider": "Synthetic replies; all process events explicitly unresolved; no real model quality claim",
+    "warnings": []
+  },
+  "javascript_syntax_checks": {
+    "passed": [
+      "server.js",
+      "web_runtime.js",
+      "web/app.js"
+    ]
+  },
+  "limits": [
+    "OpenCode provider replies are synthetic test fixtures, not a real model session.",
+    "Windows batch launch, Windows npm .cmd process execution and native tkinter dialogs were not exercised on a Windows host.",
+    "Production PLC source files, credentials and model connectivity on the user host were not available."
+  ]
+}

@@ -1,11 +1,16 @@
 @echo off
-rem PLC 步序采集工作流 - Web 界面启动脚本
+chcp 65001 >nul
+setlocal
 cd /d "%~dp0"
-title PLC Web UI
-echo.
-echo   PLC 步序采集工作流 Web 界面
-echo   启动后浏览器自动打开 http://127.0.0.1:5173
-echo   关闭此窗口即停止服务
-echo.
-python web_app.py
+where node >nul 2>&1
+if errorlevel 1 (
+  echo [ERROR] Node.js 18+ was not found. Install Node.js and reopen this window.
+  pause
+  exit /b 1
+)
+title PLC Workbench
+node server.js --open
+set "plc_exit=%errorlevel%"
+if not "%plc_exit%"=="0" echo [ERROR] Workbench exited with code %plc_exit%. See details above.
 pause
+exit /b %plc_exit%

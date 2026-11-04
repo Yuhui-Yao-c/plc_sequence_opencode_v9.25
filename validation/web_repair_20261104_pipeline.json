@@ -1,0 +1,11 @@
+{
+  "successful": true,
+  "source_example": "examples/omron_native_minimal.xml",
+  "status": "succeeded",
+  "source_unchanged": true,
+  "candidate_count": 3,
+  "final_pair_rows": 1,
+  "workbook_verified_by_openpyxl": true,
+  "provider": "Synthetic replies; all process events explicitly unresolved; no real model quality claim",
+  "warnings": []
+}

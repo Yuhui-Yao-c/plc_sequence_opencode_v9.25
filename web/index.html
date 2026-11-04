@@ -35,7 +35,7 @@
         <div class="calib-toggle" id="calibToggle">
           <span class="calib-label">校准模式</span>
           <label class="switch">
-            <input type="checkbox" id="calibCheck">
+            <input type="checkbox" id="calibCheck" aria-label="启用校准模式">
             <span class="slider"></span>
           </label>
           <span class="calib-state" id="calibState">关闭</span>
@@ -45,6 +45,12 @@
     </header>
 
     <div class="content">
+      <div id="notice" class="notice" role="alert" hidden></div>
+      <details id="healthPanel" class="health-panel">
+        <summary id="healthState">正在检查运行环境…</summary>
+        <pre id="healthDetails"></pre>
+        <button id="btnHealth" class="btn btn-ghost" type="button">重新检查环境</button>
+      </details>
       <!-- 发起新任务 -->
       <section id="sectionNew" class="section">
         <div class="section-header">
@@ -56,7 +62,7 @@
             <label class="form-label">源码 XML <span class="req">*</span></label>
             <div class="form-input">
               <input type="text" id="inpSource" class="input" placeholder="选择 PLC 源码文件">
-              <button class="btn btn-ghost" onclick="browseFile('inpSource','file','选择源码XML')">选择</button>
+              <button class="btn btn-ghost" data-browse="inpSource">选择</button>
             </div>
           </div>
           <div class="form-row">
@@ -69,27 +75,27 @@
             <label class="form-label">输出文件夹</label>
             <div class="form-input">
               <input type="text" id="inpOutputRoot" class="input" placeholder="默认 = XML 同级 output 文件夹">
-              <button class="btn btn-ghost" onclick="browseFile('inpOutputRoot','dir','选择输出文件夹')">选择</button>
+              <button class="btn btn-ghost" data-browse="inpOutputRoot" data-mode="dir">选择</button>
             </div>
           </div>
           <div class="form-row form-row-calib" id="rowManual" style="display:none;">
             <label class="form-label">人工表 <span class="req">*</span></label>
             <div class="form-input">
               <input type="text" id="inpManual" class="input" placeholder="校准模式必填">
-              <button class="btn btn-ghost" onclick="browseFile('inpManual','file','选择人工采集表')">选择</button>
+              <button class="btn btn-ghost" data-browse="inpManual">选择</button>
             </div>
           </div>
           <div class="form-row">
             <label class="form-label">Trace <span class="opt">可选</span></label>
             <div class="form-input">
               <input type="text" id="inpTrace" class="input" placeholder="运行时 trace 文件">
-              <button class="btn btn-ghost" onclick="browseFile('inpTrace','file','选择trace文件')">选择</button>
+              <button class="btn btn-ghost" data-browse="inpTrace">选择</button>
             </div>
           </div>
         </div>
         <div class="form-actions">
-          <button id="btnPredict" class="btn btn-primary btn-large">开始执行</button>
-          <span class="hint-text">点击后 OpenCode 将在后台自主完成全流程，实时进度请看后台窗口</span>
+          <button id="btnPredict" class="btn btn-primary btn-large" disabled>开始执行</button>
+          <span class="hint-text">工作台将依次完成解析、模型分析和交付；进度与日志在本页显示。</span>
         </div>
       </section>
 
@@ -107,9 +113,11 @@
           <div class="phase-hero-body">
             <div class="phase-hero-label">当前阶段</div>
             <div class="phase-hero-name" id="phaseHeroName">运行中</div>
-            <div class="phase-hero-desc" id="phaseHeroDesc">OpenCode 正在后台执行，请查看后台窗口了解实时进度。</div>
+            <div class="phase-hero-desc" id="phaseHeroDesc">准备启动任务…</div>
           </div>
         </div>
+        <div class="job-toolbar"><span>任务日志</span><button id="btnStop" type="button" class="btn btn-ghost" disabled>停止当前任务</button></div>
+        <pre id="jobLog" class="job-log" aria-live="polite"></pre>
       </section>
 
       <!-- 任务结果 -->

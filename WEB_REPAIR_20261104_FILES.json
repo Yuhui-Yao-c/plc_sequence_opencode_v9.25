@@ -1,0 +1,190 @@
+{
+  "base_commit": "18bf49d295437fa295c12fd214d38c7e73bc99e0",
+  "date": "2026-11-04",
+  "files": [
+    {
+      "path": ".gitignore",
+      "change": "modified",
+      "size": 93,
+      "sha256": "6def8670b09bb9e5f5aa557605b74b904c6429989fbbf34303989719eadcef88",
+      "git_blob_sha": "31b3657f18882f8699fc3e93a532adf4d6ef9ed2"
+    },
+    {
+      "path": "AGENTS.md",
+      "change": "modified",
+      "size": 20650,
+      "sha256": "7fd4bcb05b92cc21eeee29b675e1e280ea04f29545df5f075c6eab385e9a22b5",
+      "git_blob_sha": "30d52e2659f436dfd22d6420f74fda8fc65e85fe"
+    },
+    {
+      "path": "README.md",
+      "change": "modified",
+      "size": 6396,
+      "sha256": "671408a3073d23228787117cf1cf8235a5dd1839976e17eb55db4a0f06b2e43f",
+      "git_blob_sha": "bc950bf429c2a9ef0c9a4177625cd4d7eeedae5f"
+    },
+    {
+      "path": "WEB_REPAIR_20261104.md",
+      "change": "added",
+      "size": 9935,
+      "sha256": "ef7c9039afe8f491da8dc81bfb16d449e9e103f4daead1e0d5705600bd2bdcea",
+      "git_blob_sha": "13f599c456fb6acf9e1259049d4d1bf854dc70d2"
+    },
+    {
+      "path": "package.json",
+      "change": "added",
+      "size": 412,
+      "sha256": "9d35e7afb2ca26a64cc29c77bb34cf0451c55f2d0974306a1974a3bd7bd5ba41",
+      "git_blob_sha": "a7ce0f99b8675c101bf061e3cc55b66ef3831878"
+    },
+    {
+      "path": "requirements.txt",
+      "change": "modified",
+      "size": 52,
+      "sha256": "2e84a3f7fbbcc046ad6244702c6c1bd21570562af4eeee09c5cad9ae29a3bec9",
+      "git_blob_sha": "f4eb16d707506b4f63c4b78eef550c16b85bc2b7"
+    },
+    {
+      "path": "run_web.bat",
+      "change": "modified",
+      "size": 399,
+      "sha256": "1df87c83645fafcacd340b3e970b00b8b60adce456a6f260a0a1121509823a73",
+      "git_blob_sha": "608cbfe46b1f45fc3297b7be61abf7c44bedf8f7"
+    },
+    {
+      "path": "server.js",
+      "change": "modified",
+      "size": 32792,
+      "sha256": "af00da6d34de0051f72fea04df951ec3d98e8ac1059f57993591af2841efd2a1",
+      "git_blob_sha": "fbcfd839ab9ea05c9f888abb031af727bd60c380"
+    },
+    {
+      "path": "tests/fixtures/opencode.js",
+      "change": "added",
+      "size": 1985,
+      "sha256": "3ee8e238aab7534267ebf51492c9e880ad2fd573f646481e988da7218e26e827",
+      "git_blob_sha": "f8182b6d95d8f0d5ef00d0b6c9ebc7694ae84a14"
+    },
+    {
+      "path": "tests/fixtures/plc_cli.py",
+      "change": "added",
+      "size": 3583,
+      "sha256": "f77335f381bff3645622c9dd3e3a1f3c314d4f834b6f747f36d42bc72eadad34",
+      "git_blob_sha": "1dc39a037fa92501ab746fb86f4aaf6629dc13a6"
+    },
+    {
+      "path": "tests/web.test.js",
+      "change": "added",
+      "size": 14140,
+      "sha256": "f6412456b3afebae3f67b630d6fd5b41619f6f4c39fe62115e1ddf935be6b214",
+      "git_blob_sha": "d9fcc009641615aff62e7929f0e91de0aebb1775"
+    },
+    {
+      "path": "tests/web_fixture.js",
+      "change": "added",
+      "size": 3098,
+      "sha256": "7ab6d1b2427a81c9b228e03a3abdfeff9af826e8f37fe9e6c7076cd2d7a58d3d",
+      "git_blob_sha": "ae230c333f8e008c582664206f90b05e4ce7f5f0"
+    },
+    {
+      "path": "tests/web_real_pipeline.js",
+      "change": "added",
+      "size": 2519,
+      "sha256": "6ed8b616e81a533ae4875153aa7292ef1c96f434422bce93f8391a4754a2c00b",
+      "git_blob_sha": "16a47467778b1ca2009e3f04e48cfdc3250d6f0d"
+    },
+    {
+      "path": "tests/web_ui_smoke.js",
+      "change": "added",
+      "size": 6237,
+      "sha256": "ae80023aa55b2a57a53b61bb919ec8f0fc784572e37e6674b7c94af77ed15461",
+      "git_blob_sha": "28ac0de2b0022ef5f6d0ffb25fc12a24b03bce42"
+    },
+    {
+      "path": "validation/web_repair_20261104_browser.json",
+      "change": "added",
+      "size": 1009,
+      "sha256": "8e4f1dec15facafc84c9e50369c2a40a63ee885df3a4be005c114a41a6c7fae8",
+      "git_blob_sha": "ae38c25527b6194bb9586fd29427fe8f42147452"
+    },
+    {
+      "path": "validation/web_repair_20261104_node.log",
+      "change": "added",
+      "size": 2123,
+      "sha256": "7699e8f54ebceab656d9c63801577615bdf76849e5f10fe9eaf50658eb05b44e",
+      "git_blob_sha": "5f19880efe09ad2877343263547f82613fa06339"
+    },
+    {
+      "path": "validation/web_repair_20261104_pipeline.json",
+      "change": "added",
+      "size": 347,
+      "sha256": "9433af979fb1146898b8ba971b57e4db4031a451d2f4a05e82194abf043dc42c",
+      "git_blob_sha": "4a07b98024bd81f457b796984fbcb21560dc1f36"
+    },
+    {
+      "path": "validation/web_repair_20261104_python.log",
+      "change": "added",
+      "size": 30666,
+      "sha256": "fa1e2d2476335fe81e21886abb55d0633f48382e57e3c9efb66708e437316721",
+      "git_blob_sha": "86f0bc97ab8b99f0a83ec22f4e46d0b5fbe76754"
+    },
+    {
+      "path": "validation/web_repair_20261104_summary.json",
+      "change": "added",
+      "size": 1360,
+      "sha256": "17bda63f85097fce6da4d5726051cfa3d486f6da50addf87377aab006e77d60e",
+      "git_blob_sha": "922fa4451ae72e9595776ae21c750aa6d3b3deac"
+    },
+    {
+      "path": "web/app.js",
+      "change": "modified",
+      "size": 14417,
+      "sha256": "54a0896e088d62f812be76ce402e20d5c3cd6edfc03843bece8e955f09cf8538",
+      "git_blob_sha": "ea542d31a34b90c075a5e4aa0784226e315b3d96"
+    },
+    {
+      "path": "web/index.html",
+      "change": "modified",
+      "size": 7843,
+      "sha256": "8ff1f1e3191315423251d08d6372b996923ab9432d8587b5304c44d151961952",
+      "git_blob_sha": "390052ec6c2472a850da26f49d951292ed9f59f9"
+    },
+    {
+      "path": "web/style.css",
+      "change": "modified",
+      "size": 20658,
+      "sha256": "c06f00794773d032953168877502c87a435e166d9dfcb094bb11e6bb8fc37606",
+      "git_blob_sha": "dacdb4335ff3075a34935688a3e22b47b77d01c4"
+    },
+    {
+      "path": "web_app.py",
+      "change": "modified",
+      "size": 884,
+      "sha256": "9efa038e9d792ded13885302525db87253eec83f300e62f8f9561108fa4c7643",
+      "git_blob_sha": "0d9720365dc618a6e2d68227884cb9bb90805008"
+    },
+    {
+      "path": "web_browse.py",
+      "change": "modified",
+      "size": 1346,
+      "sha256": "98459ab43a67bab12160b7864275e8396bd1f1f59516f7856014f0fa88d828cd",
+      "git_blob_sha": "861f3a7a65103fc543d38cca594cf03f5225598d"
+    },
+    {
+      "path": "web_runtime.js",
+      "change": "added",
+      "size": 5641,
+      "sha256": "75dd4688175ad4efab269deeee53d845d76795e7c341290bb4b569f73797ec0f",
+      "git_blob_sha": "69090dde35653ff80d13578045f37ab2b67a9b20"
+    },
+    {
+      "path": "启动前端.bat",
+      "change": "modified",
+      "size": 36,
+      "sha256": "88de72df2e195fbe135d8d96221e15abdfb196de3480305017dadafa96bffeec",
+      "git_blob_sha": "c8eb2dea6752e67eb8e437a1d31ac8e70e1c06bf"
+    }
+  ],
+  "self_excluded": "WEB_REPAIR_20261104_FILES.json is excluded from its own hash list.",
+  "unchanged_plc_algorithms": true
+}

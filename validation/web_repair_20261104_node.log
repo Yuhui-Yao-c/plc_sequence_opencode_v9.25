@@ -1,0 +1,36 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> plc-sequence-workbench@9.25.0 test
+> node --test tests/web.test.js
+
+✔ CSV retains quoted newlines, commas, escaped quotes and BOM (2.114063ms)
+✔ containment rejects sibling-prefix directories (0.217238ms)
+✔ Windows npm shim command contains no user prompt or source argument (0.495107ms)
+✔ actual subprocess chain, Unicode paths, logs, duplicate-label descriptions and downloads (708.698597ms)
+✔ failure is visible and terminal: predict-fail (489.818513ms)
+✔ failure is visible and terminal: model-fail (580.97234ms)
+✔ failure is visible and terminal: incomplete (734.771172ms)
+✔ failure is visible and terminal: description-missing (759.404681ms)
+✔ failure is visible and terminal: finish-fail (729.873005ms)
+✔ failure is visible and terminal: workbook-fail (586.131316ms)
+✔ missing tools, source, pattern and malformed request fail explicitly (423.977346ms)
+✔ single active task, cancellation and recovery (681.631719ms)
+✔ manual path ignored outside calibration, retained only when explicitly enabled (743.791678ms)
+✔ file picker cancellation and GUI errors are distinct (50.069262ms)
+✔ history uses canonical IDs for same names and rejects symlink escapes (7.529112ms)
+✔ stray description files cannot conceal missing expected batches (466.879126ms)
+✔ cross-origin requests and unknown APIs fail as JSON (9.145244ms)
+✔ restart restores history, marks an interrupted job and resumes without predict (1044.766846ms)
+✔ large Unicode logs retain every character across byte cursors (528.586091ms)
+✔ source parent can be selected as output root without overwriting source (632.352515ms)
+✔ a stale success flag cannot hide absent or malformed description results (534.762936ms)
+✔ continue asks OpenCode to repair batches rejected by finish validation (617.035475ms)
+✔ a surviving subprocess from an interrupted server can be stopped explicitly (697.781674ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 11121.28624

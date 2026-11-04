@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""tkinter 文件/目录选择对话框，被 web_app.py 以 subprocess 方式调用。
-输出选中路径到 stdout；取消则输出空行。无 tkinter 时输出空行退出。"""
+"""Node 后端调用的文件选择器；stdout 仅返回路径，取消返回空行。"""
 import sys
 
 try:
     import tkinter as tk
     from tkinter import filedialog
 except ImportError:
-    print("")
-    sys.exit(0)
+    print("Python 未安装 tkinter；请安装它，或直接在网页粘贴路径。", file=sys.stderr)
+    sys.exit(2)
 
 
 def main():
@@ -37,4 +36,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as exc:
+        print(f"无法打开本机文件选择器：{exc}。可直接在网页粘贴路径。", file=sys.stderr)
+        sys.exit(2)

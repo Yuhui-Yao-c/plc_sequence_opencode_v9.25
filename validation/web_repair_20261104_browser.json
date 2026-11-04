@@ -1,0 +1,23 @@
+{
+  "successful": true,
+  "browser": "153.0.8010.0",
+  "cases_passed": 14,
+  "cases": [
+    "Environment check enables task form",
+    "Missing fields produce visible validation",
+    "File-picker result reaches source input",
+    "Task completes with Unicode/quote/space paths and live logs",
+    "Disabled calibration does not send stale manual path",
+    "Duplicate labels retain distinct action descriptions",
+    "Chinese-named workbook downloads from actual delivery list",
+    "Reload restores selected run and completed result",
+    "Search filters the actual joined descriptions",
+    "Missing description batch stops completion and resumes successfully",
+    "Model failure is visible and stops polling as a failed job",
+    "Stop button terminates the real subprocess",
+    "Workbook failure preserves CSV download and shows partial completion",
+    "Missing OpenCode is diagnosed before task submission"
+  ],
+  "page_errors": [],
+  "provider": "Synthetic fixture only; no real model was invoked"
+}

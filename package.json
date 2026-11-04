@@ -1,0 +1,13 @@
+{
+  "name": "plc-sequence-workbench",
+  "private": true,
+  "version": "9.25.0",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/web.test.js",
+    "test:browser": "node tests/web_ui_smoke.js",
+    "test:pipeline": "node tests/web_real_pipeline.js",
+    "check": "node --check server.js && node --check web_runtime.js && node --check web/app.js"
+  }
+}

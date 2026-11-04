@@ -1,4 +1,18 @@
 /* PLC 步序采集工作台 — 深青蓝 + 橙 配色 */
+[hidden] { display: none !important; }
+.notice { margin-bottom: 14px; padding: 12px 16px; border-radius: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.notice-error { background: #fdeaea; color: #991b1b; }
+.notice-info { background: #e8f0f5; color: #1a4d6e; }
+.health-panel { background: white; border: 1px solid #d1d5db; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; }
+.health-panel summary { cursor: pointer; font-weight: 600; }
+.health-panel pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 12px 0; }
+.health-ok { color: #15803d; }
+.health-error, .warning-text { color: #b45309; }
+.job-toolbar { display: flex; align-items: center; justify-content: space-between; margin: 12px 0 6px; }
+.job-log { height: 240px; overflow: auto; padding: 12px; background: #122533; color: #dbeafe; border-radius: 6px; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.6 Consolas, monospace; }
+.run-list li > button { display: flex; align-items: center; gap: 8px; width: 100%; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer; }
+.run-state { font-size: 10px; flex-shrink: 0; }
+.pagination { gap: 8px; align-items: center; }
 :root {
   --primary: #1a4d6e;
   --primary-light: #2a6d8e;
@@ -140,7 +154,8 @@ html, body {
 .calib-state.on { color: var(--accent); font-weight: 600; }
 
 .switch { position: relative; display: inline-block; width: 32px; height: 18px; }
-.switch input { opacity: 0; width: 0; height: 0; }
+.switch input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 1; }
+.switch input:focus-visible + .slider { outline: 2px solid var(--primary); outline-offset: 3px; }
 .slider {
   position: absolute;
   cursor: pointer;
